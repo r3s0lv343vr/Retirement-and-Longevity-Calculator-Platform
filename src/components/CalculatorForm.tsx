@@ -65,10 +65,11 @@ const GROUPS: { id: string; title: string; blurb: string; keys: (keyof Calculato
   },
 ];
 
-function displayValue(key: keyof CalculatorInput, value: number, kind: string): string {
-  if (kind === "percent") return (value * 100).toString();
+function displayValue(value: number, kind: string): string {
+  if (kind === "percent") return String(Number((value * 100).toFixed(4)));
+  if (kind === "multiplier") return String(Number(value.toFixed(4)));
   if (Number.isInteger(value)) return String(value);
-  return String(value);
+  return String(Number(value.toFixed(2)));
 }
 
 export function CalculatorForm({ values, onChange, onSubmit, loading, error }: Props) {
@@ -148,16 +149,21 @@ function Field({
     <label htmlFor={id} className="block">
       <span className="block text-sm font-medium text-ink">{meta.label}</span>
       {meta.hint ? <span className="block text-xs text-muted">{meta.hint}</span> : null}
-      <input
-        id={id}
-        name={fieldKey}
-        type="number"
-        inputMode="decimal"
-        step={step}
-        value={displayValue(fieldKey, values[fieldKey], meta.kind)}
-        onChange={(e) => onChange(fieldKey, e.target.value, meta.kind)}
-        className="mt-1 w-full rounded-lg border border-pine/15 bg-paper px-3 py-2 text-ink outline-none ring-gold/40 focus:ring-2"
-      />
+      <div className="relative mt-1">
+        <input
+          id={id}
+          name={fieldKey}
+          type="number"
+          inputMode="decimal"
+          step={step}
+          value={displayValue(values[fieldKey], meta.kind)}
+          onChange={(e) => onChange(fieldKey, e.target.value, meta.kind)}
+          className={`w-full rounded-lg border border-pine/15 bg-paper px-3 py-2 text-ink outline-none ring-gold/40 focus:ring-2 ${meta.kind === "percent" ? "pr-12" : ""}`}
+        />
+        {meta.kind === "percent" ? (
+          <span className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 text-sm text-muted">%</span>
+        ) : null}
+      </div>
     </label>
   );
 }
