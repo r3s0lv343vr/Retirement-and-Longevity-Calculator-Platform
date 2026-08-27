@@ -15,7 +15,6 @@
   --color-watch: #9a6b12;
   --color-risk: #b85c38;
   --color-short: #8b2e2e;
-  --color-night: #1a1632;
 }
 
 html {
@@ -24,40 +23,14 @@ html {
 
 body {
   min-height: 100vh;
-  background-color: #1a1632;
+  background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
 }
 
 .paper-rule {
-  position: relative;
-  isolation: isolate;
-  background-color: #1a1632;
-  background-image:
-    radial-gradient(ellipse 90% 70% at 50% 36%, rgba(118, 108, 196, 0.14), transparent 62%),
-    radial-gradient(ellipse 70% 50% at 100% 0%, rgba(92, 62, 168, 0.26), transparent 58%),
-    radial-gradient(ellipse 65% 50% at 0% 100%, rgba(36, 20, 88, 0.42), transparent 62%),
-    url("/atmosphere.webp"),
-    linear-gradient(180deg, #2c2558 0%, #1a1632 42%, #100c22 100%);
-  background-repeat: no-repeat;
-  background-size: auto, auto, auto, cover, auto;
-  background-position: center;
-  background-blend-mode: soft-light, overlay, multiply, overlay, normal;
-}
-
-.paper-rule::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background:
-    radial-gradient(ellipse at center, transparent 38%, rgba(10, 8, 28, 0.5) 100%);
-}
-
-.paper-rule > * {
-  position: relative;
-  z-index: 1;
+  background-image: linear-gradient(to bottom, transparent 0, transparent 47px, rgba(20, 34, 28, 0.04) 48px);
+  background-size: 100% 48px;
 }
 
 .card {
