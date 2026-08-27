@@ -4,8 +4,6 @@ Retirement and longevity income calculator. **Nestspan** estimates whether a nes
 
 **Production URL:** https://retirement-and-longevity-calculator.vercel.app
 
-> Deploy this URL by creating the Vercel project `retirement-and-longevity-calculator` from this repository. A Vercel token was requested so the agent can finish the first production deploy.
-
 ## Description
 
 Most retirement tools draw a straight line of spending and ignore how real costs move with age. Nestspan’s backend runs a year-by-year projection that:
@@ -57,10 +55,11 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Vercel
 
-Project name: **retirement-and-longevity-calculator**  
+Project: [retirement-and-longevity-calculator](https://vercel.com/r3s0lv343vrs-projects/retirement-and-longevity-calculator)  
+Production: https://retirement-and-longevity-calculator.vercel.app  
 Framework: Next.js · Root directory: repository root · No required environment variables.
 
-Git auto-deploy needs the [Vercel GitHub app](https://github.com/apps/vercel) on this repo. Until then, production deploys can be CLI uploads of the main branch.
+The GitHub repo is connected. Pushes to `main` deploy production; other branches get preview URLs.
 
 ## License
 
