@@ -259,4 +259,49 @@ describe("project", () => {
       expect(row.endBalance).toBeCloseTo(100000 + 5000 - 20000 + row.growth);
     }
   });
+
+  it("inflates independent living with general inflation, not medical inflation", () => {
+    const result = run({
+      seniorHomeRentAnnual: 36000,
+      seniorHomeStartAge: 75,
+      inflationRate: 0.02,
+      healthcareInflationRate: 0.1,
+      currentAge: 65,
+      retirementAge: 65,
+    });
+    const row = result.years.find((y) => y.age === 75);
+    expect(row?.housingKind).toBe("independent");
+    expect(row?.housingSpend).toBeCloseTo(36000 * 1.02 ** 10);
+  });
+
+  it("matches a 41-year-old plan that lasts to the early 90s", () => {
+    const result = run({
+      currentAge: 41,
+      retirementAge: 65,
+      planToAge: 95,
+      currentSavings: 71000,
+      annualContribution: 13000,
+      partTimeAnnualIncome: 16000,
+      partTimeStartAge: 65,
+      partTimeEndAge: 75,
+      socialSecurityAnnual: 28800,
+      socialSecurityStartAge: 67,
+      pensionAnnual: 36000,
+      pensionStartAge: 65,
+      lifestyleSpendToday: 62000,
+      healthcareSpendToday: 8400,
+      longTermCareAnnual: 18000,
+      longTermCareStartAge: 85,
+      seniorHomeRentAnnual: 0,
+      nursingHomeRentAnnual: 0,
+      ccrcRentAnnual: 0,
+    });
+    expect(result.outlook.fundedThroughAge).toBe(91);
+    expect(result.outlook.yearsCovered).toBe(27);
+    expect(result.outlook.yearsInRetirement).toBe(31);
+    expect(result.outlook.totalHousingSpend).toBe(0);
+    expect(result.outlook.peakHealthcareAge).toBe(91);
+    expect(result.outlook.peakHealthcareSpend).toBeCloseTo(486574, 0);
+    expect(result.outlook.partTimeTotal).toBeCloseTo(371720, 0);
+  });
 });

@@ -50,14 +50,20 @@ export function OutlookResults({ result }: Props) {
         <StatCard
           label="Healthcare & housing share"
           value={formatPercent(outlook.healthcareShare)}
-          note="Medical care, long-term support, and later-life facility rent."
+          note={
+            outlook.totalHousingSpend > 0
+              ? "Medical care, long-term support, and later-life facility rent."
+              : "Medical care and long-term support over the funded years."
+          }
         />
         <StatCard
           label="Peak care year"
           value={outlook.peakHealthcareAge ? `Age ${outlook.peakHealthcareAge}` : "—"}
           note={
             outlook.peakHealthcareSpend
-              ? `${formatMoney(outlook.peakHealthcareSpend)} that year, including facility rent`
+              ? outlook.totalHousingSpend > 0
+                ? `${formatMoney(outlook.peakHealthcareSpend)} that year, including facility rent`
+                : `${formatMoney(outlook.peakHealthcareSpend)} that year in healthcare and long-term care`
               : ""
           }
         />
@@ -176,11 +182,8 @@ function ComfortEstimateCard({
       <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
         A national-style planning figure, not a quote for your city. It uses the higher of your lifestyle spending and
         a $65,000 comfort floor, adds a 10% buffer, and keeps healthcare from falling below a typical premium-plus-care
-        amount
-        {comfort.usedHousingPlaceholder
-          ? `, plus independent living at ${formatMoney(comfort.placeholderHousingAnnual)} a year starting at age ${comfort.placeholderHousingStartAge} because facility rent was left at zero`
-          : ", plus the later-life housing rent you entered"}
-        .
+        amount. Later-life housing is included only if you entered it — lifestyle spending already covers ordinary
+        housing.
       </p>
       <dl className="mt-5 grid gap-4 sm:grid-cols-3">
         <div>
@@ -195,7 +198,7 @@ function ComfortEstimateCard({
           <dt className="text-xs uppercase tracking-wide text-muted">Nest egg to fund it</dt>
           <dd className="mt-1 font-serif text-2xl text-ink">{formatMoney(comfort.nestEggNeededNow)}</dd>
           <p className="mt-1 text-xs text-muted">
-            Savings needed today to last through your plan age with a small remaining cushion.
+            Savings needed today to last through your plan age.
           </p>
         </div>
         <div>

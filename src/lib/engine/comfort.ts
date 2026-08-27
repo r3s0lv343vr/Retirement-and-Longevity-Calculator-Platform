@@ -7,29 +7,24 @@ export const COMFORT_HEALTHCARE_FLOOR = 8_400;
 export const COMFORT_LIFESTYLE_BUFFER = 1.1;
 export const COMFORT_HOUSING_PLACEHOLDER = 36_000;
 export const COMFORT_HOUSING_START_AGE = 80;
-export const COMFORT_CUSHION_YEARS = 2;
 
 export function comfortInputFrom(input: CalculatorInput): CalculatorInput {
   const suggestedLifestyle = Math.max(input.lifestyleSpendToday, COMFORT_LIFESTYLE_FLOOR) * COMFORT_LIFESTYLE_BUFFER;
   const suggestedHealthcare = Math.max(input.healthcareSpendToday, COMFORT_HEALTHCARE_FLOOR);
-  const hasHousing =
-    input.seniorHomeRentAnnual > 0 || input.nursingHomeRentAnnual > 0 || input.ccrcRentAnnual > 0;
 
   return {
     ...input,
     lifestyleSpendToday: suggestedLifestyle,
     healthcareSpendToday: suggestedHealthcare,
-    seniorHomeRentAnnual: hasHousing ? input.seniorHomeRentAnnual : COMFORT_HOUSING_PLACEHOLDER,
-    seniorHomeStartAge: hasHousing ? input.seniorHomeStartAge : COMFORT_HOUSING_START_AGE,
-    nursingHomeRentAnnual: hasHousing ? input.nursingHomeRentAnnual : 0,
-    ccrcRentAnnual: hasHousing ? input.ccrcRentAnnual : 0,
   };
 }
 
 function isFunded(input: CalculatorInput, savings: number): boolean {
   const result = projectBase({ ...input, currentSavings: savings });
-  const cushion = result.outlook.lastYearSpend * COMFORT_CUSHION_YEARS;
-  return !result.outlook.depleted && result.outlook.endingBalance >= cushion;
+  if (result.outlook.depleted) return false;
+  const last = result.years[result.years.length - 1];
+  const livingCushion = (last?.lifestyleSpend ?? 0) + (last?.healthcareSpend ?? 0);
+  return result.outlook.endingBalance >= livingCushion;
 }
 
 export function nestEggNeededNow(input: CalculatorInput): number {
@@ -55,8 +50,7 @@ export function extraAnnualSavings(gapToday: number, years: number, rate: number
 
 export function estimateComfort(input: CalculatorInput): ComfortEstimate {
   const comfortInput = comfortInputFrom(input);
-  const usedHousingPlaceholder =
-    input.seniorHomeRentAnnual <= 0 && input.nursingHomeRentAnnual <= 0 && input.ccrcRentAnnual <= 0;
+  const usedHousingPlaceholder = false;
   const nestEggNeeded = nestEggNeededNow(comfortInput);
   const additionalNestEgg = Math.max(0, nestEggNeeded - input.currentSavings);
   const yearsToRetirement = Math.max(0, input.retirementAge - input.currentAge);

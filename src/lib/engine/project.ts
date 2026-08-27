@@ -31,25 +31,25 @@ export function facilityHousing(
   age: number,
   input: CalculatorInput,
   yearsFromNow: number,
-  rate: number,
+  medicalRate: number,
 ): { rent: number; kind: HousingKind; lifestyleFactor: number } {
   if (input.ccrcRentAnnual > 0 && age >= input.ccrcStartAge) {
     return {
-      rent: inflate(input.ccrcRentAnnual, rate, yearsFromNow),
+      rent: inflate(input.ccrcRentAnnual, medicalRate, yearsFromNow),
       kind: "ccrc",
       lifestyleFactor: HOUSING_LIFESTYLE_FACTOR.ccrc,
     };
   }
   if (input.nursingHomeRentAnnual > 0 && age >= input.nursingHomeStartAge) {
     return {
-      rent: inflate(input.nursingHomeRentAnnual, rate, yearsFromNow),
+      rent: inflate(input.nursingHomeRentAnnual, medicalRate, yearsFromNow),
       kind: "nursing",
       lifestyleFactor: HOUSING_LIFESTYLE_FACTOR.nursing,
     };
   }
   if (input.seniorHomeRentAnnual > 0 && age >= input.seniorHomeStartAge) {
     return {
-      rent: inflate(input.seniorHomeRentAnnual, rate, yearsFromNow),
+      rent: inflate(input.seniorHomeRentAnnual, input.inflationRate, yearsFromNow),
       kind: "independent",
       lifestyleFactor: HOUSING_LIFESTYLE_FACTOR.independent,
     };
