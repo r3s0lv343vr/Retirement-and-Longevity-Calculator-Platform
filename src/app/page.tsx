@@ -31,7 +31,7 @@ export default function HomePage() {
         <CalculatorApp />
       </main>
 
-      <footer className="border-t border-pine/10 bg-pine text-paper">
+      <footer className="border-t border-paper/15 bg-night/80 text-paper backdrop-blur-md">
         <div className="mx-auto max-w-5xl px-5 py-8 sm:px-6">
           <AdSlot placement="footer" className="mb-4 border-paper/20 bg-paper/10 text-paper/80" />
           <AdSlot placement="footer-2" className="mb-6 border-paper/20 bg-paper/10 text-paper/80" />
