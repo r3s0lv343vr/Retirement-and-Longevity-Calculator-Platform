@@ -3,6 +3,7 @@ export type AdPlacement =
   | "after-intro"
   | "sidebar"
   | "sidebar-2"
+  | "sidebar-3"
   | "form-break-1"
   | "form-break-2"
   | "form-break-3"
@@ -24,6 +25,7 @@ export const AD_SLOTS: Record<
   "after-intro": { label: "Below intro", size: "728 × 90", width: 728, height: 90 },
   sidebar: { label: "Sidebar", size: "160 × 600", width: 160, height: 600 },
   "sidebar-2": { label: "Sidebar", size: "160 × 600", width: 160, height: 600 },
+  "sidebar-3": { label: "Sidebar", size: "160 × 600", width: 160, height: 600 },
   "form-break-1": { label: "In-content", size: "728 × 90", width: 728, height: 90 },
   "form-break-2": { label: "In-content", size: "300 × 250", width: 300, height: 250 },
   "form-break-3": { label: "In-content", size: "728 × 90", width: 728, height: 90 },

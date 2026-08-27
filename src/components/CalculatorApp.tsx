@@ -81,6 +81,7 @@ export function CalculatorApp() {
         <div className="sticky top-6 space-y-4">
           <AdSlot placement="sidebar" />
           <AdSlot placement="sidebar-2" />
+          <AdSlot placement="sidebar-3" />
         </div>
       </div>
     </div>
