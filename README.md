@@ -1,12 +1,14 @@
-# Nestspan
+# How Long Before I Go Broke Calculator
 
-Retirement and longevity income calculator. **Nestspan** estimates whether a nest egg will last through a chosen longevity age while healthcare costs, inflation, lifestyle phases, and part-time work change over time.
+Retirement and Longevity Calculator.
+
+Estimates whether a nest egg will last through a chosen longevity age while healthcare costs, inflation, lifestyle phases, and part-time work change over time.
 
 **Production URL:** https://retirement-and-longevity-calculator.vercel.app
 
 ## Description
 
-Most retirement tools draw a straight line of spending and ignore how real costs move with age. Nestspan’s backend runs a year-by-year projection that:
+Most retirement tools draw a straight line of spending and ignore how real costs move with age. This calculator’s backend runs a year-by-year projection that:
 
 - Inflates **lifestyle** at general CPI and **healthcare** at a higher medical inflation rate
 - Scales lifestyle through **go-go, slow-go, and no-go** years

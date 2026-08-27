@@ -30,7 +30,7 @@ export function OutlookResults({ result }: Props) {
 
   return (
     <section id="outlook" className="space-y-6">
-      <header className={`rounded-2xl border p-6 sm:p-8 ${STATUS_STYLES[outlook.status]}`}>
+      <header className={`overflow-hidden rounded-2xl border p-6 sm:p-8 ${STATUS_STYLES[outlook.status]}`}>
         <p className="text-xs font-semibold uppercase tracking-[0.18em]">Retirement Longevity Outlook</p>
         <h2 className="mt-2 font-serif text-3xl leading-tight text-ink sm:text-4xl">{outlook.title}</h2>
         <p className="mt-3 max-w-2xl text-base text-ink/80">{outlook.summary}</p>
@@ -64,7 +64,7 @@ export function OutlookResults({ result }: Props) {
 
       <AdSlot placement="in-outlook" className="mx-auto w-full max-w-[300px] py-4" />
 
-      <div className="rounded-2xl border border-pine/10 bg-white/80 p-5 sm:p-6">
+      <div className="card">
         <h3 className="font-serif text-xl text-pine">Portfolio vs. changing costs</h3>
         <p className="mb-4 mt-1 text-sm text-muted">
           Bars are annual spending in retirement. Darker bars are healthcare and long-term care — they climb even when
@@ -73,7 +73,7 @@ export function OutlookResults({ result }: Props) {
         <OutlookChart years={years} />
       </div>
 
-      <div className="rounded-2xl border border-gold/40 bg-gold/10 p-5 sm:p-6">
+      <div className="card border-gold/40 bg-gold/10">
         <h3 className="font-serif text-xl text-pine">Not a straight line</h3>
         <p className="mt-2 text-sm leading-relaxed text-ink/85">
           A model that holds spending flat except for CPI would say you last until age{" "}
@@ -88,14 +88,14 @@ export function OutlookResults({ result }: Props) {
       </div>
 
       {warnings.length > 0 ? (
-        <ul className="list-disc space-y-1 rounded-xl border border-pine/10 bg-white/60 px-6 py-4 text-sm text-muted">
+        <ul className="card list-disc space-y-1 px-8 text-sm text-muted">
           {warnings.map((w) => (
             <li key={w}>{w}</li>
           ))}
         </ul>
       ) : null}
 
-      <details className="rounded-2xl border border-pine/10 bg-white/80 p-5">
+      <details className="card">
         <summary className="cursor-pointer font-serif text-xl text-pine">Year-by-year snapshot</summary>
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-full text-left text-sm">
@@ -140,7 +140,7 @@ function Metric({ label, value }: { label: string; value: string }) {
 
 function StatCard({ label, value, note }: { label: string; value: string; note: string }) {
   return (
-    <article className="rounded-xl border border-pine/10 bg-white/80 p-4">
+    <article className="card p-5">
       <p className="text-xs uppercase tracking-wide text-muted">{label}</p>
       <p className="mt-1 font-serif text-2xl text-pine">{value}</p>
       {note ? <p className="mt-2 text-xs text-muted">{note}</p> : null}

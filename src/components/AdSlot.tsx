@@ -11,7 +11,7 @@ export function AdSlot({ placement, className = "" }: Props) {
 
   return (
     <aside
-      className={`ad-slot flex flex-col items-center justify-center rounded-md border border-dashed border-pine/25 bg-white/50 text-center ${className}`}
+      className={`ad-slot flex min-h-[5.5rem] flex-col items-center justify-center rounded-xl border border-dashed border-pine/20 bg-white px-4 py-5 text-center ${className}`}
       aria-label={`Advertisement: ${slot.label}`}
       data-ad-placement={placement}
     >
@@ -26,10 +26,7 @@ export function AdSlot({ placement, className = "" }: Props) {
           data-full-width-responsive="true"
         />
       ) : (
-        <div
-          className="mt-1 flex items-center justify-center text-pine/45"
-          style={{ minWidth: Math.min(slot.width, 320), minHeight: Math.min(slot.height, 120) }}
-        >
+        <div className="mt-1 flex min-h-16 items-center justify-center px-2 text-pine/45">
           <span className="text-xs">
             {slot.label}
             <span className="mx-1 text-muted/60">·</span>

@@ -15,13 +15,13 @@ const serif = Source_Serif_4({
 });
 
 export const metadata: Metadata = {
-  title: "Nestspan — Retirement Longevity Calculator",
+  title: "How Long Before I Go Broke Calculator",
   description:
-    "Find out if your savings will last through retirement while accounting for healthcare inflation, lifestyle phases, and part-time work.",
+    "Retirement and Longevity Calculator. Find out if your savings will last while accounting for healthcare inflation, lifestyle phases, and part-time work.",
   openGraph: {
-    title: "Nestspan — Retirement Longevity Calculator",
+    title: "How Long Before I Go Broke Calculator",
     description:
-      "A retirement and longevity income calculator that does not assume a straight line of spending.",
+      "Retirement and Longevity Calculator that does not assume a straight line of spending.",
     type: "website",
   },
 };

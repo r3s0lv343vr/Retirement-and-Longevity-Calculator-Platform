@@ -42,42 +42,40 @@ export function CalculatorApp() {
   const yearCount = useMemo(() => values.planToAge - values.currentAge + 1, [values]);
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[minmax(0,1fr)_180px]">
-      <div className="space-y-8">
-        <section className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)]">
-          <CalculatorForm
-            values={values}
-            onChange={setValues}
-            onSubmit={calculate}
-            loading={loading}
-            error={error}
-          />
-          <div className="space-y-4">
-            <aside className="rounded-xl border border-pine/10 bg-white/70 p-5 text-sm leading-relaxed text-muted">
-              <h2 className="font-serif text-lg text-pine">How this differs</h2>
-              <p className="mt-2">
-                Most calculators draw a straight spending line and call it a plan. Nestspan splits lifestyle from
-                healthcare, lets costs swell in later decades, and credits part-time work only for the years you
-                actually work.
-              </p>
-              <p className="mt-3">
-                The engine projects <strong className="text-ink">{yearCount} years</strong> on the server — one pass
-                with real-world cost curves, and one straight-line comparison so you can see the gap.
-              </p>
-            </aside>
-            <AdSlot placement="mid-form" className="py-6" />
-          </div>
-        </section>
+    <div className="grid items-start gap-8 xl:grid-cols-[minmax(0,1fr)_160px]">
+      <div className="min-w-0 space-y-6">
+        <aside className="card text-sm leading-relaxed text-muted">
+          <h2 className="font-serif text-lg text-pine">How this differs</h2>
+          <p className="mt-2">
+            Most calculators draw a straight spending line and call it a plan. This one splits lifestyle from
+            healthcare, lets costs swell in later decades, and credits part-time work only for the years you actually
+            work.
+          </p>
+          <p className="mt-3">
+            The engine projects <strong className="text-ink">{yearCount} years</strong> on the server — one pass with
+            real-world cost curves, and one straight-line comparison so you can see the gap.
+          </p>
+        </aside>
+
+        <CalculatorForm
+          values={values}
+          onChange={setValues}
+          onSubmit={calculate}
+          loading={loading}
+          error={error}
+        />
+
+        <AdSlot placement="mid-form" className="min-h-[250px] py-6" />
 
         {result ? (
           <>
-            <AdSlot placement="pre-outlook" className="py-4" />
+            <AdSlot placement="pre-outlook" className="min-h-[90px] py-4" />
             <OutlookResults result={result} />
           </>
         ) : null}
       </div>
 
-      <div className="hidden lg:block">
+      <div className="hidden min-w-0 xl:block">
         <div className="sticky top-6">
           <AdSlot placement="sidebar" className="min-h-[600px] py-8" />
         </div>

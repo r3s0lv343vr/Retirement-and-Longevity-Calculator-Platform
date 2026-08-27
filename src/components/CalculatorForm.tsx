@@ -12,36 +12,48 @@ type Props = {
   error: string | null;
 };
 
-const GROUPS: { id: string; title: string; blurb: string; keys: (keyof CalculatorInput)[]; advanced?: boolean }[] = [
+const GROUPS: {
+  id: string;
+  title: string;
+  blurb: string;
+  keys: (keyof CalculatorInput)[];
+  advanced?: boolean;
+  columns: 2 | 3;
+}[] = [
   {
     id: "timeline",
     title: "Your timeline",
     blurb: "When work tapers off, and how long you want the money to last.",
     keys: ["currentAge", "retirementAge", "planToAge"],
+    columns: 3,
   },
   {
     id: "savings",
     title: "Nest egg",
     blurb: "Balances and savings in today’s dollars.",
     keys: ["currentSavings", "annualContribution"],
+    columns: 2,
   },
   {
     id: "work",
     title: "Phased work",
     blurb: "Part-time or side-hustle income after full-time work ends.",
     keys: ["partTimeAnnualIncome", "partTimeStartAge", "partTimeEndAge"],
+    columns: 2,
   },
   {
     id: "income",
     title: "Guaranteed income",
     blurb: "Social Security and any pension, inflated with general prices.",
     keys: ["socialSecurityAnnual", "socialSecurityStartAge", "pensionAnnual", "pensionStartAge"],
+    columns: 2,
   },
   {
     id: "spending",
     title: "Spending today",
     blurb: "Lifestyle and health are tracked separately so medical inflation can outrun the CPI.",
     keys: ["lifestyleSpendToday", "healthcareSpendToday", "longTermCareAnnual", "longTermCareStartAge"],
+    columns: 2,
   },
   {
     id: "assumptions",
@@ -49,6 +61,7 @@ const GROUPS: { id: string; title: string; blurb: string; keys: (keyof Calculato
     blurb: "Nominal annual rates.",
     keys: ["inflationRate", "healthcareInflationRate", "preRetirementReturn", "postRetirementReturn"],
     advanced: true,
+    columns: 2,
   },
   {
     id: "phases",
@@ -62,6 +75,7 @@ const GROUPS: { id: string; title: string; blurb: string; keys: (keyof Calculato
       "noGoLifestyleMultiplier",
     ],
     advanced: true,
+    columns: 2,
   },
 ];
 
@@ -86,27 +100,44 @@ export function CalculatorForm({ values, onChange, onSubmit, loading, error }: P
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {GROUPS.filter((g) => !g.advanced).map((group) => (
-        <fieldset key={group.id} className="rounded-xl border border-pine/10 bg-white/70 p-4 shadow-sm sm:p-5">
-          <legend className="px-1 font-serif text-lg text-pine">{group.title}</legend>
-          <p className="mb-4 text-sm text-muted">{group.blurb}</p>
-          <div className="grid gap-3 sm:grid-cols-2">
+        <section key={group.id} className="card">
+          <h2 className="font-serif text-xl leading-tight text-pine">{group.title}</h2>
+          <p className="mt-1 text-sm leading-relaxed text-muted">{group.blurb}</p>
+          <div
+            className={`mt-5 grid gap-x-5 gap-y-5 ${
+              group.columns === 3 ? "sm:grid-cols-3" : "sm:grid-cols-2"
+            }`}
+          >
             {group.keys.map((key) => (
-              <Field key={key} fieldKey={key} values={values} onChange={setField} />
+              <Field
+                key={key}
+                fieldKey={key}
+                values={values}
+                onChange={setField}
+                wide={group.id === "work" && key === "partTimeAnnualIncome"}
+              />
             ))}
           </div>
-        </fieldset>
+        </section>
       ))}
 
-      <details className="rounded-xl border border-pine/10 bg-white/50 p-4">
-        <summary className="cursor-pointer font-medium text-pine">Advanced assumptions</summary>
-        <p className="mt-2 text-sm text-muted">Change these if you have a specific plan. Defaults are conservative US planning figures.</p>
+      <details className="card group">
+        <summary className="cursor-pointer list-none font-medium text-pine marker:content-none [&::-webkit-details-marker]:hidden">
+          <span className="inline-flex items-center gap-2">
+            <span className="inline-block text-xs transition group-open:rotate-90">▶</span>
+            Advanced assumptions
+          </span>
+        </summary>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          Change these if you have a specific plan. Defaults are conservative US planning figures.
+        </p>
         {GROUPS.filter((g) => g.advanced).map((group) => (
-          <div key={group.id} className="mt-4">
-            <h3 className="font-serif text-base text-pine">{group.title}</h3>
-            <p className="mb-3 text-sm text-muted">{group.blurb}</p>
-            <div className="grid gap-3 sm:grid-cols-2">
+          <div key={group.id} className="mt-6 border-t border-pine/10 pt-5">
+            <h3 className="font-serif text-lg text-pine">{group.title}</h3>
+            <p className="mt-1 text-sm leading-relaxed text-muted">{group.blurb}</p>
+            <div className="mt-4 grid gap-x-5 gap-y-5 sm:grid-cols-2">
               {group.keys.map((key) => (
                 <Field key={key} fieldKey={key} values={values} onChange={setField} />
               ))}
@@ -116,7 +147,7 @@ export function CalculatorForm({ values, onChange, onSubmit, loading, error }: P
       </details>
 
       {error ? (
-        <p className="rounded-md border border-short/30 bg-short/10 px-3 py-2 text-sm text-short" role="alert">
+        <p className="rounded-xl border border-short/30 bg-short/10 px-4 py-3 text-sm text-short" role="alert">
           {error}
         </p>
       ) : null}
@@ -124,7 +155,7 @@ export function CalculatorForm({ values, onChange, onSubmit, loading, error }: P
       <button
         type="submit"
         disabled={loading}
-        className="inline-flex w-full items-center justify-center rounded-full bg-pine px-6 py-3 text-sm font-semibold text-paper shadow-sm transition hover:bg-pine-2 disabled:opacity-60"
+        className="inline-flex h-12 w-full items-center justify-center rounded-full bg-pine px-6 text-sm font-semibold text-paper shadow-sm transition hover:bg-pine-2 disabled:opacity-60"
       >
         {loading ? "Running projection…" : "See longevity outlook"}
       </button>
@@ -136,20 +167,24 @@ function Field({
   fieldKey,
   values,
   onChange,
+  wide = false,
 }: {
   fieldKey: keyof CalculatorInput;
   values: CalculatorInput;
   onChange: (key: keyof CalculatorInput, raw: string, kind: string) => void;
+  wide?: boolean;
 }) {
   const meta = FIELD_META[fieldKey];
   const id = `field-${fieldKey}`;
   const step = meta.kind === "percent" || meta.kind === "multiplier" ? "0.1" : meta.kind === "age" ? "1" : "100";
 
   return (
-    <label htmlFor={id} className="block">
-      <span className="block text-sm font-medium text-ink">{meta.label}</span>
-      {meta.hint ? <span className="block text-xs text-muted">{meta.hint}</span> : null}
-      <div className="relative mt-1">
+    <label htmlFor={id} className={`flex min-w-0 flex-col gap-1.5 ${wide ? "sm:col-span-2" : ""}`}>
+      <span className="min-h-10">
+        <span className="block text-sm font-medium leading-snug text-ink">{meta.label}</span>
+        {meta.hint ? <span className="mt-0.5 block text-xs leading-snug text-muted">{meta.hint}</span> : null}
+      </span>
+      <div className="relative">
         <input
           id={id}
           name={fieldKey}
@@ -158,7 +193,7 @@ function Field({
           step={step}
           value={displayValue(values[fieldKey], meta.kind)}
           onChange={(e) => onChange(fieldKey, e.target.value, meta.kind)}
-          className={`w-full rounded-lg border border-pine/15 bg-paper px-3 py-2 text-ink outline-none ring-gold/40 focus:ring-2 ${meta.kind === "percent" ? "pr-12" : ""}`}
+          className={`h-11 w-full min-w-0 rounded-lg border border-pine/15 bg-paper px-3 text-ink outline-none ring-gold/40 focus:ring-2 ${meta.kind === "percent" ? "pr-12" : "pr-3"}`}
         />
         {meta.kind === "percent" ? (
           <span className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 text-sm text-muted">%</span>
