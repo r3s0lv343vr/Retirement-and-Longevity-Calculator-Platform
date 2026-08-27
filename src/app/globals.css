@@ -15,7 +15,7 @@
   --color-watch: #9a6b12;
   --color-risk: #b85c38;
   --color-short: #8b2e2e;
-  --color-night: #2a342e;
+  --color-night: #1a1632;
 }
 
 html {
@@ -24,7 +24,7 @@ html {
 
 body {
   min-height: 100vh;
-  background-color: #2a342e;
+  background-color: #1a1632;
   color: var(--color-ink);
   font-family: var(--font-sans);
 }
@@ -32,38 +32,17 @@ body {
 .paper-rule {
   position: relative;
   isolation: isolate;
-  background-color: #2a342e;
+  background-color: #1a1632;
   background-image:
-    url("/grain.png"),
-    url("/fiber.png"),
-    repeating-linear-gradient(
-      0deg,
-      rgba(255, 248, 230, 0.045) 0px,
-      rgba(255, 248, 230, 0.045) 1px,
-      transparent 1px,
-      transparent 4px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      rgba(8, 12, 10, 0.12) 0px,
-      rgba(8, 12, 10, 0.12) 1px,
-      transparent 1px,
-      transparent 5px
-    ),
-    radial-gradient(ellipse 100% 70% at 50% -20%, rgba(201, 168, 92, 0.28), transparent 58%),
-    radial-gradient(ellipse 70% 55% at 100% 0%, rgba(47, 107, 80, 0.35), transparent 55%),
-    radial-gradient(ellipse 65% 50% at 0% 100%, rgba(20, 48, 40, 0.55), transparent 60%),
-    linear-gradient(180deg, #3a463d 0%, #2a342e 38%, #1e2823 100%);
-  background-size:
-    220px 220px,
-    480px 480px,
-    auto,
-    auto,
-    auto,
-    auto,
-    auto,
-    auto;
-  background-blend-mode: overlay, soft-light, overlay, multiply, normal, normal, normal, normal;
+    radial-gradient(ellipse 90% 70% at 50% 36%, rgba(118, 108, 196, 0.14), transparent 62%),
+    radial-gradient(ellipse 70% 50% at 100% 0%, rgba(92, 62, 168, 0.26), transparent 58%),
+    radial-gradient(ellipse 65% 50% at 0% 100%, rgba(36, 20, 88, 0.42), transparent 62%),
+    url("/atmosphere.webp"),
+    linear-gradient(180deg, #2c2558 0%, #1a1632 42%, #100c22 100%);
+  background-repeat: no-repeat;
+  background-size: auto, auto, auto, cover, auto;
+  background-position: center;
+  background-blend-mode: soft-light, overlay, multiply, overlay, normal;
 }
 
 .paper-rule::before {
@@ -73,7 +52,7 @@ body {
   pointer-events: none;
   z-index: 0;
   background:
-    radial-gradient(ellipse at center, transparent 40%, rgba(8, 10, 9, 0.45) 100%);
+    radial-gradient(ellipse at center, transparent 38%, rgba(10, 8, 28, 0.5) 100%);
 }
 
 .paper-rule > * {
