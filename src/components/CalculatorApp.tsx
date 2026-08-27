@@ -57,6 +57,8 @@ export function CalculatorApp() {
           </p>
         </aside>
 
+        <AdSlot placement="after-intro" />
+
         <CalculatorForm
           values={values}
           onChange={setValues}
@@ -65,19 +67,20 @@ export function CalculatorApp() {
           error={error}
         />
 
-        <AdSlot placement="mid-form" className="min-h-[250px] py-6" />
+        <AdSlot placement="mid-form" />
 
         {result ? (
           <>
-            <AdSlot placement="pre-outlook" className="min-h-[90px] py-4" />
+            <AdSlot placement="pre-outlook" />
             <OutlookResults result={result} />
           </>
         ) : null}
       </div>
 
       <div className="hidden min-w-0 xl:block">
-        <div className="sticky top-6">
-          <AdSlot placement="sidebar" className="min-h-[600px] py-8" />
+        <div className="sticky top-6 space-y-4">
+          <AdSlot placement="sidebar" />
+          <AdSlot placement="sidebar-2" />
         </div>
       </div>
     </div>

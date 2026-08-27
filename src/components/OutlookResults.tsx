@@ -62,7 +62,8 @@ export function OutlookResults({ result }: Props) {
         />
       </div>
 
-      <AdSlot placement="in-outlook" className="mx-auto w-full max-w-[300px] py-4" />
+      <AdSlot placement="after-stats" />
+      <AdSlot placement="in-outlook" />
 
       <div className="card">
         <h3 className="font-serif text-xl text-pine">Portfolio vs. changing costs</h3>
@@ -72,6 +73,8 @@ export function OutlookResults({ result }: Props) {
         </p>
         <OutlookChart years={years} />
       </div>
+
+      <AdSlot placement="after-chart" />
 
       <div className="card border-gold/40 bg-gold/10">
         <h3 className="font-serif text-xl text-pine">Not a straight line</h3>
@@ -86,6 +89,8 @@ export function OutlookResults({ result }: Props) {
             : "."}
         </p>
       </div>
+
+      <AdSlot placement="after-comparison" />
 
       {warnings.length > 0 ? (
         <ul className="card list-disc space-y-1 px-8 text-sm text-muted">

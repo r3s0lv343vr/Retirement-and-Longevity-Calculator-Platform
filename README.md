@@ -28,7 +28,7 @@ This is an educational model, not tax, investment, or medical advice.
 
 ## Ads
 
-Six labeled IAB-style slots ship on the page (header, sidebar, mid-form, before results, in results, footer). Set `NEXT_PUBLIC_ADSENSE_CLIENT` to attach a live AdSense publisher id; otherwise the slots render as placeholders.
+Labeled IAB-style slots sit in the header, between form sections, in the sidebar, around results, and in the footer. Set `NEXT_PUBLIC_ADSENSE_CLIENT` to attach a live AdSense publisher id; otherwise the slots render as placeholders.
 
 ## Run locally
 

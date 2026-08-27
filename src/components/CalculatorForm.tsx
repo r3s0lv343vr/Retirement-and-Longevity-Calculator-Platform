@@ -1,6 +1,8 @@
 "use client";
 
+import { AdSlot } from "@/components/AdSlot";
 import { FIELD_META } from "@/lib/engine";
+import type { AdPlacement } from "@/lib/ads";
 import type { CalculatorInput } from "@/lib/engine";
 import type { FormEvent } from "react";
 
@@ -79,6 +81,13 @@ const GROUPS: {
   },
 ];
 
+const ADS_AFTER: Partial<Record<string, AdPlacement>> = {
+  timeline: "form-break-1",
+  savings: "form-break-2",
+  work: "form-break-3",
+  income: "form-break-4",
+};
+
 function displayValue(value: number, kind: string): string {
   if (kind === "percent") return String(Number((value * 100).toFixed(4)));
   if (kind === "multiplier") return String(Number(value.toFixed(4)));
@@ -102,25 +111,28 @@ export function CalculatorForm({ values, onChange, onSubmit, loading, error }: P
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {GROUPS.filter((g) => !g.advanced).map((group) => (
-        <section key={group.id} className="card">
-          <h2 className="font-serif text-xl leading-tight text-pine">{group.title}</h2>
-          <p className="mt-1 text-sm leading-relaxed text-muted">{group.blurb}</p>
-          <div
-            className={`mt-5 grid items-end gap-x-6 gap-y-6 ${
-              group.columns === 3 ? "sm:grid-cols-3" : "sm:grid-cols-2"
-            }`}
-          >
-            {group.keys.map((key) => (
-              <Field
-                key={key}
-                fieldKey={key}
-                values={values}
-                onChange={setField}
-                wide={group.id === "work" && key === "partTimeAnnualIncome"}
-              />
-            ))}
-          </div>
-        </section>
+        <div key={group.id} className="space-y-5">
+          <section className="card">
+            <h2 className="font-serif text-xl leading-tight text-pine">{group.title}</h2>
+            <p className="mt-1 text-sm leading-relaxed text-muted">{group.blurb}</p>
+            <div
+              className={`mt-5 grid items-end gap-x-6 gap-y-6 ${
+                group.columns === 3 ? "sm:grid-cols-3" : "sm:grid-cols-2"
+              }`}
+            >
+              {group.keys.map((key) => (
+                <Field
+                  key={key}
+                  fieldKey={key}
+                  values={values}
+                  onChange={setField}
+                  wide={group.id === "work" && key === "partTimeAnnualIncome"}
+                />
+              ))}
+            </div>
+          </section>
+          {ADS_AFTER[group.id] ? <AdSlot placement={ADS_AFTER[group.id] as AdPlacement} /> : null}
+        </div>
       ))}
 
       <details className="card group">
