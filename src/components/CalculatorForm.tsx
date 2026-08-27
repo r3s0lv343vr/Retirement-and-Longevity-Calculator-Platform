@@ -106,7 +106,7 @@ export function CalculatorForm({ values, onChange, onSubmit, loading, error }: P
           <h2 className="font-serif text-xl leading-tight text-pine">{group.title}</h2>
           <p className="mt-1 text-sm leading-relaxed text-muted">{group.blurb}</p>
           <div
-            className={`mt-5 grid gap-x-5 gap-y-5 ${
+            className={`mt-5 grid items-end gap-x-6 gap-y-6 ${
               group.columns === 3 ? "sm:grid-cols-3" : "sm:grid-cols-2"
             }`}
           >
@@ -180,7 +180,7 @@ function Field({
 
   return (
     <label htmlFor={id} className={`flex min-w-0 flex-col gap-1.5 ${wide ? "sm:col-span-2" : ""}`}>
-      <span className="min-h-10">
+      <span>
         <span className="block text-sm font-medium leading-snug text-ink">{meta.label}</span>
         {meta.hint ? <span className="mt-0.5 block text-xs leading-snug text-muted">{meta.hint}</span> : null}
       </span>
