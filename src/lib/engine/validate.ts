@@ -52,23 +52,26 @@ export function validateInput(input: CalculatorInput): string[] {
   if (input.currentAge < 18 || input.currentAge > 90) {
     errors.push("Current age must be between 18 and 90.");
   }
-  if (input.retirementAge <= input.currentAge) {
-    errors.push("Retirement age must be after your current age.");
+  if (input.retirementAge < 40 || input.retirementAge > 90) {
+    errors.push("Retirement age must be between 40 and 90.");
   }
-  if (input.planToAge <= input.retirementAge) {
-    errors.push("Plan-through age must be after retirement.");
+  if (input.planToAge < input.currentAge) {
+    errors.push("Plan-through age must be on or after your current age.");
+  }
+  if (input.planToAge < input.retirementAge) {
+    errors.push("Plan-through age must be on or after retirement.");
   }
   if (input.planToAge > MAX_AGE) {
     errors.push("Plan-through age cannot exceed 120.");
   }
-  if (input.goGoEndAge <= input.retirementAge) {
-    errors.push("Go-go years should extend past retirement.");
+  if (input.goGoEndAge < input.retirementAge) {
+    errors.push("Go-go years should extend through retirement.");
   }
   if (input.slowGoEndAge <= input.goGoEndAge) {
     errors.push("Slow-go years must end after go-go years.");
   }
-  if (input.partTimeAnnualIncome > 0 && input.partTimeEndAge <= input.partTimeStartAge) {
-    errors.push("Part-time work must end after it starts.");
+  if (input.partTimeAnnualIncome > 0 && input.partTimeEndAge < input.partTimeStartAge) {
+    errors.push("Part-time work must end on or after it starts.");
   }
 
   for (const key of moneyKeys) {

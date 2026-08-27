@@ -23,9 +23,14 @@ describe("healthcareAgeFactor", () => {
 });
 
 describe("validateInput", () => {
-  it("rejects retirement before current age", () => {
-    const input = mergeInput({ currentAge: 70, retirementAge: 65 });
-    expect(validateInput(input).join(" ")).toMatch(/Retirement age/);
+  it("rejects a plan that ends before today", () => {
+    const input = mergeInput({ currentAge: 70, planToAge: 60 });
+    expect(validateInput(input).join(" ")).toMatch(/Plan-through age/);
+  });
+
+  it("allows a plan that is already in retirement", () => {
+    const input = mergeInput({ currentAge: 70, retirementAge: 65, planToAge: 95 });
+    expect(validateInput(input)).toEqual([]);
   });
 });
 
@@ -40,6 +45,8 @@ describe("project", () => {
     expect(result.outlook.depleted).toBe(false);
     expect(result.outlook.status).toBe("strong");
     expect(result.outlook.fundedThroughAge).toBe(result.input.planToAge);
+    expect(result.outlook.yearsCovered).toBe(result.outlook.yearsInRetirement);
+    expect(result.outlook.yearsInRetirement).toBe(DEFAULT_INPUT.planToAge - DEFAULT_INPUT.retirementAge + 1);
   });
 
   it("depletes quickly with almost no savings and high spending", () => {
@@ -173,6 +180,83 @@ describe("project", () => {
     expect(before && after).toBeTruthy();
     if (before && after) {
       expect(after.lifestyleSpend).toBeLessThan(before.lifestyleSpend);
+    }
+  });
+
+  it("counts retirement years inclusively when savings run out", () => {
+    const result = run({
+      currentSavings: 20000,
+      annualContribution: 0,
+      partTimeAnnualIncome: 0,
+      socialSecurityAnnual: 0,
+      pensionAnnual: 0,
+      lifestyleSpendToday: 80000,
+      healthcareSpendToday: 12000,
+    });
+    expect(result.outlook.depleted).toBe(true);
+    expect(result.outlook.depletionAge).not.toBeNull();
+    expect(result.outlook.yearsCovered).toBe(
+      (result.outlook.depletionAge as number) - DEFAULT_INPUT.retirementAge + 1,
+    );
+    expect(result.outlook.peakHealthcareAge).toBeLessThanOrEqual(result.outlook.depletionAge as number);
+  });
+
+  it("includes part-time income in the year that work ends", () => {
+    const result = run({
+      inflationRate: 0,
+      partTimeAnnualIncome: 40000,
+      partTimeStartAge: 65,
+      partTimeEndAge: 72,
+    });
+    expect(result.years.find((y) => y.age === 72)?.partTimeIncome).toBeCloseTo(40000);
+    expect(result.years.find((y) => y.age === 73)?.partTimeIncome).toBe(0);
+  });
+
+  it("treats go-go and slow-go end ages as inclusive", () => {
+    const result = run();
+    expect(result.years.find((y) => y.age === 75)?.phase).toBe("go-go");
+    expect(result.years.find((y) => y.age === 76)?.phase).toBe("slow-go");
+    expect(result.years.find((y) => y.age === 85)?.phase).toBe("slow-go");
+    expect(result.years.find((y) => y.age === 86)?.phase).toBe("no-go");
+  });
+
+  it("projects spending immediately when already retired", () => {
+    const result = run({
+      currentAge: 70,
+      retirementAge: 65,
+      planToAge: 95,
+      annualContribution: 0,
+    });
+    expect(result.years[0]?.age).toBe(70);
+    expect(result.years[0]?.phase).not.toBe("working");
+    expect(result.years[0]?.totalSpend).toBeGreaterThan(0);
+    expect(result.outlook.yearsInRetirement).toBe(95 - 70 + 1);
+  });
+
+  it("earns a return only on the balance left after retirement spending", () => {
+    const result = run({
+      currentAge: 65,
+      retirementAge: 65,
+      currentSavings: 100000,
+      annualContribution: 0,
+      inflationRate: 0,
+      healthcareInflationRate: 0,
+      postRetirementReturn: 0.05,
+      preRetirementReturn: 0.05,
+      lifestyleSpendToday: 20000,
+      healthcareSpendToday: 0,
+      longTermCareAnnual: 0,
+      socialSecurityAnnual: 5000,
+      socialSecurityStartAge: 65,
+      pensionAnnual: 0,
+      partTimeAnnualIncome: 0,
+      goGoLifestyleMultiplier: 1,
+    });
+    const row = result.years.find((y) => y.age === 65);
+    expect(row).toBeTruthy();
+    if (row) {
+      expect(row.growth).toBeCloseTo((100000 + 5000 - 20000) * 0.05);
+      expect(row.endBalance).toBeCloseTo(100000 + 5000 - 20000 + row.growth);
     }
   });
 });

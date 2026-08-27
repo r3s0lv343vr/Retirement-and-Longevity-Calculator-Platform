@@ -7,8 +7,8 @@ export function inflate(amount: number, rate: number, years: number): number {
 
 export function lifePhase(age: number, input: CalculatorInput): LifePhase {
   if (age < input.retirementAge) return "working";
-  if (age < input.goGoEndAge) return "go-go";
-  if (age < input.slowGoEndAge) return "slow-go";
+  if (age <= input.goGoEndAge) return "go-go";
+  if (age <= input.slowGoEndAge) return "slow-go";
   return "no-go";
 }
 
@@ -74,8 +74,6 @@ function runYears(input: CalculatorInput, straightLine: boolean): YearRow[] {
     const startBalance = Math.max(balance, 0);
     const working = age < input.retirementAge;
     const rate = working ? input.preRetirementReturn : input.postRetirementReturn;
-    const growth = startBalance * rate;
-    balance = startBalance + growth;
 
     const contribution = working
       ? inflate(input.annualContribution, input.inflationRate, yearsFromNow)
@@ -95,7 +93,7 @@ function runYears(input: CalculatorInput, straightLine: boolean): YearRow[] {
       !working &&
       input.partTimeAnnualIncome > 0 &&
       age >= input.partTimeStartAge &&
-      age < input.partTimeEndAge
+      age <= input.partTimeEndAge
         ? inflate(input.partTimeAnnualIncome, input.inflationRate, yearsFromNow)
         : 0;
 
@@ -132,11 +130,28 @@ function runYears(input: CalculatorInput, straightLine: boolean): YearRow[] {
     const totalSpend = lifestyleSpend + healthcareSpend + longTermCareSpend + housingSpend;
     const inflow = contribution + (working ? 0 : guaranteedIncome + partTimeIncome);
     const netCashFlow = inflow - totalSpend;
-    balance += netCashFlow;
 
-    let endBalance = balance;
+    let growth: number;
+    let endBalance: number;
+    if (working) {
+      // Contribute at year-end: return is earned on the opening balance.
+      growth = startBalance * rate;
+      endBalance = startBalance + growth + netCashFlow;
+    } else {
+      // Spend/receive cash at the start of the year, then earn a return on what remains.
+      const afterCash = startBalance + netCashFlow;
+      if (afterCash < 0) {
+        growth = 0;
+        endBalance = 0;
+        depleted = true;
+      } else {
+        growth = afterCash * rate;
+        endBalance = afterCash + growth;
+      }
+    }
+
     if (endBalance < 0) {
-      if (!depleted) depleted = true;
+      depleted = true;
       endBalance = 0;
     }
     balance = endBalance;
@@ -175,26 +190,36 @@ function fundedThrough(years: YearRow[], planToAge: number): number {
   return Math.max(depletion, years[0]?.age ?? depletion);
 }
 
+function fundedRetirementYears(years: YearRow[]): YearRow[] {
+  const funded: YearRow[] = [];
+  for (const y of years) {
+    if (y.phase === "working") continue;
+    funded.push(y);
+    if (y.depleted) break;
+  }
+  return funded;
+}
+
 function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRow[]): Outlook {
-  const retirementYears = years.filter((y) => y.phase !== "working");
+  const fundedYears = fundedRetirementYears(years);
   const last = years[years.length - 1];
   const depletionAge = firstDepletionAge(years);
   const depleted = depletionAge != null;
   const fundedThroughAge = fundedThrough(years, input.planToAge);
-  const endingBalance = last?.endBalance ?? 0;
-  const lastYearSpend = retirementYears.at(-1)?.totalSpend ?? 0;
+  const endingBalance = depleted ? 0 : last?.endBalance ?? 0;
+  const lastYearSpend = fundedYears.at(-1)?.totalSpend ?? 0;
 
-  const totalHealthcareSpend = retirementYears.reduce((s, y) => s + y.healthcareSpend, 0);
-  const totalLifestyleSpend = retirementYears.reduce((s, y) => s + y.lifestyleSpend, 0);
-  const totalLongTermCareSpend = retirementYears.reduce((s, y) => s + y.longTermCareSpend, 0);
-  const totalHousingSpend = retirementYears.reduce((s, y) => s + y.housingSpend, 0);
+  const totalHealthcareSpend = fundedYears.reduce((s, y) => s + y.healthcareSpend, 0);
+  const totalLifestyleSpend = fundedYears.reduce((s, y) => s + y.lifestyleSpend, 0);
+  const totalLongTermCareSpend = fundedYears.reduce((s, y) => s + y.longTermCareSpend, 0);
+  const totalHousingSpend = fundedYears.reduce((s, y) => s + y.housingSpend, 0);
   const totalSpend = totalHealthcareSpend + totalLifestyleSpend + totalLongTermCareSpend + totalHousingSpend;
   const healthcareShare = totalSpend > 0 ? (totalHealthcareSpend + totalLongTermCareSpend + totalHousingSpend) / totalSpend : 0;
-  const partTimeTotal = retirementYears.reduce((s, y) => s + y.partTimeIncome, 0);
+  const partTimeTotal = fundedYears.reduce((s, y) => s + y.partTimeIncome, 0);
 
   let peakHealthcareAge: number | null = null;
   let peakHealthcareSpend = 0;
-  for (const y of retirementYears) {
+  for (const y of fundedYears) {
     const medical = y.healthcareSpend + y.longTermCareSpend + y.housingSpend;
     if (medical > peakHealthcareSpend) {
       peakHealthcareSpend = medical;
@@ -203,11 +228,16 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
   }
 
   const straightLineFundedThroughAge = fundedThrough(straight, input.planToAge);
-  const straightLineEndingBalance = straight.at(-1)?.endBalance ?? 0;
+  const straightLineEndingBalance = firstDepletionAge(straight) != null ? 0 : straight.at(-1)?.endBalance ?? 0;
   const longevityGapYears = straightLineFundedThroughAge - fundedThroughAge;
 
-  const yearsInRetirement = Math.max(0, input.planToAge - input.retirementAge + 1);
-  const yearsCovered = Math.max(0, fundedThroughAge - input.retirementAge);
+  const modeledFromAge = years[0]?.age ?? input.currentAge;
+  const retirementStartAge = Math.max(input.retirementAge, modeledFromAge);
+  const yearsInRetirement = Math.max(0, input.planToAge - retirementStartAge + 1);
+  const yearsCovered = Math.min(
+    yearsInRetirement,
+    Math.max(0, fundedThroughAge - retirementStartAge + 1),
+  );
 
   let status: Outlook["status"];
   if (!depleted && endingBalance >= lastYearSpend * 3) {
@@ -216,7 +246,7 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
     status = "watchful";
   } else if (depletionAge != null && depletionAge >= input.planToAge - 4) {
     status = "watchful";
-  } else if (depletionAge != null && depletionAge >= input.retirementAge + 12) {
+  } else if (depletionAge != null && depletionAge >= retirementStartAge + 12) {
     status = "at-risk";
   } else {
     status = "shortfall";
