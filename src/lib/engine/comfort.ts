@@ -1,0 +1,83 @@
+import type { CalculatorInput, ComfortEstimate } from "./types";
+import { projectBase } from "./project";
+
+/** Moderate US planning floor for a comfortable lifestyle (today’s dollars), not a high-cost city. */
+export const COMFORT_LIFESTYLE_FLOOR = 65_000;
+export const COMFORT_HEALTHCARE_FLOOR = 8_400;
+export const COMFORT_LIFESTYLE_BUFFER = 1.1;
+export const COMFORT_HOUSING_PLACEHOLDER = 36_000;
+export const COMFORT_HOUSING_START_AGE = 80;
+export const COMFORT_CUSHION_YEARS = 2;
+
+export function comfortInputFrom(input: CalculatorInput): CalculatorInput {
+  const suggestedLifestyle = Math.max(input.lifestyleSpendToday, COMFORT_LIFESTYLE_FLOOR) * COMFORT_LIFESTYLE_BUFFER;
+  const suggestedHealthcare = Math.max(input.healthcareSpendToday, COMFORT_HEALTHCARE_FLOOR);
+  const hasHousing =
+    input.seniorHomeRentAnnual > 0 || input.nursingHomeRentAnnual > 0 || input.ccrcRentAnnual > 0;
+
+  return {
+    ...input,
+    lifestyleSpendToday: suggestedLifestyle,
+    healthcareSpendToday: suggestedHealthcare,
+    seniorHomeRentAnnual: hasHousing ? input.seniorHomeRentAnnual : COMFORT_HOUSING_PLACEHOLDER,
+    seniorHomeStartAge: hasHousing ? input.seniorHomeStartAge : COMFORT_HOUSING_START_AGE,
+    nursingHomeRentAnnual: hasHousing ? input.nursingHomeRentAnnual : 0,
+    ccrcRentAnnual: hasHousing ? input.ccrcRentAnnual : 0,
+  };
+}
+
+function isFunded(input: CalculatorInput, savings: number): boolean {
+  const result = projectBase({ ...input, currentSavings: savings });
+  const cushion = result.outlook.lastYearSpend * COMFORT_CUSHION_YEARS;
+  return !result.outlook.depleted && result.outlook.endingBalance >= cushion;
+}
+
+export function nestEggNeededNow(input: CalculatorInput): number {
+  if (isFunded(input, 0)) return 0;
+  let lo = 0;
+  let hi = 25_000_000;
+  if (!isFunded(input, hi)) return hi;
+  for (let i = 0; i < 36; i += 1) {
+    const mid = (lo + hi) / 2;
+    if (isFunded(input, mid)) hi = mid;
+    else lo = mid;
+  }
+  return Math.ceil(hi / 100) * 100;
+}
+
+/** Extra yearly savings to close a present-value nest-egg gap before retirement. */
+export function extraAnnualSavings(gapToday: number, years: number, rate: number): number {
+  if (gapToday <= 0 || years <= 0) return 0;
+  if (Math.abs(rate) < 1e-8) return gapToday / years;
+  const growth = (1 + rate) ** years;
+  return (gapToday * rate * growth) / (growth - 1);
+}
+
+export function estimateComfort(input: CalculatorInput): ComfortEstimate {
+  const comfortInput = comfortInputFrom(input);
+  const usedHousingPlaceholder =
+    input.seniorHomeRentAnnual <= 0 && input.nursingHomeRentAnnual <= 0 && input.ccrcRentAnnual <= 0;
+  const nestEggNeeded = nestEggNeededNow(comfortInput);
+  const additionalNestEgg = Math.max(0, nestEggNeeded - input.currentSavings);
+  const yearsToRetirement = Math.max(0, input.retirementAge - input.currentAge);
+  const additionalAnnualSavings = extraAnnualSavings(
+    additionalNestEgg,
+    yearsToRetirement,
+    input.preRetirementReturn,
+  );
+  const comfortRun = projectBase({ ...comfortInput, currentSavings: Math.max(input.currentSavings, nestEggNeeded) });
+
+  return {
+    suggestedLifestyleToday: comfortInput.lifestyleSpendToday,
+    suggestedHealthcareToday: comfortInput.healthcareSpendToday,
+    suggestedAnnualBudgetToday: comfortInput.lifestyleSpendToday + comfortInput.healthcareSpendToday,
+    usedHousingPlaceholder,
+    placeholderHousingAnnual: usedHousingPlaceholder ? COMFORT_HOUSING_PLACEHOLDER : 0,
+    placeholderHousingStartAge: usedHousingPlaceholder ? COMFORT_HOUSING_START_AGE : 0,
+    nestEggNeededNow: nestEggNeeded,
+    additionalNestEgg,
+    additionalAnnualSavings,
+    yearsToRetirement,
+    fundedThroughIfFunded: comfortRun.outlook.fundedThroughAge,
+  };
+}

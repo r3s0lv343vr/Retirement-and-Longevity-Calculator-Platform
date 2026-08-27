@@ -53,7 +53,7 @@ const GROUPS: {
   {
     id: "spending",
     title: "Spending today",
-    blurb: "Lifestyle and health are tracked separately so medical inflation can outrun the CPI.",
+    blurb: "Lifestyle and health are tracked separately so medical inflation can outrun the CPI. A suggested comfortable-living estimate appears in your outlook.",
     keys: ["lifestyleSpendToday", "healthcareSpendToday", "longTermCareAnnual", "longTermCareStartAge"],
     columns: 2,
   },

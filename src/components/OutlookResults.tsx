@@ -2,7 +2,7 @@
 
 import { AdSlot } from "@/components/AdSlot";
 import { OutlookChart } from "@/components/OutlookChart";
-import type { ProjectionResult } from "@/lib/engine";
+import type { ComfortEstimate, ProjectionResult } from "@/lib/engine";
 import { formatMoney, formatPercent } from "@/lib/format";
 
 type Props = {
@@ -24,7 +24,7 @@ const PHASE_LABEL: Record<string, string> = {
 };
 
 export function OutlookResults({ result }: Props) {
-  const { outlook, years, warnings } = result;
+  const { outlook, years, warnings, comfort } = result;
   const retiredYears = years.filter((y) => y.phase !== "working");
   const sampleYears = retiredYears.filter((_, i, arr) => i % 5 === 0 || i === arr.length - 1);
 
@@ -43,6 +43,8 @@ export function OutlookResults({ result }: Props) {
           <Metric label="Years of retirement covered" value={`${outlook.yearsCovered} of ${outlook.yearsInRetirement}`} />
         </dl>
       </header>
+
+      {comfort ? <ComfortEstimateCard comfort={comfort} currentSavings={result.input.currentSavings} /> : null}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
@@ -150,6 +152,68 @@ function Metric({ label, value }: { label: string; value: string }) {
       <dt className="text-xs uppercase tracking-wide opacity-80">{label}</dt>
       <dd className="mt-1 font-serif text-2xl text-ink">{value}</dd>
     </div>
+  );
+}
+
+function ComfortEstimateCard({
+  comfort,
+  currentSavings,
+}: {
+  comfort: ComfortEstimate;
+  currentSavings: number;
+}) {
+  const saveLine =
+    comfort.additionalNestEgg <= 0
+      ? "Your current nest egg is at or above this comfortable estimate, given the other assumptions on the form."
+      : comfort.yearsToRetirement > 0
+        ? `That is ${formatMoney(comfort.additionalNestEgg)} more than the ${formatMoney(currentSavings)} entered. Saving about ${formatMoney(comfort.additionalAnnualSavings)} extra per year until retirement would close the gap in this model.`
+        : `That is ${formatMoney(comfort.additionalNestEgg)} more than the ${formatMoney(currentSavings)} entered. Because retirement is already here, the gap is a nest-egg shortfall rather than extra yearly saving.`;
+
+  return (
+    <section className="card border-pine/20">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Suggested estimate</p>
+      <h3 className="mt-2 font-serif text-2xl text-pine">Comfortable living — what to save toward</h3>
+      <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
+        A national-style planning figure, not a quote for your city. It uses the higher of your lifestyle spending and
+        a $65,000 comfort floor, adds a 10% buffer, and keeps healthcare from falling below a typical premium-plus-care
+        amount
+        {comfort.usedHousingPlaceholder
+          ? `, plus independent living at ${formatMoney(comfort.placeholderHousingAnnual)} a year starting at age ${comfort.placeholderHousingStartAge} because facility rent was left at zero`
+          : ", plus the later-life housing rent you entered"}
+        .
+      </p>
+      <dl className="mt-5 grid gap-4 sm:grid-cols-3">
+        <div>
+          <dt className="text-xs uppercase tracking-wide text-muted">Comfortable budget / year</dt>
+          <dd className="mt-1 font-serif text-2xl text-ink">{formatMoney(comfort.suggestedAnnualBudgetToday)}</dd>
+          <p className="mt-1 text-xs text-muted">
+            {formatMoney(comfort.suggestedLifestyleToday)} lifestyle + {formatMoney(comfort.suggestedHealthcareToday)}{" "}
+            healthcare, in today’s dollars.
+          </p>
+        </div>
+        <div>
+          <dt className="text-xs uppercase tracking-wide text-muted">Nest egg to fund it</dt>
+          <dd className="mt-1 font-serif text-2xl text-ink">{formatMoney(comfort.nestEggNeededNow)}</dd>
+          <p className="mt-1 text-xs text-muted">
+            Savings needed today to last through your plan age with a small remaining cushion.
+          </p>
+        </div>
+        <div>
+          <dt className="text-xs uppercase tracking-wide text-muted">Extra to save / year</dt>
+          <dd className="mt-1 font-serif text-2xl text-ink">
+            {comfort.additionalNestEgg <= 0 ? "$0" : formatMoney(comfort.additionalAnnualSavings)}
+          </dd>
+          <p className="mt-1 text-xs text-muted">On top of the annual savings already on the form, until full-time work ends.</p>
+        </div>
+      </dl>
+      <p className="mt-4 text-sm leading-relaxed text-ink/85">{saveLine}</p>
+      {comfort.usedHousingPlaceholder ? (
+        <p className="mt-2 text-xs text-muted">
+          Housing placeholder is included in the nest-egg figure. Enter your own senior, nursing, or CCRC rent to replace
+          it.
+        </p>
+      ) : null}
+    </section>
   );
 }
 

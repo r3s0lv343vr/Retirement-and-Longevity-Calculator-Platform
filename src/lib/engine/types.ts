@@ -81,11 +81,26 @@ export type Outlook = {
   lastYearSpend: number;
 };
 
+export type ComfortEstimate = {
+  suggestedLifestyleToday: number;
+  suggestedHealthcareToday: number;
+  suggestedAnnualBudgetToday: number;
+  usedHousingPlaceholder: boolean;
+  placeholderHousingAnnual: number;
+  placeholderHousingStartAge: number;
+  nestEggNeededNow: number;
+  additionalNestEgg: number;
+  additionalAnnualSavings: number;
+  yearsToRetirement: number;
+  fundedThroughIfFunded: number;
+};
+
 export type ProjectionResult = {
   input: CalculatorInput;
   years: YearRow[];
   outlook: Outlook;
   warnings: string[];
+  comfort: ComfortEstimate;
 };
 
 export type CalculatorPayload = Partial<CalculatorInput>;

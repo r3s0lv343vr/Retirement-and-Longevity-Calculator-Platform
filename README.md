@@ -16,6 +16,7 @@ Most retirement tools draw a straight line of spending and ignore how real costs
 - Adds **senior home rental**, **nursing home**, or **continuing-care (CCRC) rent**, using one facility at a time and trimming lifestyle spend while you live there
 - Credits **part-time / side-hustle** income only during a phased-work window
 - Compares that dynamic path to a straight-line model so the longevity gap is visible
+- After you calculate, shows a **comfortable-living estimate** (budget, nest egg to fund it, extra to save per year)
 
 The one-page interface is organized around a **Retirement Longevity Outlook**: funded-through age, remaining balance, healthcare share of spending, and a chart of portfolio vs. changing costs.
 

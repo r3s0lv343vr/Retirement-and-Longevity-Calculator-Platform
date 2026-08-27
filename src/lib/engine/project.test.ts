@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_INPUT } from "./defaults";
-import { healthcareAgeFactor, inflate, project } from "./project";
+import { healthcareAgeFactor, inflate, projectBase } from "./project";
 import { mergeInput, validateInput } from "./validate";
 import type { CalculatorInput } from "./types";
 
 function run(overrides: Partial<CalculatorInput> = {}) {
-  return project({ ...DEFAULT_INPUT, ...overrides });
+  return projectBase({ ...DEFAULT_INPUT, ...overrides });
 }
 
 describe("inflate", () => {

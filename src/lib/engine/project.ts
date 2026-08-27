@@ -276,7 +276,7 @@ function formatCompact(n: number): string {
   }).format(n);
 }
 
-export function project(input: CalculatorInput): ProjectionResult {
+export function projectBase(input: CalculatorInput): Omit<ProjectionResult, "comfort"> {
   const years = runYears(input, false);
   const straight = runYears(input, true);
   return {
