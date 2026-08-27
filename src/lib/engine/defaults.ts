@@ -27,6 +27,12 @@ export const DEFAULT_INPUT: CalculatorInput = {
   noGoLifestyleMultiplier: 0.62,
   longTermCareAnnual: 18000,
   longTermCareStartAge: 85,
+  seniorHomeRentAnnual: 0,
+  seniorHomeStartAge: 75,
+  nursingHomeRentAnnual: 0,
+  nursingHomeStartAge: 85,
+  ccrcRentAnnual: 0,
+  ccrcStartAge: 75,
 };
 
 export const FIELD_META: Record<
@@ -47,8 +53,14 @@ export const FIELD_META: Record<
   pensionStartAge: { label: "Pension starts", group: "income", kind: "age" },
   lifestyleSpendToday: { label: "Lifestyle spending / year", hint: "Housing, food, travel — not medical.", group: "spending", kind: "money" },
   healthcareSpendToday: { label: "Healthcare spending / year", hint: "Premiums + out-of-pocket today.", group: "spending", kind: "money" },
-  longTermCareAnnual: { label: "Long-term care / year", hint: "Support starting in later years.", group: "spending", kind: "money" },
+  longTermCareAnnual: { label: "Long-term care / year", hint: "In-home or extra support. Skipped once nursing or CCRC rent starts.", group: "spending", kind: "money" },
   longTermCareStartAge: { label: "Long-term care starts", group: "spending", kind: "age" },
+  seniorHomeRentAnnual: { label: "Senior home rental / year", hint: "Independent living. Today’s dollars.", group: "housing", kind: "money" },
+  seniorHomeStartAge: { label: "Senior rental starts", group: "housing", kind: "age" },
+  nursingHomeRentAnnual: { label: "Nursing home / year", hint: "Replaces senior rental from this age.", group: "housing", kind: "money" },
+  nursingHomeStartAge: { label: "Nursing home starts", group: "housing", kind: "age" },
+  ccrcRentAnnual: { label: "Continuing care rent / year", hint: "CCRC monthly fees, annualized. Takes priority if set.", group: "housing", kind: "money" },
+  ccrcStartAge: { label: "Continuing care starts", group: "housing", kind: "age" },
   inflationRate: { label: "General inflation", group: "assumptions", kind: "percent" },
   healthcareInflationRate: { label: "Healthcare inflation", group: "assumptions", kind: "percent" },
   preRetirementReturn: { label: "Return before retirement", group: "assumptions", kind: "percent" },

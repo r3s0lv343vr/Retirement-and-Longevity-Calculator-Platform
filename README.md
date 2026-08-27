@@ -13,6 +13,7 @@ Most retirement tools draw a straight line of spending and ignore how real costs
 - Inflates **lifestyle** at general CPI and **healthcare** at a higher medical inflation rate
 - Scales lifestyle through **go-go, slow-go, and no-go** years
 - Raises medical intensity after 65, 75, and 85, with optional long-term care
+- Adds **senior home rental**, **nursing home**, or **continuing-care (CCRC) rent**, using one facility at a time and trimming lifestyle spend while you live there
 - Credits **part-time / side-hustle** income only during a phased-work window
 - Compares that dynamic path to a straight-line model so the longevity gap is visible
 

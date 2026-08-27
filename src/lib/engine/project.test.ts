@@ -104,4 +104,75 @@ describe("project", () => {
       expect(noGo.healthcareSpend + noGo.longTermCareSpend).toBeGreaterThan(go.healthcareSpend);
     }
   });
+
+  it("charges senior rental then switches to nursing home", () => {
+    const result = run({
+      seniorHomeRentAnnual: 36000,
+      seniorHomeStartAge: 75,
+      nursingHomeRentAnnual: 100000,
+      nursingHomeStartAge: 85,
+      ccrcRentAnnual: 0,
+      longTermCareAnnual: 0,
+      healthcareInflationRate: 0,
+      inflationRate: 0,
+    });
+    const independent = result.years.find((y) => y.age === 80);
+    const nursing = result.years.find((y) => y.age === 90);
+    expect(independent?.housingKind).toBe("independent");
+    expect(independent?.housingSpend).toBeCloseTo(36000);
+    expect(nursing?.housingKind).toBe("nursing");
+    expect(nursing?.housingSpend).toBeCloseTo(100000);
+    expect(result.outlook.totalHousingSpend).toBeGreaterThan(0);
+  });
+
+  it("uses continuing-care rent instead of senior rental and nursing", () => {
+    const result = run({
+      seniorHomeRentAnnual: 36000,
+      nursingHomeRentAnnual: 100000,
+      ccrcRentAnnual: 48000,
+      ccrcStartAge: 75,
+      healthcareInflationRate: 0,
+      inflationRate: 0,
+    });
+    const row = result.years.find((y) => y.age === 88);
+    expect(row?.housingKind).toBe("ccrc");
+    expect(row?.housingSpend).toBeCloseTo(48000);
+    expect(row?.longTermCareSpend).toBe(0);
+  });
+
+  it("shortens the runway when nursing home rent is added", () => {
+    const without = run({
+      currentSavings: 700000,
+      annualContribution: 0,
+      partTimeAnnualIncome: 0,
+      nursingHomeRentAnnual: 0,
+    });
+    const withNursing = run({
+      currentSavings: 700000,
+      annualContribution: 0,
+      partTimeAnnualIncome: 0,
+      nursingHomeRentAnnual: 120000,
+      nursingHomeStartAge: 80,
+    });
+    expect(withNursing.outlook.fundedThroughAge).toBeLessThanOrEqual(without.outlook.fundedThroughAge);
+    expect(withNursing.years.find((y) => y.age === 82)?.housingSpend).toBeGreaterThan(0);
+  });
+
+  it("reduces lifestyle spending after a move into senior housing", () => {
+    const result = run({
+      seniorHomeRentAnnual: 40000,
+      seniorHomeStartAge: 75,
+      inflationRate: 0,
+      healthcareInflationRate: 0,
+      goGoLifestyleMultiplier: 1,
+      slowGoLifestyleMultiplier: 1,
+      noGoLifestyleMultiplier: 1,
+    });
+    const before = result.years.find((y) => y.age === 70);
+    const after = result.years.find((y) => y.age === 76);
+    expect(before && after).toBeTruthy();
+    if (before && after) {
+      expect(after.lifestyleSpend).toBeLessThan(before.lifestyleSpend);
+    }
+  });
 });

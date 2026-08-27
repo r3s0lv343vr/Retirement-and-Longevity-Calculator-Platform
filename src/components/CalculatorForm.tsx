@@ -58,6 +58,21 @@ const GROUPS: {
     columns: 2,
   },
   {
+    id: "housing",
+    title: "Later-life housing",
+    blurb:
+      "Senior rental, nursing home, or continuing-care rent. Only one applies each year: CCRC first, then nursing, then independent living. Rent inflates with healthcare costs, and lifestyle spending is reduced while you live there.",
+    keys: [
+      "seniorHomeRentAnnual",
+      "seniorHomeStartAge",
+      "nursingHomeRentAnnual",
+      "nursingHomeStartAge",
+      "ccrcRentAnnual",
+      "ccrcStartAge",
+    ],
+    columns: 2,
+  },
+  {
     id: "assumptions",
     title: "Market & inflation",
     blurb: "Nominal annual rates.",

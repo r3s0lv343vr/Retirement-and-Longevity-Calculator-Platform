@@ -43,7 +43,7 @@ export function OutlookChart({ years }: Props) {
           return <line key={i} x1={pad.left} x2={width - pad.right} y1={yy} y2={yy} stroke="#14221c" strokeOpacity="0.08" />;
         })}
         {series.map((row) => {
-          const medical = row.healthcareSpend + row.longTermCareSpend;
+          const medical = row.healthcareSpend + row.longTermCareSpend + row.housingSpend;
           const barW = Math.max(innerW / series.length - 2, 2);
           return (
             <g key={row.age}>
@@ -85,7 +85,7 @@ export function OutlookChart({ years }: Props) {
           <span className="h-2.5 w-2.5 bg-gold/70" /> Total spending
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 bg-clay/80" /> Healthcare & care
+          <span className="h-2.5 w-2.5 bg-clay/80" /> Healthcare, care & housing
         </span>
       </div>
     </div>

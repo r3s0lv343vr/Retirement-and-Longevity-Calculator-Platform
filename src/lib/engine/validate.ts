@@ -33,6 +33,9 @@ export function validateInput(input: CalculatorInput): string[] {
     "pensionAnnual",
     "partTimeAnnualIncome",
     "longTermCareAnnual",
+    "seniorHomeRentAnnual",
+    "nursingHomeRentAnnual",
+    "ccrcRentAnnual",
   ];
   const rateKeys: (keyof CalculatorInput)[] = [
     "preRetirementReturn",
@@ -100,6 +103,12 @@ export function warningsFor(input: CalculatorInput): string[] {
   }
   if (input.postRetirementReturn > input.preRetirementReturn) {
     warnings.push("Returns in retirement are usually modeled lower than accumulation-year returns.");
+  }
+  if (input.ccrcRentAnnual > 0 && (input.seniorHomeRentAnnual > 0 || input.nursingHomeRentAnnual > 0)) {
+    warnings.push("Continuing-care rent is used instead of senior rental and nursing home rent when all are filled.");
+  }
+  if (input.nursingHomeRentAnnual > 0 && input.nursingHomeStartAge < input.seniorHomeStartAge && input.seniorHomeRentAnnual > 0) {
+    warnings.push("Nursing home starts before senior rental, so independent-living rent will never be charged.");
   }
   return warnings;
 }

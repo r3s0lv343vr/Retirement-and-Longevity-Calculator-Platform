@@ -1,4 +1,4 @@
-import type { CalculatorInput, LifePhase, Outlook, ProjectionResult, YearRow } from "./types";
+import type { CalculatorInput, HousingKind, LifePhase, Outlook, ProjectionResult, YearRow } from "./types";
 import { warningsFor } from "./validate";
 
 export function inflate(amount: number, rate: number, years: number): number {
@@ -20,7 +20,43 @@ export function lifestyleMultiplier(age: number, input: CalculatorInput): number
   return input.noGoLifestyleMultiplier;
 }
 
-/** Age-driven medical intensity on top of healthcare inflation. */
+const HOUSING_LIFESTYLE_FACTOR: Record<Exclude<HousingKind, null>, number> = {
+  independent: 0.72,
+  ccrc: 0.58,
+  nursing: 0.42,
+};
+
+/** One facility stream at a time: CCRC, else nursing, else senior rental. */
+export function facilityHousing(
+  age: number,
+  input: CalculatorInput,
+  yearsFromNow: number,
+  rate: number,
+): { rent: number; kind: HousingKind; lifestyleFactor: number } {
+  if (input.ccrcRentAnnual > 0 && age >= input.ccrcStartAge) {
+    return {
+      rent: inflate(input.ccrcRentAnnual, rate, yearsFromNow),
+      kind: "ccrc",
+      lifestyleFactor: HOUSING_LIFESTYLE_FACTOR.ccrc,
+    };
+  }
+  if (input.nursingHomeRentAnnual > 0 && age >= input.nursingHomeStartAge) {
+    return {
+      rent: inflate(input.nursingHomeRentAnnual, rate, yearsFromNow),
+      kind: "nursing",
+      lifestyleFactor: HOUSING_LIFESTYLE_FACTOR.nursing,
+    };
+  }
+  if (input.seniorHomeRentAnnual > 0 && age >= input.seniorHomeStartAge) {
+    return {
+      rent: inflate(input.seniorHomeRentAnnual, rate, yearsFromNow),
+      kind: "independent",
+      lifestyleFactor: HOUSING_LIFESTYLE_FACTOR.independent,
+    };
+  }
+  return { rent: 0, kind: null, lifestyleFactor: 1 };
+}
+
 export function healthcareAgeFactor(age: number): number {
   if (age < 65) return 1;
   if (age < 75) return 1.22;
@@ -70,16 +106,30 @@ function runYears(input: CalculatorInput, straightLine: boolean): YearRow[] {
     let lifestyleSpend = 0;
     let healthcareSpend = 0;
     let longTermCareSpend = 0;
+    let housingSpend = 0;
+    let housingKind: HousingKind = null;
 
     if (!working) {
-      lifestyleSpend = inflate(input.lifestyleSpendToday, input.inflationRate, yearsFromNow) * lifeMult;
+      const housing = straightLine
+        ? { rent: 0, kind: null as HousingKind, lifestyleFactor: 1 }
+        : facilityHousing(age, input, yearsFromNow, healthInflation);
+      housingSpend = housing.rent;
+      housingKind = housing.kind;
+      lifestyleSpend =
+        inflate(input.lifestyleSpendToday, input.inflationRate, yearsFromNow) * lifeMult * housing.lifestyleFactor;
       healthcareSpend = inflate(input.healthcareSpendToday, healthInflation, yearsFromNow) * healthMult;
-      if (!straightLine && age >= input.longTermCareStartAge && input.longTermCareAnnual > 0) {
+      const facilityIncludesCare = housing.kind === "nursing" || housing.kind === "ccrc";
+      if (
+        !straightLine &&
+        !facilityIncludesCare &&
+        age >= input.longTermCareStartAge &&
+        input.longTermCareAnnual > 0
+      ) {
         longTermCareSpend = inflate(input.longTermCareAnnual, healthInflation, yearsFromNow);
       }
     }
 
-    const totalSpend = lifestyleSpend + healthcareSpend + longTermCareSpend;
+    const totalSpend = lifestyleSpend + healthcareSpend + longTermCareSpend + housingSpend;
     const inflow = contribution + (working ? 0 : guaranteedIncome + partTimeIncome);
     const netCashFlow = inflow - totalSpend;
     balance += netCashFlow;
@@ -102,6 +152,8 @@ function runYears(input: CalculatorInput, straightLine: boolean): YearRow[] {
       lifestyleSpend,
       healthcareSpend,
       longTermCareSpend,
+      housingSpend,
+      housingKind,
       totalSpend,
       netCashFlow,
       endBalance,
@@ -135,14 +187,15 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
   const totalHealthcareSpend = retirementYears.reduce((s, y) => s + y.healthcareSpend, 0);
   const totalLifestyleSpend = retirementYears.reduce((s, y) => s + y.lifestyleSpend, 0);
   const totalLongTermCareSpend = retirementYears.reduce((s, y) => s + y.longTermCareSpend, 0);
-  const totalSpend = totalHealthcareSpend + totalLifestyleSpend + totalLongTermCareSpend;
-  const healthcareShare = totalSpend > 0 ? (totalHealthcareSpend + totalLongTermCareSpend) / totalSpend : 0;
+  const totalHousingSpend = retirementYears.reduce((s, y) => s + y.housingSpend, 0);
+  const totalSpend = totalHealthcareSpend + totalLifestyleSpend + totalLongTermCareSpend + totalHousingSpend;
+  const healthcareShare = totalSpend > 0 ? (totalHealthcareSpend + totalLongTermCareSpend + totalHousingSpend) / totalSpend : 0;
   const partTimeTotal = retirementYears.reduce((s, y) => s + y.partTimeIncome, 0);
 
   let peakHealthcareAge: number | null = null;
   let peakHealthcareSpend = 0;
   for (const y of retirementYears) {
-    const medical = y.healthcareSpend + y.longTermCareSpend;
+    const medical = y.healthcareSpend + y.longTermCareSpend + y.housingSpend;
     if (medical > peakHealthcareSpend) {
       peakHealthcareSpend = medical;
       peakHealthcareAge = y.age;
@@ -203,6 +256,7 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
     totalHealthcareSpend,
     totalLifestyleSpend,
     totalLongTermCareSpend,
+    totalHousingSpend,
     healthcareShare,
     peakHealthcareAge,
     peakHealthcareSpend,

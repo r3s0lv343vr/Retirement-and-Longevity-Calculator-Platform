@@ -44,16 +44,25 @@ export function OutlookResults({ result }: Props) {
         </dl>
       </header>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          label="Healthcare share of retirement spending"
+          label="Healthcare & housing share"
           value={formatPercent(outlook.healthcareShare)}
-          note="Includes long-term care. This is why a flat withdrawal rate misleads."
+          note="Medical care, long-term support, and later-life facility rent."
         />
         <StatCard
-          label="Peak medical year"
+          label="Peak care year"
           value={outlook.peakHealthcareAge ? `Age ${outlook.peakHealthcareAge}` : "—"}
-          note={outlook.peakHealthcareSpend ? formatMoney(outlook.peakHealthcareSpend) + " that year" : ""}
+          note={
+            outlook.peakHealthcareSpend
+              ? `${formatMoney(outlook.peakHealthcareSpend)} that year, including facility rent`
+              : ""
+          }
+        />
+        <StatCard
+          label="Later-life housing (total)"
+          value={formatMoney(outlook.totalHousingSpend)}
+          note="Senior rental, nursing home, or continuing-care rent over the plan."
         />
         <StatCard
           label="Part-time income (total)"
@@ -68,8 +77,7 @@ export function OutlookResults({ result }: Props) {
       <div className="card">
         <h3 className="font-serif text-xl text-pine">Portfolio vs. changing costs</h3>
         <p className="mb-4 mt-1 text-sm text-muted">
-          Bars are annual spending in retirement. Darker bars are healthcare and long-term care — they climb even when
-          lifestyle spending eases.
+          Bars are annual spending in retirement. Darker bars are healthcare, long-term care, and facility rent.
         </p>
         <OutlookChart years={years} />
       </div>
@@ -82,7 +90,7 @@ export function OutlookResults({ result }: Props) {
           A model that holds spending flat except for CPI would say you last until age{" "}
           <strong>{outlook.straightLineFundedThroughAge}</strong>
           {outlook.straightLineEndingBalance > 0 ? ` with ${formatMoney(outlook.straightLineEndingBalance)} left` : ""}.
-          Accounting for healthcare inflation, age-driven medical costs, lifestyle phases, and later-life care, this
+          Accounting for healthcare inflation, age-driven medical costs, lifestyle phases, later-life housing, and care, this
           plan funds through age <strong>{outlook.fundedThroughAge}</strong>
           {outlook.longevityGapYears > 0
             ? ` — ${outlook.longevityGapYears} year${outlook.longevityGapYears === 1 ? "" : "s"} sooner.`
@@ -110,6 +118,7 @@ export function OutlookResults({ result }: Props) {
                 <th className="py-2 pr-3 font-medium">Phase</th>
                 <th className="py-2 pr-3 font-medium">Lifestyle</th>
                 <th className="py-2 pr-3 font-medium">Healthcare</th>
+                <th className="py-2 pr-3 font-medium">Housing</th>
                 <th className="py-2 pr-3 font-medium">Income</th>
                 <th className="py-2 font-medium">Balance</th>
               </tr>
@@ -121,6 +130,7 @@ export function OutlookResults({ result }: Props) {
                   <td className="py-2 pr-3">{PHASE_LABEL[row.phase]}</td>
                   <td className="py-2 pr-3">{formatMoney(row.lifestyleSpend)}</td>
                   <td className="py-2 pr-3">{formatMoney(row.healthcareSpend + row.longTermCareSpend)}</td>
+                  <td className="py-2 pr-3">{formatMoney(row.housingSpend)}</td>
                   <td className="py-2 pr-3">{formatMoney(row.guaranteedIncome + row.partTimeIncome)}</td>
                   <td className="py-2 font-medium">{formatMoney(row.endBalance)}</td>
                 </tr>

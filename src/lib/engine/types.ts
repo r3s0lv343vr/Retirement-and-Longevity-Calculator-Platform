@@ -1,3 +1,5 @@
+export type HousingKind = "independent" | "nursing" | "ccrc" | null;
+
 export type LifePhase = "working" | "go-go" | "slow-go" | "no-go";
 
 export type OutlookStatus = "strong" | "watchful" | "at-risk" | "shortfall";
@@ -28,6 +30,12 @@ export type CalculatorInput = {
   noGoLifestyleMultiplier: number;
   longTermCareAnnual: number;
   longTermCareStartAge: number;
+  seniorHomeRentAnnual: number;
+  seniorHomeStartAge: number;
+  nursingHomeRentAnnual: number;
+  nursingHomeStartAge: number;
+  ccrcRentAnnual: number;
+  ccrcStartAge: number;
 };
 
 export type YearRow = {
@@ -41,6 +49,8 @@ export type YearRow = {
   lifestyleSpend: number;
   healthcareSpend: number;
   longTermCareSpend: number;
+  housingSpend: number;
+  housingKind: HousingKind;
   totalSpend: number;
   netCashFlow: number;
   endBalance: number;
@@ -60,6 +70,7 @@ export type Outlook = {
   totalHealthcareSpend: number;
   totalLifestyleSpend: number;
   totalLongTermCareSpend: number;
+  totalHousingSpend: number;
   healthcareShare: number;
   peakHealthcareAge: number | null;
   peakHealthcareSpend: number;
