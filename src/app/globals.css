@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Source Serif 4", ui-serif, Georgia, serif;
+  --color-ink: #14221c;
+  --color-muted: #5a6b62;
+  --color-paper: #f3eee4;
+  --color-paper-2: #e7dfd0;
+  --color-pine: #1d4a38;
+  --color-pine-2: #2f6b50;
+  --color-gold: #c4a35a;
+  --color-clay: #b85c38;
+  --color-strong: #1f6b46;
+  --color-watch: #9a6b12;
+  --color-risk: #b85c38;
+  --color-short: #8b2e2e;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+.paper-rule {
+  background-image: linear-gradient(to bottom, transparent 0, transparent 47px, rgba(20, 34, 28, 0.04) 48px);
+  background-size: 100% 48px;
+}
+
+.card {
+  min-width: 0;
+  overflow-wrap: break-word;
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--color-pine) 12%, transparent);
+  background: #fff;
+  padding: 1.75rem;
+  box-shadow: 0 1px 2px rgba(20, 34, 28, 0.04);
+}
+
+@media (min-width: 640px) {
+  .card {
+    padding: 2rem 2.25rem;
+  }
+}
+
+.ad-slot {
+  overflow: hidden;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  opacity: 1;
+}
