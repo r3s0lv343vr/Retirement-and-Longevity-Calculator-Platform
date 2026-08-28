@@ -62,7 +62,8 @@ const GROUPS: {
   {
     id: "spending",
     title: "Spending today",
-    blurb: "Lifestyle and health are tracked separately so medical inflation can outrun the CPI. A suggested comfortable-living estimate appears in your outlook.",
+    blurb:
+      "Enter amounts in today’s dollars. Lifestyle (food, travel, ordinary housing) rises with general inflation and is scaled in go-go, slow-go, and no-go years. Healthcare (premiums and out-of-pocket) uses a higher medical inflation rate and steps up after 65, 75, and 85, so medical costs can outrun the CPI. Long-term care is optional extra support from the age you set; it is skipped once nursing or CCRC rent starts. After you calculate, the outlook shows a comfortable-living estimate: at least a $65,000 lifestyle floor plus a 10% buffer, healthcare no lower than a typical premium-plus-care amount, and the nest egg needed to fund that through your plan age.",
     keys: ["lifestyleSpendToday", "healthcareSpendToday", "longTermCareAnnual", "longTermCareStartAge"],
     columns: 2,
   },
