@@ -32,7 +32,7 @@ const GROUPS: {
   {
     id: "savings",
     title: "Nest egg",
-    blurb: "Balances and savings in today’s dollars.",
+    blurb: "Current balance in today’s dollars. Annual savings is the same deposit each year until retirement.",
     keys: ["currentSavings", "annualContribution"],
     columns: 2,
   },

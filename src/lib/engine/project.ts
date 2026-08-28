@@ -75,9 +75,7 @@ function runYears(input: CalculatorInput, straightLine: boolean): YearRow[] {
     const working = age < input.retirementAge;
     const rate = working ? input.preRetirementReturn : input.postRetirementReturn;
 
-    const contribution = working
-      ? inflate(input.annualContribution, input.inflationRate, yearsFromNow)
-      : 0;
+    const contribution = working ? input.annualContribution : 0;
 
     const socialSecurity =
       age >= input.socialSecurityStartAge

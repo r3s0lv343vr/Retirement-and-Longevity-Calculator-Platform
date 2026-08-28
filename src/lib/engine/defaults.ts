@@ -43,7 +43,7 @@ export const FIELD_META: Record<
   retirementAge: { label: "Full-time work ends", group: "timeline", kind: "age" },
   planToAge: { label: "Plan through age", hint: "Longevity target, not a prediction.", group: "timeline", kind: "age" },
   currentSavings: { label: "Current retirement savings", group: "savings", kind: "money" },
-  annualContribution: { label: "Annual savings until retirement", group: "savings", kind: "money" },
+  annualContribution: { label: "Annual savings until retirement", hint: "Same dollar amount each year. Inflation raises spending, not this deposit.", group: "savings", kind: "money" },
   partTimeAnnualIncome: { label: "Part-time / side-hustle income", hint: "Today’s dollars, after retirement.", group: "work", kind: "money" },
   partTimeStartAge: { label: "Part-time starts", group: "work", kind: "age" },
   partTimeEndAge: { label: "Part-time ends", hint: "Last year with this income.", group: "work", kind: "age" },

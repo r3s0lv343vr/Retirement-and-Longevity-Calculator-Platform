@@ -102,6 +102,22 @@ describe("project", () => {
     expect(working.every((y) => y.contribution > 0)).toBe(true);
   });
 
+  it("does not inflate annual savings; it does inflate retirement spending", () => {
+    const result = run({
+      currentAge: 41,
+      retirementAge: 65,
+      currentSavings: 71000,
+      annualContribution: 13000,
+      inflationRate: 0.026,
+    });
+    const first = result.years.find((y) => y.age === 41);
+    const lastWork = result.years.find((y) => y.age === 64);
+    const firstRetire = result.years.find((y) => y.age === 65);
+    expect(first?.contribution).toBe(13000);
+    expect(lastWork?.contribution).toBe(13000);
+    expect(firstRetire?.lifestyleSpend).toBeGreaterThan(62000);
+  });
+
   it("raises medical costs in no-go years versus go-go years", () => {
     const result = run({ healthcareInflationRate: 0 });
     const go = result.years.find((y) => y.age === 70);
@@ -296,12 +312,14 @@ describe("project", () => {
       nursingHomeRentAnnual: 0,
       ccrcRentAnnual: 0,
     });
-    expect(result.outlook.fundedThroughAge).toBe(91);
-    expect(result.outlook.yearsCovered).toBe(27);
+    expect(result.years.find((y) => y.age === 65)?.startBalance).toBeCloseTo(1_116_434.77, 0);
+    expect(result.years.find((y) => y.age === 41)?.contribution).toBe(13000);
+    expect(result.years.find((y) => y.age === 64)?.contribution).toBe(13000);
+    expect(result.outlook.fundedThroughAge).toBe(90);
+    expect(result.outlook.yearsCovered).toBe(26);
     expect(result.outlook.yearsInRetirement).toBe(31);
     expect(result.outlook.totalHousingSpend).toBe(0);
-    expect(result.outlook.peakHealthcareAge).toBe(91);
-    expect(result.outlook.peakHealthcareSpend).toBeCloseTo(486574, 0);
+    expect(result.outlook.peakHealthcareAge).toBe(90);
     expect(result.outlook.partTimeTotal).toBeCloseTo(371720, 0);
   });
 });
