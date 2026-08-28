@@ -5,6 +5,29 @@ export function inflate(amount: number, rate: number, years: number): number {
   return amount * (1 + rate) ** years;
 }
 
+/** FV = PV (1 + r)^n */
+export function futureValueLump(presentValue: number, rate: number, years: number): number {
+  if (years <= 0) return presentValue;
+  return presentValue * (1 + rate) ** years;
+}
+
+/** Ordinary (end-of-year) annuity: FV = PMT [((1 + r)^n − 1) / r] */
+export function futureValueOrdinaryAnnuity(payment: number, rate: number, years: number): number {
+  if (years <= 0) return 0;
+  if (Math.abs(rate) < 1e-12) return payment * years;
+  return payment * (((1 + rate) ** years - 1) / rate);
+}
+
+/** Nest-egg phase: grow current savings, then add level annual deposits. */
+export function nestEggAtRetirement(
+  presentValue: number,
+  annualSavings: number,
+  rate: number,
+  years: number,
+): number {
+  return futureValueLump(presentValue, rate, years) + futureValueOrdinaryAnnuity(annualSavings, rate, years);
+}
+
 export function lifePhase(age: number, input: CalculatorInput): LifePhase {
   if (age < input.retirementAge) return "working";
   if (age <= input.goGoEndAge) return "go-go";
@@ -71,12 +94,50 @@ function runYears(input: CalculatorInput, straightLine: boolean): YearRow[] {
 
   for (let age = input.currentAge; age <= input.planToAge; age += 1) {
     const yearsFromNow = age - input.currentAge;
-    const startBalance = Math.max(balance, 0);
     const working = age < input.retirementAge;
-    const rate = working ? input.preRetirementReturn : input.postRetirementReturn;
 
-    const contribution = working ? input.annualContribution : 0;
+    if (working) {
+      const yearsDone = age - input.currentAge;
+      const rate = input.preRetirementReturn;
+      const startBalance = nestEggAtRetirement(
+        input.currentSavings,
+        input.annualContribution,
+        rate,
+        yearsDone,
+      );
+      const endBalance = nestEggAtRetirement(
+        input.currentSavings,
+        input.annualContribution,
+        rate,
+        yearsDone + 1,
+      );
+      const contribution = input.annualContribution;
+      const growth = startBalance * rate;
+      balance = endBalance;
+      years.push({
+        age,
+        phase: "working",
+        startBalance,
+        growth,
+        contribution,
+        guaranteedIncome: 0,
+        partTimeIncome: 0,
+        lifestyleSpend: 0,
+        healthcareSpend: 0,
+        longTermCareSpend: 0,
+        housingSpend: 0,
+        housingKind: null,
+        totalSpend: 0,
+        netCashFlow: contribution,
+        endBalance,
+        depleted: false,
+      });
+      continue;
+    }
 
+    const startBalance = Math.max(balance, 0);
+    const rate = input.postRetirementReturn;
+    const contribution = 0;
     const socialSecurity =
       age >= input.socialSecurityStartAge
         ? inflate(input.socialSecurityAnnual, input.inflationRate, yearsFromNow)
@@ -88,7 +149,6 @@ function runYears(input: CalculatorInput, straightLine: boolean): YearRow[] {
     const guaranteedIncome = socialSecurity + pension;
 
     const partTimeIncome =
-      !working &&
       input.partTimeAnnualIncome > 0 &&
       age >= input.partTimeStartAge &&
       age <= input.partTimeEndAge
@@ -99,53 +159,37 @@ function runYears(input: CalculatorInput, straightLine: boolean): YearRow[] {
     const lifeMult = straightLine ? 1 : lifestyleMultiplier(age, input);
     const healthMult = straightLine ? 1 : healthcareAgeFactor(age);
 
-    let lifestyleSpend = 0;
-    let healthcareSpend = 0;
-    let longTermCareSpend = 0;
-    let housingSpend = 0;
-    let housingKind: HousingKind = null;
-
-    if (!working) {
-      const housing = straightLine
-        ? { rent: 0, kind: null as HousingKind, lifestyleFactor: 1 }
-        : facilityHousing(age, input, yearsFromNow, healthInflation);
-      housingSpend = housing.rent;
-      housingKind = housing.kind;
-      lifestyleSpend =
-        inflate(input.lifestyleSpendToday, input.inflationRate, yearsFromNow) * lifeMult * housing.lifestyleFactor;
-      healthcareSpend = inflate(input.healthcareSpendToday, healthInflation, yearsFromNow) * healthMult;
-      const facilityIncludesCare = housing.kind === "nursing" || housing.kind === "ccrc";
-      if (
-        !straightLine &&
-        !facilityIncludesCare &&
-        age >= input.longTermCareStartAge &&
-        input.longTermCareAnnual > 0
-      ) {
-        longTermCareSpend = inflate(input.longTermCareAnnual, healthInflation, yearsFromNow);
-      }
-    }
+    const housing = straightLine
+      ? { rent: 0, kind: null as HousingKind, lifestyleFactor: 1 }
+      : facilityHousing(age, input, yearsFromNow, healthInflation);
+    const housingSpend = housing.rent;
+    const housingKind = housing.kind;
+    const lifestyleSpend =
+      inflate(input.lifestyleSpendToday, input.inflationRate, yearsFromNow) * lifeMult * housing.lifestyleFactor;
+    const healthcareSpend = inflate(input.healthcareSpendToday, healthInflation, yearsFromNow) * healthMult;
+    const facilityIncludesCare = housing.kind === "nursing" || housing.kind === "ccrc";
+    const longTermCareSpend =
+      !straightLine &&
+      !facilityIncludesCare &&
+      age >= input.longTermCareStartAge &&
+      input.longTermCareAnnual > 0
+        ? inflate(input.longTermCareAnnual, healthInflation, yearsFromNow)
+        : 0;
 
     const totalSpend = lifestyleSpend + healthcareSpend + longTermCareSpend + housingSpend;
-    const inflow = contribution + (working ? 0 : guaranteedIncome + partTimeIncome);
+    const inflow = guaranteedIncome + partTimeIncome;
     const netCashFlow = inflow - totalSpend;
 
+    const afterCash = startBalance + netCashFlow;
     let growth: number;
     let endBalance: number;
-    if (working) {
-      // Contribute at year-end: return is earned on the opening balance.
-      growth = startBalance * rate;
-      endBalance = startBalance + growth + netCashFlow;
+    if (afterCash < 0) {
+      growth = 0;
+      endBalance = 0;
+      depleted = true;
     } else {
-      // Spend/receive cash at the start of the year, then earn a return on what remains.
-      const afterCash = startBalance + netCashFlow;
-      if (afterCash < 0) {
-        growth = 0;
-        endBalance = 0;
-        depleted = true;
-      } else {
-        growth = afterCash * rate;
-        endBalance = afterCash + growth;
-      }
+      growth = afterCash * rate;
+      endBalance = afterCash + growth;
     }
 
     if (endBalance < 0) {

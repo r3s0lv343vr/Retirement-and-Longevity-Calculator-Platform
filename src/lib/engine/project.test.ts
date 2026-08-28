@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_INPUT } from "./defaults";
-import { healthcareAgeFactor, inflate, projectBase } from "./project";
+import { healthcareAgeFactor, inflate, futureValueLump, futureValueOrdinaryAnnuity, nestEggAtRetirement, projectBase } from "./project";
 import { mergeInput, validateInput } from "./validate";
 import type { CalculatorInput } from "./types";
 
@@ -11,6 +11,34 @@ function run(overrides: Partial<CalculatorInput> = {}) {
 describe("inflate", () => {
   it("compounds a dollar amount", () => {
     expect(inflate(100, 0.1, 2)).toBeCloseTo(121);
+  });
+});
+
+describe("nest egg formulas", () => {
+  it("grows current savings as a future value", () => {
+    expect(futureValueLump(71000, 0.07, 24)).toBeCloseTo(360138.05, 2);
+  });
+
+  it("grows level annual savings as an ordinary annuity", () => {
+    expect(futureValueOrdinaryAnnuity(13000, 0.07, 24)).toBeCloseTo(756296.72, 2);
+  });
+
+  it("adds those two pieces for capital at retirement", () => {
+    expect(nestEggAtRetirement(71000, 13000, 0.07, 24)).toBeCloseTo(1116434.77, 2);
+  });
+
+  it("uses those formulas as the opening balance at retirement", () => {
+    const result = run({
+      currentAge: 41,
+      retirementAge: 65,
+      currentSavings: 71000,
+      annualContribution: 13000,
+      preRetirementReturn: 0.07,
+    });
+    expect(result.years.find((y) => y.age === 65)?.startBalance).toBeCloseTo(
+      nestEggAtRetirement(71000, 13000, 0.07, 24),
+      6,
+    );
   });
 });
 

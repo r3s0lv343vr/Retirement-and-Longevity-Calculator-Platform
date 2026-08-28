@@ -63,7 +63,12 @@ export const FIELD_META: Record<
   ccrcStartAge: { label: "Continuing care starts", group: "housing", kind: "age" },
   inflationRate: { label: "General inflation", group: "assumptions", kind: "percent" },
   healthcareInflationRate: { label: "Healthcare inflation", group: "assumptions", kind: "percent" },
-  preRetirementReturn: { label: "Return before retirement", group: "assumptions", kind: "percent" },
+  preRetirementReturn: {
+    label: "Return before retirement",
+    hint: "Grows current savings (future value) and annual deposits (ordinary annuity) until full-time work ends.",
+    group: "savings",
+    kind: "percent",
+  },
   postRetirementReturn: { label: "Return in retirement", group: "assumptions", kind: "percent" },
   goGoEndAge: { label: "Go-go years end", hint: "Higher travel and activity, through this age.", group: "phases", kind: "age" },
   slowGoEndAge: { label: "Slow-go years end", hint: "Through this age, then no-go years begin.", group: "phases", kind: "age" },

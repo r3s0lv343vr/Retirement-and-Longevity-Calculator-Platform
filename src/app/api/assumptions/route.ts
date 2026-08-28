@@ -8,7 +8,7 @@ export async function GET() {
     notes: {
       phases:
         "Go-go, slow-go, and no-go years scale lifestyle spending. Healthcare is inflated separately and rises with age.",
-      returns: "Nominal annual rates. Spending and guaranteed income are inflated from today’s dollars.",
+      returns: "The nest egg uses a future-value lump sum plus an ordinary annuity until retirement. Inflation raises spending and guaranteed income, not annual deposits.",
     },
   });
 }

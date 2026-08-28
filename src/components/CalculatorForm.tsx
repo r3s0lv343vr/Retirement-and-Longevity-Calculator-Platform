@@ -32,9 +32,10 @@ const GROUPS: {
   {
     id: "savings",
     title: "Nest egg",
-    blurb: "Current balance in today’s dollars. Annual savings is the same deposit each year until retirement.",
-    keys: ["currentSavings", "annualContribution"],
-    columns: 2,
+    blurb:
+      "Current savings grow as a future value. Annual savings are a level deposit each year (ordinary annuity). Inflation does not raise the deposit; it raises later spending.",
+    keys: ["currentSavings", "annualContribution", "preRetirementReturn"],
+    columns: 3,
   },
   {
     id: "work",
@@ -76,7 +77,7 @@ const GROUPS: {
     id: "assumptions",
     title: "Market & inflation",
     blurb: "Nominal annual rates.",
-    keys: ["inflationRate", "healthcareInflationRate", "preRetirementReturn", "postRetirementReturn"],
+    keys: ["inflationRate", "healthcareInflationRate", "postRetirementReturn"],
     advanced: true,
     columns: 2,
   },
