@@ -54,7 +54,8 @@ const GROUPS: {
   {
     id: "income",
     title: "Guaranteed income",
-    blurb: "Social Security and any pension, inflated with general prices.",
+    blurb:
+      "annuity[social security, r=0%] + annuity[pension, r=0%]. Each is a fixed annual amount from its start age, not before the nest-egg cutoff (full-time work ends), through the plan-through age. If pension is $0, only Social Security is used.",
     keys: ["socialSecurityAnnual", "socialSecurityStartAge", "pensionAnnual", "pensionStartAge"],
     columns: 2,
   },

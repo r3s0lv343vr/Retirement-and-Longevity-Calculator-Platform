@@ -45,7 +45,7 @@ describe("estimateComfort", () => {
     expect(thin.suggestedAnnualBudgetToday).toBeGreaterThan(DEFAULT_INPUT.healthcareSpendToday);
   });
 
-  it("does not ask a 41-year-old for $50k extra a year when the plan already lasts into the 90s", () => {
+  it("still asks a 41-year-old for extra savings when the comfort budget is higher than entered spending", () => {
     const comfort = estimateComfort({
       ...DEFAULT_INPUT,
       currentAge: 41,
@@ -68,7 +68,7 @@ describe("estimateComfort", () => {
       ccrcRentAnnual: 0,
     });
     expect(comfort.usedHousingPlaceholder).toBe(false);
-    expect(comfort.additionalAnnualSavings).toBeLessThan(25000);
     expect(comfort.additionalAnnualSavings).toBeGreaterThan(0);
+    expect(comfort.additionalAnnualSavings).toBeLessThan(80000);
   });
 });

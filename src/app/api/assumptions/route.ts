@@ -8,7 +8,8 @@ export async function GET() {
     notes: {
       phases:
         "Go-go, slow-go, and no-go years scale lifestyle spending. Healthcare is inflated separately and rises with age.",
-      returns: "The nest egg uses a future-value lump sum plus an ordinary annuity until retirement. Inflation raises spending and guaranteed income, not annual deposits.",
+      returns:
+        "The nest egg uses a future-value lump sum plus an ordinary annuity until retirement. Guaranteed income is annuity[social security, r=0%] + annuity[pension, r=0%] from the nest-egg cutoff through the plan-through age (pension omitted when $0). Inflation raises spending, not deposits or guaranteed income.",
     },
   });
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_INPUT } from "./defaults";
-import { healthcareAgeFactor, inflate, futureValueLump, futureValueOrdinaryAnnuity, nestEggAtRetirement, projectBase } from "./project";
+import { healthcareAgeFactor, inflate, futureValueLump, futureValueOrdinaryAnnuity, nestEggAtRetirement, guaranteedIncomeAnnuity, guaranteedIncomeWindow, projectBase } from "./project";
 import { mergeInput, validateInput } from "./validate";
 import type { CalculatorInput } from "./types";
 
@@ -318,7 +318,7 @@ describe("project", () => {
     expect(row?.housingSpend).toBeCloseTo(36000 * 1.02 ** 10);
   });
 
-  it("matches a 41-year-old plan that lasts to the early 90s", () => {
+  it("matches a 41-year-old nest egg and 0% guaranteed-income annuities", () => {
     const result = run({
       currentAge: 41,
       retirementAge: 65,
@@ -343,11 +343,11 @@ describe("project", () => {
     expect(result.years.find((y) => y.age === 65)?.startBalance).toBeCloseTo(1_116_434.77, 0);
     expect(result.years.find((y) => y.age === 41)?.contribution).toBe(13000);
     expect(result.years.find((y) => y.age === 64)?.contribution).toBe(13000);
-    expect(result.outlook.fundedThroughAge).toBe(90);
-    expect(result.outlook.yearsCovered).toBe(26);
+    expect(result.outlook.fundedThroughAge).toBe(79);
+    expect(result.outlook.yearsCovered).toBe(15);
     expect(result.outlook.yearsInRetirement).toBe(31);
     expect(result.outlook.totalHousingSpend).toBe(0);
-    expect(result.outlook.peakHealthcareAge).toBe(90);
+    expect(result.outlook.peakHealthcareAge).toBe(79);
     expect(result.outlook.partTimeTotal).toBeCloseTo(371720, 0);
   });
 
@@ -418,5 +418,60 @@ describe("project", () => {
       longTermCareAnnual: 0,
     });
     expect(result.outlook.partTimeTotal).toBeCloseTo(16000 * 10);
+  });
+
+  it("pays Social Security as a 0% annuity from the nest-egg cutoff through the plan-through age", () => {
+    const result = run({
+      currentAge: 41,
+      retirementAge: 65,
+      planToAge: 95,
+      inflationRate: 0.1,
+      socialSecurityAnnual: 28800,
+      socialSecurityStartAge: 67,
+      pensionAnnual: 0,
+    });
+    const ss = guaranteedIncomeWindow(67, result.input);
+    expect(ss).toEqual({ start: 67, end: 95, years: 29 });
+    expect(guaranteedIncomeAnnuity(result.input)).toBeCloseTo(futureValueOrdinaryAnnuity(28800, 0, 29));
+    expect(result.years.find((y) => y.age === 65)?.guaranteedIncome).toBe(0);
+    expect(result.years.find((y) => y.age === 66)?.guaranteedIncome).toBe(0);
+    expect(result.years.find((y) => y.age === 67)?.guaranteedIncome).toBe(28800);
+    expect(result.years.find((y) => y.age === 95)?.guaranteedIncome).toBe(28800);
+    const paid = result.years.reduce((s, y) => s + y.guaranteedIncome, 0);
+    expect(paid).toBeCloseTo(guaranteedIncomeAnnuity(result.input));
+  });
+
+  it("adds pension as a second 0% annuity and omits it when pension is $0", () => {
+    const both = run({
+      currentAge: 41,
+      retirementAge: 65,
+      planToAge: 95,
+      inflationRate: 0.1,
+      socialSecurityAnnual: 28800,
+      socialSecurityStartAge: 67,
+      pensionAnnual: 36000,
+      pensionStartAge: 65,
+    });
+    const ssYears = 95 - 67 + 1;
+    const pensionYears = 95 - 65 + 1;
+    expect(guaranteedIncomeAnnuity(both.input)).toBeCloseTo(28800 * ssYears + 36000 * pensionYears);
+    expect(both.years.find((y) => y.age === 65)?.guaranteedIncome).toBe(36000);
+    expect(both.years.find((y) => y.age === 67)?.guaranteedIncome).toBe(28800 + 36000);
+    expect(both.years.reduce((s, y) => s + y.guaranteedIncome, 0)).toBeCloseTo(
+      guaranteedIncomeAnnuity(both.input),
+    );
+
+    const ssOnly = run({
+      currentAge: 41,
+      retirementAge: 65,
+      planToAge: 95,
+      socialSecurityAnnual: 28800,
+      socialSecurityStartAge: 67,
+      pensionAnnual: 0,
+      pensionStartAge: 65,
+    });
+    expect(guaranteedIncomeAnnuity(ssOnly.input)).toBeCloseTo(28800 * ssYears);
+    expect(ssOnly.years.find((y) => y.age === 65)?.guaranteedIncome).toBe(0);
+    expect(ssOnly.years.find((y) => y.age === 67)?.guaranteedIncome).toBe(28800);
   });
 });

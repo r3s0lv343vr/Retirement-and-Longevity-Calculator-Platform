@@ -35,6 +35,44 @@ export function phasedWorkWindow(input: CalculatorInput): { start: number; end: 
   return { start, end, years: end - start + 1 };
 }
 
+/**
+ * Guaranteed-income window for one stream.
+ * Starts at the later of the benefit start, the nest-egg cutoff (full-time work ends),
+ * and current age; ends at the plan-through age.
+ */
+export function guaranteedIncomeWindow(
+  startAge: number,
+  input: CalculatorInput,
+): { start: number; end: number; years: number } {
+  const start = Math.max(startAge, input.retirementAge, input.currentAge);
+  const end = input.planToAge;
+  if (end < start) return { start, end, years: 0 };
+  return { start, end, years: end - start + 1 };
+}
+
+/**
+ * annuity[social security, r=0%] + annuity[pension, r=0%].
+ * Pension is omitted when it is $0. At r = 0% this is payment × years.
+ */
+export function guaranteedIncomeAnnuity(input: CalculatorInput): number {
+  const ss = guaranteedIncomeWindow(input.socialSecurityStartAge, input);
+  const socialSecurity = futureValueOrdinaryAnnuity(input.socialSecurityAnnual, 0, ss.years);
+  if (input.pensionAnnual <= 0) return socialSecurity;
+  const pension = guaranteedIncomeWindow(input.pensionStartAge, input);
+  return socialSecurity + futureValueOrdinaryAnnuity(input.pensionAnnual, 0, pension.years);
+}
+
+function guaranteedIncomeAtAge(age: number, input: CalculatorInput): number {
+  const ss = guaranteedIncomeWindow(input.socialSecurityStartAge, input);
+  const socialSecurity =
+    ss.years > 0 && age >= ss.start && age <= ss.end ? input.socialSecurityAnnual : 0;
+  if (input.pensionAnnual <= 0) return socialSecurity;
+  const pension = guaranteedIncomeWindow(input.pensionStartAge, input);
+  const pensionPay =
+    pension.years > 0 && age >= pension.start && age <= pension.end ? input.pensionAnnual : 0;
+  return socialSecurity + pensionPay;
+}
+
 export function lifePhase(age: number, input: CalculatorInput): LifePhase {
   if (age < input.retirementAge) return "working";
   if (age <= input.goGoEndAge) return "go-go";
@@ -155,15 +193,7 @@ function runYears(input: CalculatorInput, straightLine: boolean): YearRow[] {
         ? nestEggAtRetirement(0, investPmt, input.partTimeInvestmentReturn, investYear)
         : 0;
     const contribution = investPmt;
-    const socialSecurity =
-      age >= input.socialSecurityStartAge
-        ? inflate(input.socialSecurityAnnual, input.inflationRate, yearsFromNow)
-        : 0;
-    const pension =
-      age >= input.pensionStartAge
-        ? inflate(input.pensionAnnual, input.inflationRate, yearsFromNow)
-        : 0;
-    const guaranteedIncome = socialSecurity + pension;
+    const guaranteedIncome = guaranteedIncomeAtAge(age, input);
 
     const partTimeIncome =
       input.partTimeAnnualIncome > 0 &&
