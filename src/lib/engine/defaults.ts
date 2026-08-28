@@ -17,6 +17,7 @@ export const DEFAULT_INPUT: CalculatorInput = {
   socialSecurityStartAge: 67,
   pensionAnnual: 0,
   pensionStartAge: 65,
+  pensionCola: true,
   partTimeAnnualIncome: 22000,
   partTimeStartAge: 65,
   partTimeEndAge: 72,
@@ -39,7 +40,7 @@ export const DEFAULT_INPUT: CalculatorInput = {
 
 export const FIELD_META: Record<
   keyof CalculatorInput,
-  { label: string; hint?: string; group: string; kind: "age" | "money" | "percent" | "multiplier" }
+  { label: string; hint?: string; group: string; kind: "age" | "money" | "percent" | "multiplier" | "toggle" }
 > = {
   currentAge: { label: "Current age", group: "timeline", kind: "age" },
   retirementAge: { label: "Full-time work ends", group: "timeline", kind: "age" },
@@ -61,10 +62,16 @@ export const FIELD_META: Record<
     group: "work",
     kind: "percent",
   },
-  socialSecurityAnnual: { label: "Social Security / year", hint: "Fixed annual amount (annuity at r = 0%).", group: "income", kind: "money" },
+  socialSecurityAnnual: { label: "Social Security / year", hint: "Today’s dollars, with COLA (rises with general inflation).", group: "income", kind: "money" },
   socialSecurityStartAge: { label: "Social Security starts", group: "income", kind: "age" },
-  pensionAnnual: { label: "Pension / year", hint: "Fixed annual amount (annuity at r = 0%). Leave at 0 to skip.", group: "income", kind: "money" },
+  pensionAnnual: { label: "Pension / year", hint: "Leave at 0 to skip. COLA is on unless you turn it off.", group: "income", kind: "money" },
   pensionStartAge: { label: "Pension starts", group: "income", kind: "age" },
+  pensionCola: {
+    label: "Pension COLA",
+    hint: "On = this pension rises with inflation. Off = a fixed annual amount.",
+    group: "income",
+    kind: "toggle",
+  },
   lifestyleSpendToday: { label: "Lifestyle spending / year", hint: "Housing, food, travel — not medical.", group: "spending", kind: "money" },
   healthcareSpendToday: { label: "Healthcare spending / year", hint: "Premiums + out-of-pocket today.", group: "spending", kind: "money" },
   longTermCareAnnual: { label: "Long-term care / year", hint: "In-home or extra support. Skipped once nursing or CCRC rent starts.", group: "spending", kind: "money" },

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_INPUT } from "./defaults";
-import { healthcareAgeFactor, inflate, futureValueLump, futureValueOrdinaryAnnuity, nestEggAtRetirement, guaranteedIncomeAnnuity, guaranteedIncomeWindow, projectBase } from "./project";
+import { healthcareAgeFactor, inflate, futureValueLump, futureValueOrdinaryAnnuity, nestEggAtRetirement, guaranteedIncomeAnnuity, guaranteedIncomeWindow, growingPaymentSum, projectBase } from "./project";
 import { mergeInput, validateInput } from "./validate";
 import type { CalculatorInput } from "./types";
 
@@ -59,6 +59,12 @@ describe("validateInput", () => {
   it("allows a plan that is already in retirement", () => {
     const input = mergeInput({ currentAge: 70, retirementAge: 65, planToAge: 95 });
     expect(validateInput(input)).toEqual([]);
+  });
+
+  it("reads pension COLA as a boolean and defaults it to on", () => {
+    expect(mergeInput({}).pensionCola).toBe(true);
+    expect(mergeInput({ pensionCola: false }).pensionCola).toBe(false);
+    expect(mergeInput({ pensionCola: "off" as unknown as boolean }).pensionCola).toBe(false);
   });
 });
 
@@ -318,7 +324,7 @@ describe("project", () => {
     expect(row?.housingSpend).toBeCloseTo(36000 * 1.02 ** 10);
   });
 
-  it("matches a 41-year-old nest egg and 0% guaranteed-income annuities", () => {
+  it("matches a 41-year-old nest egg and COLA guaranteed income", () => {
     const result = run({
       currentAge: 41,
       retirementAge: 65,
@@ -343,11 +349,11 @@ describe("project", () => {
     expect(result.years.find((y) => y.age === 65)?.startBalance).toBeCloseTo(1_116_434.77, 0);
     expect(result.years.find((y) => y.age === 41)?.contribution).toBe(13000);
     expect(result.years.find((y) => y.age === 64)?.contribution).toBe(13000);
-    expect(result.outlook.fundedThroughAge).toBe(79);
-    expect(result.outlook.yearsCovered).toBe(15);
+    expect(result.outlook.fundedThroughAge).toBe(90);
+    expect(result.outlook.yearsCovered).toBe(26);
     expect(result.outlook.yearsInRetirement).toBe(31);
     expect(result.outlook.totalHousingSpend).toBe(0);
-    expect(result.outlook.peakHealthcareAge).toBe(79);
+    expect(result.outlook.peakHealthcareAge).toBe(90);
     expect(result.outlook.partTimeTotal).toBeCloseTo(371720, 0);
   });
 
@@ -420,7 +426,7 @@ describe("project", () => {
     expect(result.outlook.partTimeTotal).toBeCloseTo(16000 * 10);
   });
 
-  it("pays Social Security as a 0% annuity from the nest-egg cutoff through the plan-through age", () => {
+  it("applies COLA to Social Security from the nest-egg cutoff through the plan-through age", () => {
     const result = run({
       currentAge: 41,
       retirementAge: 65,
@@ -432,46 +438,72 @@ describe("project", () => {
     });
     const ss = guaranteedIncomeWindow(67, result.input);
     expect(ss).toEqual({ start: 67, end: 95, years: 29 });
-    expect(guaranteedIncomeAnnuity(result.input)).toBeCloseTo(futureValueOrdinaryAnnuity(28800, 0, 29));
     expect(result.years.find((y) => y.age === 65)?.guaranteedIncome).toBe(0);
     expect(result.years.find((y) => y.age === 66)?.guaranteedIncome).toBe(0);
-    expect(result.years.find((y) => y.age === 67)?.guaranteedIncome).toBe(28800);
-    expect(result.years.find((y) => y.age === 95)?.guaranteedIncome).toBe(28800);
+    expect(result.years.find((y) => y.age === 67)?.guaranteedIncome).toBeCloseTo(inflate(28800, 0.1, 26));
+    expect(result.years.find((y) => y.age === 95)?.guaranteedIncome).toBeCloseTo(inflate(28800, 0.1, 54));
     const paid = result.years.reduce((s, y) => s + y.guaranteedIncome, 0);
-    expect(paid).toBeCloseTo(guaranteedIncomeAnnuity(result.input));
+    expect(paid).toBeCloseTo(growingPaymentSum(28800, 0.1, 26, 29));
+    expect(guaranteedIncomeAnnuity(result.input)).toBeCloseTo(paid);
   });
 
-  it("adds pension as a second 0% annuity and omits it when pension is $0", () => {
-    const both = run({
-      currentAge: 41,
+  it("lets pension COLA be turned off while Social Security still inflates", () => {
+    const colaOn = run({
+      currentAge: 65,
       retirementAge: 65,
-      planToAge: 95,
+      planToAge: 70,
       inflationRate: 0.1,
-      socialSecurityAnnual: 28800,
-      socialSecurityStartAge: 67,
-      pensionAnnual: 36000,
+      socialSecurityAnnual: 0,
+      pensionAnnual: 10000,
       pensionStartAge: 65,
+      pensionCola: true,
+      lifestyleSpendToday: 1000,
+      healthcareSpendToday: 0,
+      longTermCareAnnual: 0,
+      currentSavings: 5_000_000,
     });
-    const ssYears = 95 - 67 + 1;
-    const pensionYears = 95 - 65 + 1;
-    expect(guaranteedIncomeAnnuity(both.input)).toBeCloseTo(28800 * ssYears + 36000 * pensionYears);
-    expect(both.years.find((y) => y.age === 65)?.guaranteedIncome).toBe(36000);
-    expect(both.years.find((y) => y.age === 67)?.guaranteedIncome).toBe(28800 + 36000);
-    expect(both.years.reduce((s, y) => s + y.guaranteedIncome, 0)).toBeCloseTo(
-      guaranteedIncomeAnnuity(both.input),
-    );
+    expect(colaOn.years.find((y) => y.age === 65)?.guaranteedIncome).toBeCloseTo(10000);
+    expect(colaOn.years.find((y) => y.age === 67)?.guaranteedIncome).toBeCloseTo(inflate(10000, 0.1, 2));
 
-    const ssOnly = run({
-      currentAge: 41,
+    const colaOff = run({
+      currentAge: 65,
       retirementAge: 65,
-      planToAge: 95,
-      socialSecurityAnnual: 28800,
-      socialSecurityStartAge: 67,
-      pensionAnnual: 0,
+      planToAge: 70,
+      inflationRate: 0.1,
+      socialSecurityAnnual: 20000,
+      socialSecurityStartAge: 65,
+      pensionAnnual: 10000,
       pensionStartAge: 65,
+      pensionCola: false,
+      lifestyleSpendToday: 1000,
+      healthcareSpendToday: 0,
+      longTermCareAnnual: 0,
+      currentSavings: 5_000_000,
     });
-    expect(guaranteedIncomeAnnuity(ssOnly.input)).toBeCloseTo(28800 * ssYears);
-    expect(ssOnly.years.find((y) => y.age === 65)?.guaranteedIncome).toBe(0);
-    expect(ssOnly.years.find((y) => y.age === 67)?.guaranteedIncome).toBe(28800);
+    expect(colaOff.years.find((y) => y.age === 65)?.guaranteedIncome).toBeCloseTo(30000);
+    expect(colaOff.years.find((y) => y.age === 67)?.guaranteedIncome).toBeCloseTo(inflate(20000, 0.1, 2) + 10000);
+    expect(colaOff.years.filter((y) => y.age >= 65).every((y) => {
+      const pension = y.guaranteedIncome - inflate(20000, 0.1, y.age - 65);
+      return Math.abs(pension - 10000) < 1e-6;
+    })).toBe(true);
+
+    const omitted = run({
+      currentAge: 65,
+      retirementAge: 65,
+      planToAge: 70,
+      inflationRate: 0.1,
+      socialSecurityAnnual: 20000,
+      socialSecurityStartAge: 65,
+      pensionAnnual: 0,
+      pensionCola: true,
+      currentSavings: 5_000_000,
+      lifestyleSpendToday: 1000,
+      healthcareSpendToday: 0,
+      longTermCareAnnual: 0,
+    });
+    expect(omitted.years.find((y) => y.age === 67)?.guaranteedIncome).toBeCloseTo(inflate(20000, 0.1, 2));
+    expect(guaranteedIncomeAnnuity(omitted.input)).toBeCloseTo(
+      omitted.years.reduce((s, y) => s + y.guaranteedIncome, 0),
+    );
   });
 });

@@ -13,11 +13,26 @@ function asNumber(value: unknown, fallback: number): number {
   return fallback;
 }
 
+function asBoolean(value: unknown, fallback: boolean): boolean {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number" && Number.isFinite(value)) return value !== 0;
+  if (typeof value === "string") {
+    const s = value.trim().toLowerCase();
+    if (["true", "1", "yes", "on"].includes(s)) return true;
+    if (["false", "0", "no", "off"].includes(s)) return false;
+  }
+  return fallback;
+}
+
 export function mergeInput(payload: CalculatorPayload | null | undefined): CalculatorInput {
   const src = payload ?? {};
   const merged = { ...DEFAULT_INPUT };
   (Object.keys(DEFAULT_INPUT) as (keyof CalculatorInput)[]).forEach((key) => {
-    merged[key] = asNumber(src[key], DEFAULT_INPUT[key]);
+    if (key === "pensionCola") {
+      merged.pensionCola = asBoolean(src.pensionCola, DEFAULT_INPUT.pensionCola);
+      return;
+    }
+    merged[key] = asNumber(src[key], DEFAULT_INPUT[key] as number);
   });
   return merged;
 }
@@ -80,17 +95,20 @@ export function validateInput(input: CalculatorInput): string[] {
   }
 
   for (const key of moneyKeys) {
-    if (input[key] < 0 || input[key] > MAX_MONEY) {
+    const value = input[key] as number;
+    if (value < 0 || value > MAX_MONEY) {
       errors.push(`${key} is out of range.`);
     }
   }
   for (const key of rateKeys) {
-    if (input[key] < -0.1 || input[key] > 0.25) {
+    const value = input[key] as number;
+    if (value < -0.1 || value > 0.25) {
       errors.push(`${key} must be between -10% and 25%.`);
     }
   }
   for (const key of multiplierKeys) {
-    if (input[key] < 0.2 || input[key] > 2.5) {
+    const value = input[key] as number;
+    if (value < 0.2 || value > 2.5) {
       errors.push(`${key} must be between 0.2 and 2.5.`);
     }
   }

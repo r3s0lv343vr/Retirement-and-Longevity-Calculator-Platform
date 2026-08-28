@@ -51,25 +51,53 @@ export function guaranteedIncomeWindow(
 }
 
 /**
- * annuity[social security, r=0%] + annuity[pension, r=0%].
- * Pension is omitted when it is $0. At r = 0% this is payment × years.
+ * Sum of n annual payments that grow at `rate`, starting `firstYearsFromNow` years from today.
+ * At r = 0% this is payment × years.
+ */
+export function growingPaymentSum(payment: number, rate: number, firstYearsFromNow: number, years: number): number {
+  if (years <= 0 || payment <= 0) return 0;
+  if (Math.abs(rate) < 1e-12) return payment * years;
+  return payment * (1 + rate) ** firstYearsFromNow * (((1 + rate) ** years - 1) / rate);
+}
+
+/**
+ * Social Security with COLA (general inflation) plus pension.
+ * Pension is omitted when it is $0. Pension COLA follows `pensionCola`.
  */
 export function guaranteedIncomeAnnuity(input: CalculatorInput): number {
   const ss = guaranteedIncomeWindow(input.socialSecurityStartAge, input);
-  const socialSecurity = futureValueOrdinaryAnnuity(input.socialSecurityAnnual, 0, ss.years);
+  const socialSecurity = growingPaymentSum(
+    input.socialSecurityAnnual,
+    input.inflationRate,
+    ss.start - input.currentAge,
+    ss.years,
+  );
   if (input.pensionAnnual <= 0) return socialSecurity;
   const pension = guaranteedIncomeWindow(input.pensionStartAge, input);
-  return socialSecurity + futureValueOrdinaryAnnuity(input.pensionAnnual, 0, pension.years);
+  const pensionRate = input.pensionCola ? input.inflationRate : 0;
+  return (
+    socialSecurity +
+    growingPaymentSum(input.pensionAnnual, pensionRate, pension.start - input.currentAge, pension.years)
+  );
 }
 
-function guaranteedIncomeAtAge(age: number, input: CalculatorInput): number {
+function streamPay(annual: number, cola: boolean, inflationRate: number, yearsFromNow: number): number {
+  if (annual <= 0) return 0;
+  return cola ? inflate(annual, inflationRate, yearsFromNow) : annual;
+}
+
+function guaranteedIncomeAtAge(age: number, input: CalculatorInput, yearsFromNow: number): number {
   const ss = guaranteedIncomeWindow(input.socialSecurityStartAge, input);
   const socialSecurity =
-    ss.years > 0 && age >= ss.start && age <= ss.end ? input.socialSecurityAnnual : 0;
+    ss.years > 0 && age >= ss.start && age <= ss.end
+      ? streamPay(input.socialSecurityAnnual, true, input.inflationRate, yearsFromNow)
+      : 0;
   if (input.pensionAnnual <= 0) return socialSecurity;
   const pension = guaranteedIncomeWindow(input.pensionStartAge, input);
   const pensionPay =
-    pension.years > 0 && age >= pension.start && age <= pension.end ? input.pensionAnnual : 0;
+    pension.years > 0 && age >= pension.start && age <= pension.end
+      ? streamPay(input.pensionAnnual, input.pensionCola, input.inflationRate, yearsFromNow)
+      : 0;
   return socialSecurity + pensionPay;
 }
 
@@ -193,7 +221,7 @@ function runYears(input: CalculatorInput, straightLine: boolean): YearRow[] {
         ? nestEggAtRetirement(0, investPmt, input.partTimeInvestmentReturn, investYear)
         : 0;
     const contribution = investPmt;
-    const guaranteedIncome = guaranteedIncomeAtAge(age, input);
+    const guaranteedIncome = guaranteedIncomeAtAge(age, input, yearsFromNow);
 
     const partTimeIncome =
       input.partTimeAnnualIncome > 0 &&

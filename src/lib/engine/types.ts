@@ -20,6 +20,8 @@ export type CalculatorInput = {
   socialSecurityStartAge: number;
   pensionAnnual: number;
   pensionStartAge: number;
+  /** When true, pension rises with general inflation. Turn off if this pension has no COLA. */
+  pensionCola: boolean;
   partTimeAnnualIncome: number;
   partTimeStartAge: number;
   partTimeEndAge: number;

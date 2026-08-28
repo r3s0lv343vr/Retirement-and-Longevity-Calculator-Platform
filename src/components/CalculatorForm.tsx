@@ -55,8 +55,8 @@ const GROUPS: {
     id: "income",
     title: "Guaranteed income",
     blurb:
-      "annuity[social security, r=0%] + annuity[pension, r=0%]. Each is a fixed annual amount from its start age, not before the nest-egg cutoff (full-time work ends), through the plan-through age. If pension is $0, only Social Security is used.",
-    keys: ["socialSecurityAnnual", "socialSecurityStartAge", "pensionAnnual", "pensionStartAge"],
+      "Social Security has COLA (rises with general inflation). Pension is added from its start age through the plan-through age, not before the nest-egg cutoff. Turn pension COLA off if that pension does not adjust. If pension is $0, only Social Security is used.",
+    keys: ["socialSecurityAnnual", "socialSecurityStartAge", "pensionAnnual", "pensionStartAge", "pensionCola"],
     columns: 2,
   },
   {
@@ -121,6 +121,10 @@ function displayValue(value: number, kind: string): string {
 
 export function CalculatorForm({ values, onChange, onSubmit, loading, error }: Props) {
   const setField = (key: keyof CalculatorInput, raw: string, kind: string) => {
+    if (kind === "toggle") {
+      onChange({ ...values, [key]: raw === "true" });
+      return;
+    }
     const n = Number(raw);
     if (!Number.isFinite(n)) return;
     const stored = kind === "percent" ? n / 100 : n;
@@ -150,7 +154,10 @@ export function CalculatorForm({ values, onChange, onSubmit, loading, error }: P
                   fieldKey={key}
                   values={values}
                   onChange={setField}
-                  wide={group.id === "work" && key === "partTimeAnnualIncome"}
+                  wide={
+                    (group.id === "work" && key === "partTimeAnnualIncome") ||
+                    (group.id === "income" && key === "pensionCola")
+                  }
                 />
               ))}
             </div>
@@ -212,6 +219,42 @@ function Field({
 }) {
   const meta = FIELD_META[fieldKey];
   const id = `field-${fieldKey}`;
+
+  if (meta.kind === "toggle") {
+    const on = Boolean(values[fieldKey]);
+    return (
+      <div className={`flex min-w-0 flex-col gap-1.5 ${wide ? "sm:col-span-2" : ""}`}>
+        <span>
+          <span className="block text-sm font-medium leading-snug text-ink">{meta.label}</span>
+          {meta.hint ? <span className="mt-0.5 block text-xs leading-snug text-muted">{meta.hint}</span> : null}
+        </span>
+        <div className="grid h-11 grid-cols-2 overflow-hidden rounded-lg border border-pine/15 bg-paper">
+          <button
+            type="button"
+            aria-pressed={on}
+            className={`text-sm font-semibold transition ${
+              on ? "bg-pine text-paper" : "text-muted hover:bg-paper-2"
+            }`}
+            onClick={() => onChange(fieldKey, "true", "toggle")}
+          >
+            On
+          </button>
+          <button
+            type="button"
+            aria-pressed={!on}
+            className={`text-sm font-semibold transition ${
+              !on ? "bg-pine text-paper" : "text-muted hover:bg-paper-2"
+            }`}
+            onClick={() => onChange(fieldKey, "false", "toggle")}
+          >
+            Off
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const numeric = values[fieldKey] as number;
   const step = meta.kind === "percent" || meta.kind === "multiplier" ? "0.1" : meta.kind === "age" ? "1" : "100";
 
   return (
@@ -227,7 +270,7 @@ function Field({
           type="number"
           inputMode="decimal"
           step={step}
-          value={displayValue(values[fieldKey], meta.kind)}
+          value={displayValue(numeric, meta.kind)}
           onChange={(e) => onChange(fieldKey, e.target.value, meta.kind)}
           className={`h-11 w-full min-w-0 rounded-lg border border-pine/15 bg-paper px-3 text-ink outline-none ring-gold/40 focus:ring-2 ${meta.kind === "percent" ? "pr-12" : "pr-3"}`}
         />
