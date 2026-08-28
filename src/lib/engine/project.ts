@@ -28,6 +28,13 @@ export function nestEggAtRetirement(
   return futureValueLump(presentValue, rate, years) + futureValueOrdinaryAnnuity(annualSavings, rate, years);
 }
 
+export function phasedWorkWindow(input: CalculatorInput): { start: number; end: number; years: number } {
+  const start = Math.max(input.partTimeStartAge, input.retirementAge, input.currentAge);
+  const end = input.partTimeEndAge;
+  if (end < start) return { start, end, years: 0 };
+  return { start, end, years: end - start + 1 };
+}
+
 export function lifePhase(age: number, input: CalculatorInput): LifePhase {
   if (age < input.retirementAge) return "working";
   if (age <= input.goGoEndAge) return "go-go";
@@ -91,6 +98,8 @@ function runYears(input: CalculatorInput, straightLine: boolean): YearRow[] {
   const years: YearRow[] = [];
   let balance = input.currentSavings;
   let depleted = false;
+  const workWindow = phasedWorkWindow(input);
+  let investActive = input.partTimeAnnualInvestment > 0;
 
   for (let age = input.currentAge; age <= input.planToAge; age += 1) {
     const yearsFromNow = age - input.currentAge;
@@ -137,7 +146,15 @@ function runYears(input: CalculatorInput, straightLine: boolean): YearRow[] {
 
     const startBalance = Math.max(balance, 0);
     const rate = input.postRetirementReturn;
-    const contribution = 0;
+    const inPhasedWork = age >= workWindow.start && age <= workWindow.end && workWindow.years > 0;
+    const investPmt =
+      investActive && inPhasedWork && input.partTimeAnnualInvestment > 0 ? input.partTimeAnnualInvestment : 0;
+    const investYear = inPhasedWork ? age - workWindow.start + 1 : 0;
+    const sidecar =
+      investPmt > 0 && investYear > 0
+        ? nestEggAtRetirement(0, investPmt, input.partTimeInvestmentReturn, investYear)
+        : 0;
+    const contribution = investPmt;
     const socialSecurity =
       age >= input.socialSecurityStartAge
         ? inflate(input.socialSecurityAnnual, input.inflationRate, yearsFromNow)
@@ -182,21 +199,43 @@ function runYears(input: CalculatorInput, straightLine: boolean): YearRow[] {
 
     const afterCash = startBalance + netCashFlow;
     let growth: number;
+    let mainEnd: number;
     let endBalance: number;
     if (afterCash < 0) {
       growth = 0;
-      endBalance = 0;
-      depleted = true;
+      if (afterCash + sidecar >= 0) {
+        mainEnd = afterCash + sidecar;
+        endBalance = mainEnd;
+        depleted = false;
+        investActive = false;
+      } else {
+        mainEnd = 0;
+        endBalance = 0;
+        depleted = true;
+        investActive = false;
+      }
+      balance = mainEnd;
     } else {
       growth = afterCash * rate;
-      endBalance = afterCash + growth;
+      mainEnd = afterCash + growth;
+      if (inPhasedWork && age < workWindow.end) {
+        endBalance = mainEnd + sidecar;
+        balance = mainEnd;
+      } else if (inPhasedWork && age === workWindow.end) {
+        mainEnd += sidecar;
+        endBalance = mainEnd;
+        balance = mainEnd;
+      } else {
+        endBalance = mainEnd;
+        balance = mainEnd;
+      }
     }
 
     if (endBalance < 0) {
       depleted = true;
       endBalance = 0;
+      balance = 0;
     }
-    balance = endBalance;
 
     years.push({
       age,
@@ -257,7 +296,16 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
   const totalHousingSpend = fundedYears.reduce((s, y) => s + y.housingSpend, 0);
   const totalSpend = totalHealthcareSpend + totalLifestyleSpend + totalLongTermCareSpend + totalHousingSpend;
   const healthcareShare = totalSpend > 0 ? (totalHealthcareSpend + totalLongTermCareSpend + totalHousingSpend) / totalSpend : 0;
-  const partTimeTotal = fundedYears.reduce((s, y) => s + y.partTimeIncome, 0);
+  const partTimeEarned = fundedYears.reduce((s, y) => s + y.partTimeIncome, 0);
+  const window = phasedWorkWindow(input);
+  const investedYears = fundedYears.filter((y) => y.age >= window.start && y.age <= window.end).length;
+  const partTimeInvested = nestEggAtRetirement(
+    0,
+    input.partTimeAnnualInvestment,
+    input.partTimeInvestmentReturn,
+    investedYears,
+  );
+  const partTimeTotal = partTimeEarned + partTimeInvested;
 
   let peakHealthcareAge: number | null = null;
   let peakHealthcareSpend = 0;

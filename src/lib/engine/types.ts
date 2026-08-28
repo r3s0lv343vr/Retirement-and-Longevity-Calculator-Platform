@@ -23,6 +23,8 @@ export type CalculatorInput = {
   partTimeAnnualIncome: number;
   partTimeStartAge: number;
   partTimeEndAge: number;
+  partTimeAnnualInvestment: number;
+  partTimeInvestmentReturn: number;
   goGoEndAge: number;
   slowGoEndAge: number;
   goGoLifestyleMultiplier: number;

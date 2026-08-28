@@ -32,6 +32,7 @@ export function validateInput(input: CalculatorInput): string[] {
     "socialSecurityAnnual",
     "pensionAnnual",
     "partTimeAnnualIncome",
+    "partTimeAnnualInvestment",
     "longTermCareAnnual",
     "seniorHomeRentAnnual",
     "nursingHomeRentAnnual",
@@ -40,6 +41,7 @@ export function validateInput(input: CalculatorInput): string[] {
   const rateKeys: (keyof CalculatorInput)[] = [
     "preRetirementReturn",
     "postRetirementReturn",
+    "partTimeInvestmentReturn",
     "inflationRate",
     "healthcareInflationRate",
   ];
@@ -70,7 +72,10 @@ export function validateInput(input: CalculatorInput): string[] {
   if (input.slowGoEndAge <= input.goGoEndAge) {
     errors.push("Slow-go years must end after go-go years.");
   }
-  if (input.partTimeAnnualIncome > 0 && input.partTimeEndAge < input.partTimeStartAge) {
+  if (
+    (input.partTimeAnnualIncome > 0 || input.partTimeAnnualInvestment > 0) &&
+    input.partTimeEndAge < input.partTimeStartAge
+  ) {
     errors.push("Part-time work must end on or after it starts.");
   }
 

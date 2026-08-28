@@ -75,7 +75,11 @@ export function OutlookResults({ result }: Props) {
         <StatCard
           label="Part-time income (total)"
           value={formatMoney(outlook.partTimeTotal)}
-          note="Inflated side-hustle or phased-work wages after full-time ends."
+          note={
+            result.input.partTimeAnnualInvestment > 0
+              ? "Wages during the window, plus extra savings as an ordinary annuity (or amount × years if the rate is 0%)."
+              : "Inflated side-hustle or phased-work wages after full-time ends."
+          }
         />
       </div>
 

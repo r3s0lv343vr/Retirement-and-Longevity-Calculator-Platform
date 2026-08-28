@@ -350,4 +350,73 @@ describe("project", () => {
     expect(result.outlook.peakHealthcareAge).toBe(90);
     expect(result.outlook.partTimeTotal).toBeCloseTo(371720, 0);
   });
+
+  it("adds phased-work extra savings as amount × years when the rate is 0%", () => {
+    const result = run({
+      currentAge: 65,
+      retirementAge: 65,
+      planToAge: 80,
+      currentSavings: 5_000_000,
+      inflationRate: 0,
+      healthcareInflationRate: 0,
+      partTimeAnnualIncome: 16000,
+      partTimeStartAge: 65,
+      partTimeEndAge: 74,
+      partTimeAnnualInvestment: 1000,
+      partTimeInvestmentReturn: 0,
+      lifestyleSpendToday: 10000,
+      healthcareSpendToday: 0,
+      longTermCareAnnual: 0,
+      socialSecurityAnnual: 0,
+      pensionAnnual: 0,
+      goGoLifestyleMultiplier: 1,
+    });
+    expect(result.outlook.partTimeTotal).toBeCloseTo(16000 * 10 + 1000 * 10);
+    const lastWindow = result.years.find((y) => y.age === 74);
+    const afterWindow = result.years.find((y) => y.age === 75);
+    expect(afterWindow?.startBalance).toBeCloseTo(lastWindow?.endBalance ?? 0);
+  });
+
+  it("adds phased-work extra savings as an ordinary annuity when a rate is set", () => {
+    const result = run({
+      currentAge: 65,
+      retirementAge: 65,
+      planToAge: 80,
+      currentSavings: 5_000_000,
+      inflationRate: 0,
+      healthcareInflationRate: 0,
+      partTimeAnnualIncome: 0,
+      partTimeStartAge: 65,
+      partTimeEndAge: 74,
+      partTimeAnnualInvestment: 1000,
+      partTimeInvestmentReturn: 0.07,
+      lifestyleSpendToday: 10000,
+      healthcareSpendToday: 0,
+      longTermCareAnnual: 0,
+      socialSecurityAnnual: 0,
+      pensionAnnual: 0,
+      goGoLifestyleMultiplier: 1,
+    });
+    const annuity = 1000 * ((1.07 ** 10 - 1) / 0.07);
+    expect(result.outlook.partTimeTotal).toBeCloseTo(annuity);
+  });
+
+  it("keeps only wages × years when extra savings fields are left at zero", () => {
+    const result = run({
+      currentAge: 65,
+      retirementAge: 65,
+      currentSavings: 5_000_000,
+      inflationRate: 0,
+      healthcareInflationRate: 0,
+      partTimeAnnualIncome: 16000,
+      partTimeStartAge: 65,
+      partTimeEndAge: 74,
+      partTimeAnnualInvestment: 0,
+      partTimeInvestmentReturn: 0,
+      lifestyleSpendToday: 10000,
+      healthcareSpendToday: 0,
+      longTermCareAnnual: 0,
+    });
+    expect(result.outlook.partTimeTotal).toBeCloseTo(16000 * 10);
+  });
 });

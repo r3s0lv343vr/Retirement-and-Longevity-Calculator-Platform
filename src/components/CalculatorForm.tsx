@@ -40,8 +40,15 @@ const GROUPS: {
   {
     id: "work",
     title: "Phased work",
-    blurb: "Part-time or side-hustle income after full-time work ends.",
-    keys: ["partTimeAnnualIncome", "partTimeStartAge", "partTimeEndAge"],
+    blurb:
+      "Wages during the window are income × years. You can also invest extra each year: that grows as an ordinary annuity, or as amount × years if the rate is 0%. Leave the extra fields at 0 to skip.",
+    keys: [
+      "partTimeAnnualIncome",
+      "partTimeStartAge",
+      "partTimeEndAge",
+      "partTimeAnnualInvestment",
+      "partTimeInvestmentReturn",
+    ],
     columns: 2,
   },
   {
