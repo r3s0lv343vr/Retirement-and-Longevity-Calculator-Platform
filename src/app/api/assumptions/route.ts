@@ -9,7 +9,7 @@ export async function GET() {
       phases:
         "Go-go, slow-go, and no-go years scale lifestyle spending. Healthcare is inflated separately and rises with age.",
       returns:
-        "The nest egg uses a future-value lump sum plus an ordinary annuity until retirement. Yearly deposits stay level unless you turn on rising savings with inflation. Social Security has COLA (general inflation). A 67 vs 70 claiming compare scales the entered check; the main run does not. Pension is omitted when $0; its COLA can be turned off. A weak first-decade return path is shown beside the usual-return outlook.",
+        "The nest egg uses a future-value lump sum plus an ordinary annuity until retirement. Yearly deposits stay level unless you turn on rising savings with inflation. Social Security has COLA (general inflation). A 67 vs 70 claiming compare scales the entered check; the main run does not. Pension is omitted when $0; its COLA can be turned off. A weak first-decade return path is shown beside the usual-return outlook. Two persons is optional: one household pot, partner income and care, survivor Social Security as the larger check, and a second plan-through age.",
     },
   });
 }

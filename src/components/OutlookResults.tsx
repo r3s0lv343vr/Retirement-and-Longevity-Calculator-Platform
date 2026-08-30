@@ -87,6 +87,8 @@ export function OutlookResults({ result, adoptedBudget = null, onAdoptComfort, a
 
       <WhatIfCompare result={result} />
 
+      <HouseholdSurvivorCard result={result} />
+
       <ClaimingCompareCard result={result} />
 
       <div className="space-y-4">
@@ -252,6 +254,7 @@ export function OutlookResults({ result, adoptedBudget = null, onAdoptComfort, a
             <thead>
               <tr className="border-b border-pine/15 text-muted">
                 <th className="py-2 pr-3 font-medium">Age</th>
+                {result.input.twoPerson ? <th className="py-2 pr-3 font-medium">Partner</th> : null}
                 <th className="py-2 pr-3 font-medium">Phase</th>
                 <th className="py-2 pr-3 font-medium">Lifestyle</th>
                 <th className="py-2 pr-3 font-medium">Healthcare</th>
@@ -264,6 +267,18 @@ export function OutlookResults({ result, adoptedBudget = null, onAdoptComfort, a
               {sampleYears.map((row) => (
                 <tr key={row.age} className="border-b border-pine/8">
                   <td className="py-2 pr-3">{row.age}</td>
+                  {result.input.twoPerson ? (
+                    <td className="py-2 pr-3">
+                      {row.partnerAge ?? "—"}
+                      {!row.primaryAlive || !row.partnerAlive
+                        ? !row.primaryAlive && !row.partnerAlive
+                          ? ""
+                          : row.primaryAlive
+                            ? " (you)"
+                            : " (partner)"
+                        : ""}
+                    </td>
+                  ) : null}
                   <td className="py-2 pr-3">{PHASE_LABEL[row.phase]}</td>
                   <td className="py-2 pr-3">{formatMoney(row.lifestyleSpend)}</td>
                   <td className="py-2 pr-3">{formatMoney(row.healthcareSpend + row.longTermCareSpend)}</td>
@@ -284,6 +299,52 @@ export function OutlookResults({ result, adoptedBudget = null, onAdoptComfort, a
   );
 }
 
+function HouseholdSurvivorCard({ result }: { result: ProjectionResult }) {
+  const { outlook, input } = result;
+  if (!input.twoPerson) return null;
+  const firstDeath = outlook.firstDeathPrimaryAge;
+  const afterDeath = firstDeath != null ? result.years.find((y) => y.age === firstDeath + 1) : null;
+  return (
+    <section className="card">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Household — entered plan</p>
+      <h3 className="mt-2 font-serif text-2xl text-pine">Two persons and the survivor</h3>
+      <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
+        One nest egg and one set of market returns. While both are alive, both Social Security and pension checks
+        count. After the first death, Social Security becomes the larger of the two checks; a pension continues only by
+        the survivor share on the form. Lifestyle then uses the survivor factor (
+        {(input.survivorLifestyleFactor * 100).toFixed(0)}%). If only one person is in nursing, household lifestyle is
+        not cut.
+      </p>
+      <dl className="mt-5 grid gap-4 sm:grid-cols-3">
+        <div>
+          <dt className="text-xs uppercase tracking-wide text-muted">Plan through (you / partner)</dt>
+          <dd className="mt-1 font-serif text-2xl text-ink">
+            {input.planToAge} / {input.partnerPlanToAge}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs uppercase tracking-wide text-muted">First death</dt>
+          <dd className="mt-1 font-serif text-2xl text-ink">
+            {firstDeath == null
+              ? "Same year"
+              : afterDeath && afterDeath.primaryAlive && !afterDeath.partnerAlive
+                ? `Partner, your age ${firstDeath}`
+                : `You, age ${firstDeath}`}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs uppercase tracking-wide text-muted">Funded through</dt>
+          <dd className="mt-1 font-serif text-2xl text-ink">
+            {outlook.fundedThroughAge}
+            {outlook.partnerFundedThroughAge != null ? ` / ${outlook.partnerFundedThroughAge}` : ""}
+          </dd>
+          <p className="mt-1 text-xs text-muted">Your age / partner age in that year.</p>
+        </div>
+      </dl>
+    </section>
+  );
+}
+
 function ClaimingCompareCard({ result }: { result: ProjectionResult }) {
   const { outlook, input } = result;
   const enteredAnnual = input.socialSecurityAnnual;
@@ -293,9 +354,10 @@ function ClaimingCompareCard({ result }: { result: ProjectionResult }) {
       <h3 className="mt-2 font-serif text-2xl text-pine">Claim at 67 vs 70</h3>
       <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
         Your outlook still uses the check and start age on the form ({formatMoney(enteredAnnual)} starting at{" "}
-        {input.socialSecurityStartAge}). This compare scales that check the way delayed retirement credits work in the
-        U.S. — full retirement age 67, and age 70 is 24% higher — then runs the same spending path with fewer years of
-        checks.
+        {input.socialSecurityStartAge}
+        {input.twoPerson ? "; this compare is the first person’s check" : ""}). This compare scales that check the way
+        delayed retirement credits work in the U.S. — full retirement age 67, and age 70 is 24% higher — then runs the
+        same spending path with fewer years of checks.
       </p>
       <dl className="mt-5 grid gap-4 sm:grid-cols-2">
         <div className="rounded-xl border border-pine/10 bg-paper-2/40 p-4">

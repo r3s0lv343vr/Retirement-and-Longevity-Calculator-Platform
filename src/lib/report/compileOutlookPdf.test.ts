@@ -38,6 +38,7 @@ describe("compileOutlookPdf", () => {
     expect(text).toContain("Claim at 70");
     expect(text).toContain("weak first decade");
     expect(text).toContain("Raise yearly saving with inflation");
+    expect(text).toContain("Two persons");
   });
 
   it("includes surplus wording when leftover savings last past the plan", () => {
@@ -52,6 +53,17 @@ describe("compileOutlookPdf", () => {
     expect(result.outlook.surpassesRequiredMonths).toBe(true);
     expect(text).toContain("This surpasses the required");
     expect(text).toContain(formatMoney(result.outlook.remainingSavings));
+  });
+
+  it("includes household survivor wording when two persons is on", () => {
+    const result = project({
+      ...DEFAULT_INPUT,
+      twoPerson: true,
+      partnerSocialSecurityAnnual: 18000,
+    });
+    const text = pdfLatin1(compileOutlookPdf(result));
+    expect(text).toContain("Two persons and the survivor");
+    expect(text).toContain("Partner Social Security / year");
   });
 
   it("includes remaining-expense wording when capital runs out", () => {

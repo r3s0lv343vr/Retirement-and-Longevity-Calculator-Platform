@@ -25,6 +25,7 @@ const INPUT_GROUPS: { id: CalculatorInputGroup; label: string }[] = [
   { id: "savings", label: "Savings and growth" },
   { id: "work", label: "Phased work" },
   { id: "income", label: "Guaranteed income" },
+  { id: "partner", label: "Second person" },
   { id: "spending", label: "Spending" },
   { id: "housing", label: "Later-life housing" },
   { id: "assumptions", label: "Rates" },
@@ -44,7 +45,7 @@ export function compileOutlookPdf(result: ProjectionResult, generatedAt = new Da
   writer.enteredPlan(result);
   writer.portfolioChart(result.years);
   writer.capitalMonths(result.outlook);
-  writer.yearByYear(result.years);
+  writer.yearByYear(result.years, result.input.twoPerson);
   writer.assumptions(result.input);
   writer.closing();
   return writer.doc.output("arraybuffer");
@@ -201,6 +202,29 @@ class ReportWriter {
     );
     this.lineKV("Part-time income (total)", formatMoney(outlook.partTimeTotal));
 
+    if (input.twoPerson) {
+      this.space(8);
+      this.subhead("Two persons and the survivor");
+      this.lineKV("Plan through (you / partner)", `${input.planToAge} / ${input.partnerPlanToAge}`);
+      this.lineKV(
+        "Household horizon (your age)",
+        `Age ${outlook.householdHorizonAge}`,
+      );
+      this.lineKV(
+        "First death (your age)",
+        outlook.firstDeathPrimaryAge == null ? "Same year" : `Age ${outlook.firstDeathPrimaryAge}`,
+      );
+      this.lineKV(
+        "Funded through (you / partner)",
+        outlook.partnerFundedThroughAge != null
+          ? `${outlook.fundedThroughAge} / ${outlook.partnerFundedThroughAge}`
+          : String(outlook.fundedThroughAge),
+      );
+      this.body(
+        "One nest egg and one set of market returns. After the first death, Social Security becomes the larger of the two checks; a pension continues only by the survivor share on the form. Lifestyle then uses the survivor factor. If only one person is in nursing, household lifestyle is not cut.",
+      );
+    }
+
     this.space(8);
     this.subhead("Not a straight line");
     const straight =
@@ -280,35 +304,57 @@ class ReportWriter {
     );
   }
 
-  yearByYear(years: YearRow[]) {
+  yearByYear(years: YearRow[], twoPerson = false) {
     const retired = years.filter((y) => y.phase !== "working");
     const rows = retired.length > 0 ? retired : years;
     this.ensure(80);
     this.section("Year-by-year snapshot", "Every retirement year from this run.");
 
-    const cols = [
-      { label: "Age", w: 36 },
-      { label: "Phase", w: 70 },
-      { label: "Lifestyle", w: 78 },
-      { label: "Healthcare", w: 78 },
-      { label: "Housing", w: 78 },
-      { label: "Income", w: 78 },
-      { label: "Balance", w: 86 },
-    ];
+    const cols = twoPerson
+      ? [
+          { label: "Age", w: 32 },
+          { label: "Partner", w: 40 },
+          { label: "Phase", w: 58 },
+          { label: "Lifestyle", w: 70 },
+          { label: "Healthcare", w: 70 },
+          { label: "Housing", w: 70 },
+          { label: "Income", w: 70 },
+          { label: "Balance", w: 74 },
+        ]
+      : [
+          { label: "Age", w: 36 },
+          { label: "Phase", w: 70 },
+          { label: "Lifestyle", w: 78 },
+          { label: "Healthcare", w: 78 },
+          { label: "Housing", w: 78 },
+          { label: "Income", w: 78 },
+          { label: "Balance", w: 86 },
+        ];
 
     this.tableHeader(cols);
     for (const row of rows) {
       this.ensure(18);
       if (this.y < MARGIN + 40) this.tableHeader(cols);
-      const values = [
-        String(row.age),
-        PHASE_LABEL[row.phase],
-        formatMoney(row.lifestyleSpend),
-        formatMoney(row.healthcareSpend + row.longTermCareSpend),
-        formatMoney(row.housingSpend),
-        formatMoney(row.guaranteedIncome + row.partTimeIncome),
-        formatMoney(row.endBalance),
-      ];
+      const values = twoPerson
+        ? [
+            String(row.age),
+            row.partnerAge == null ? "--" : String(row.partnerAge),
+            PHASE_LABEL[row.phase],
+            formatMoney(row.lifestyleSpend),
+            formatMoney(row.healthcareSpend + row.longTermCareSpend),
+            formatMoney(row.housingSpend),
+            formatMoney(row.guaranteedIncome + row.partTimeIncome),
+            formatMoney(row.endBalance),
+          ]
+        : [
+            String(row.age),
+            PHASE_LABEL[row.phase],
+            formatMoney(row.lifestyleSpend),
+            formatMoney(row.healthcareSpend + row.longTermCareSpend),
+            formatMoney(row.housingSpend),
+            formatMoney(row.guaranteedIncome + row.partTimeIncome),
+            formatMoney(row.endBalance),
+          ];
       this.tableRow(cols, values);
     }
   }

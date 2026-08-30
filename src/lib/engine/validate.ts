@@ -28,7 +28,12 @@ export function mergeInput(payload: CalculatorPayload | null | undefined): Calcu
   const src = payload ?? {};
   const merged = { ...DEFAULT_INPUT };
   (Object.keys(DEFAULT_INPUT) as (keyof CalculatorInput)[]).forEach((key) => {
-    if (key === "pensionCola" || key === "savingsGrowWithInflation") {
+    if (
+      key === "pensionCola" ||
+      key === "savingsGrowWithInflation" ||
+      key === "twoPerson" ||
+      key === "partnerPensionCola"
+    ) {
       merged[key] = asBoolean(src[key], DEFAULT_INPUT[key]);
       return;
     }
@@ -52,6 +57,12 @@ export function validateInput(input: CalculatorInput): string[] {
     "seniorHomeRentAnnual",
     "nursingHomeRentAnnual",
     "ccrcRentAnnual",
+    "partnerSocialSecurityAnnual",
+    "partnerPensionAnnual",
+    "partnerPartTimeAnnualIncome",
+    "partnerHealthcareSpendToday",
+    "partnerLongTermCareAnnual",
+    "partnerNursingHomeRentAnnual",
   ];
   const rateKeys: (keyof CalculatorInput)[] = [
     "preRetirementReturn",
@@ -64,7 +75,9 @@ export function validateInput(input: CalculatorInput): string[] {
     "goGoLifestyleMultiplier",
     "slowGoLifestyleMultiplier",
     "noGoLifestyleMultiplier",
+    "survivorLifestyleFactor",
   ];
+  const survivorShareKeys: (keyof CalculatorInput)[] = ["pensionSurvivorPercent", "partnerPensionSurvivorPercent"];
 
   if (input.currentAge < 18 || input.currentAge > 90) {
     errors.push("Current age must be between 18 and 90.");
@@ -93,6 +106,20 @@ export function validateInput(input: CalculatorInput): string[] {
   ) {
     errors.push("Part-time work must end on or after it starts.");
   }
+  if (input.twoPerson) {
+    if (input.partnerCurrentAge < 18 || input.partnerCurrentAge > 90) {
+      errors.push("Partner age must be between 18 and 90.");
+    }
+    if (input.partnerPlanToAge < input.partnerCurrentAge) {
+      errors.push("Partner plan-through age must be on or after their current age.");
+    }
+    if (input.partnerPlanToAge > MAX_AGE) {
+      errors.push("Partner plan-through age cannot exceed 120.");
+    }
+    if (input.partnerPartTimeAnnualIncome > 0 && input.partnerPartTimeEndAge < input.partnerPartTimeStartAge) {
+      errors.push("Partner part-time work must end on or after it starts.");
+    }
+  }
 
   for (const key of moneyKeys) {
     const value = input[key] as number;
@@ -110,6 +137,12 @@ export function validateInput(input: CalculatorInput): string[] {
     const value = input[key] as number;
     if (value < 0.2 || value > 2.5) {
       errors.push(`${key} must be between 0.2 and 2.5.`);
+    }
+  }
+  for (const key of survivorShareKeys) {
+    const value = input[key] as number;
+    if (value < 0 || value > 1) {
+      errors.push(`${key} must be between 0% and 100%.`);
     }
   }
 
@@ -135,6 +168,12 @@ export function warningsFor(input: CalculatorInput): string[] {
   }
   if (input.nursingHomeRentAnnual > 0 && input.nursingHomeStartAge < input.seniorHomeStartAge && input.seniorHomeRentAnnual > 0) {
     warnings.push("Nursing home starts before senior rental, so independent-living rent will never be charged.");
+  }
+  if (input.twoPerson && input.partnerPlanToAge < 90) {
+    warnings.push("The partner plan-through age is below 90. A shorter second horizon can look safer than it is.");
+  }
+  if (input.twoPerson && input.partnerNursingHomeRentAnnual > 0 && input.nursingHomeRentAnnual > 0) {
+    warnings.push("Two nursing rents can both apply in the same year if both people are alive and in care.");
   }
   return warnings;
 }

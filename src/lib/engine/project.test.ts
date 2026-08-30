@@ -101,6 +101,13 @@ describe("validateInput", () => {
     expect(mergeInput({ savingsGrowWithInflation: true }).savingsGrowWithInflation).toBe(true);
     expect(mergeInput({ savingsGrowWithInflation: "on" as unknown as boolean }).savingsGrowWithInflation).toBe(true);
   });
+
+  it("reads two persons as a boolean and defaults it to off", () => {
+    expect(mergeInput({}).twoPerson).toBe(false);
+    expect(mergeInput({ twoPerson: true }).twoPerson).toBe(true);
+    expect(mergeInput({ twoPerson: "on" as unknown as boolean }).twoPerson).toBe(true);
+    expect(mergeInput({ partnerPensionCola: "off" as unknown as boolean }).partnerPensionCola).toBe(false);
+  });
 });
 
 describe("social security claiming factors", () => {
@@ -659,5 +666,146 @@ describe("project", () => {
     expect(result.outlook.badDecadeReturn).toBeCloseTo(badDecadeReturn(result.input.postRetirementReturn));
     expect(result.outlook.badDecadeFundedThroughAge).toBeLessThanOrEqual(result.outlook.fundedThroughAge);
     expect(result.outlook.badDecadeGapYears).toBeGreaterThanOrEqual(0);
+  });
+
+  it("keeps the one-person path when two persons is on but the partner matches and adds no money", () => {
+    const one = run();
+    const two = run({
+      twoPerson: true,
+      partnerCurrentAge: DEFAULT_INPUT.currentAge,
+      partnerPlanToAge: DEFAULT_INPUT.planToAge,
+      partnerSocialSecurityAnnual: 0,
+      partnerPensionAnnual: 0,
+      partnerPartTimeAnnualIncome: 0,
+      partnerHealthcareSpendToday: 0,
+      partnerLongTermCareAnnual: 0,
+      partnerNursingHomeRentAnnual: 0,
+    });
+    expect(two.outlook.householdHorizonAge).toBe(DEFAULT_INPUT.planToAge);
+    expect(two.outlook.fundedThroughAge).toBe(one.outlook.fundedThroughAge);
+    expect(two.years.filter((y) => y.age <= DEFAULT_INPUT.planToAge).map((y) => y.endBalance)).toEqual(
+      one.years.map((y) => y.endBalance),
+    );
+  });
+
+  it("keeps the larger Social Security check after the first death", () => {
+    const result = run({
+      twoPerson: true,
+      currentAge: 65,
+      retirementAge: 65,
+      planToAge: 80,
+      partnerCurrentAge: 65,
+      partnerPlanToAge: 70,
+      currentSavings: 5_000_000,
+      inflationRate: 0,
+      healthcareInflationRate: 0,
+      socialSecurityAnnual: 20000,
+      socialSecurityStartAge: 65,
+      partnerSocialSecurityAnnual: 30000,
+      partnerSocialSecurityStartAge: 65,
+      pensionAnnual: 0,
+      partnerPensionAnnual: 0,
+      partTimeAnnualIncome: 0,
+      partnerPartTimeAnnualIncome: 0,
+      lifestyleSpendToday: 1000,
+      healthcareSpendToday: 0,
+      partnerHealthcareSpendToday: 0,
+      longTermCareAnnual: 0,
+      goGoLifestyleMultiplier: 1,
+    });
+    expect(result.years.find((y) => y.age === 70)?.guaranteedIncome).toBeCloseTo(50000);
+    expect(result.years.find((y) => y.age === 71)?.guaranteedIncome).toBeCloseTo(30000);
+    expect(result.years.find((y) => y.age === 71)?.primaryAlive).toBe(true);
+    expect(result.years.find((y) => y.age === 71)?.partnerAlive).toBe(false);
+    expect(result.outlook.firstDeathPrimaryAge).toBe(70);
+  });
+
+  it("continues a pension only by the survivor share", () => {
+    const result = run({
+      twoPerson: true,
+      currentAge: 65,
+      retirementAge: 65,
+      planToAge: 70,
+      partnerCurrentAge: 65,
+      partnerPlanToAge: 80,
+      currentSavings: 5_000_000,
+      inflationRate: 0,
+      healthcareInflationRate: 0,
+      socialSecurityAnnual: 0,
+      partnerSocialSecurityAnnual: 0,
+      pensionAnnual: 12000,
+      pensionStartAge: 65,
+      pensionCola: false,
+      pensionSurvivorPercent: 0.5,
+      partnerPensionAnnual: 0,
+      partTimeAnnualIncome: 0,
+      lifestyleSpendToday: 1000,
+      healthcareSpendToday: 0,
+      longTermCareAnnual: 0,
+      goGoLifestyleMultiplier: 1,
+    });
+    expect(result.years.find((y) => y.age === 70)?.guaranteedIncome).toBeCloseTo(12000);
+    expect(result.years.find((y) => y.age === 71)?.guaranteedIncome).toBeCloseTo(6000);
+  });
+
+  it("adds a second side hustle on the partner’s ages", () => {
+    const result = run({
+      twoPerson: true,
+      currentAge: 65,
+      retirementAge: 65,
+      planToAge: 75,
+      partnerCurrentAge: 63,
+      partnerPlanToAge: 75,
+      currentSavings: 5_000_000,
+      inflationRate: 0,
+      healthcareInflationRate: 0,
+      partTimeAnnualIncome: 0,
+      partnerPartTimeAnnualIncome: 10000,
+      partnerPartTimeStartAge: 63,
+      partnerPartTimeEndAge: 68,
+      socialSecurityAnnual: 0,
+      partnerSocialSecurityAnnual: 0,
+      lifestyleSpendToday: 1000,
+      healthcareSpendToday: 0,
+      longTermCareAnnual: 0,
+      goGoLifestyleMultiplier: 1,
+    });
+    expect(result.years.find((y) => y.age === 65)?.partTimeIncome).toBeCloseTo(10000);
+    expect(result.years.find((y) => y.age === 70)?.partTimeIncome).toBeCloseTo(10000);
+    expect(result.years.find((y) => y.age === 71)?.partTimeIncome).toBe(0);
+    expect(result.outlook.householdHorizonAge).toBe(77);
+  });
+
+  it("does not cut household lifestyle when only one person is in nursing", () => {
+    const result = run({
+      twoPerson: true,
+      currentAge: 70,
+      retirementAge: 65,
+      planToAge: 80,
+      partnerCurrentAge: 70,
+      partnerPlanToAge: 80,
+      currentSavings: 5_000_000,
+      inflationRate: 0,
+      healthcareInflationRate: 0,
+      lifestyleSpendToday: 50000,
+      healthcareSpendToday: 0,
+      partnerHealthcareSpendToday: 0,
+      longTermCareAnnual: 0,
+      partnerLongTermCareAnnual: 0,
+      nursingHomeRentAnnual: 100000,
+      nursingHomeStartAge: 72,
+      partnerNursingHomeRentAnnual: 0,
+      ccrcRentAnnual: 0,
+      seniorHomeRentAnnual: 0,
+      socialSecurityAnnual: 0,
+      partnerSocialSecurityAnnual: 0,
+      partTimeAnnualIncome: 0,
+      goGoLifestyleMultiplier: 1,
+      slowGoLifestyleMultiplier: 1,
+      noGoLifestyleMultiplier: 1,
+    });
+    const row = result.years.find((y) => y.age === 74);
+    expect(row?.housingSpend).toBeCloseTo(100000);
+    expect(row?.lifestyleSpend).toBeCloseTo(50000);
   });
 });
