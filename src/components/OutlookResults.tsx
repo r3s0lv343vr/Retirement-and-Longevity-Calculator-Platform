@@ -46,7 +46,7 @@ export function OutlookResults({ result }: Props) {
 
       {comfort ? <ComfortEstimateCard comfort={comfort} currentSavings={result.input.currentSavings} /> : null}
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-2">
         <BreakdownCard
           title="Nest egg at retirement"
           total={outlook.nestEggAtRetirement}
@@ -72,9 +72,20 @@ export function OutlookResults({ result }: Props) {
           ]}
         />
         <BreakdownCard
+          title="All spending through last funded year"
+          total={outlook.totalRetirementSpend}
+          note={`Lifestyle plus healthcare through age ${outlook.fundedThroughAge}. Healthcare is only part of this total. Nest egg plus later income is ${formatMoney(outlook.nestEggAtRetirement + outlook.retirementIncomeTotal)}; remaining-balance growth in retirement covers some of the difference.`}
+          rows={[
+            { label: "Lifestyle", value: outlook.totalLifestyleSpend },
+            { label: "Routine healthcare", value: outlook.totalHealthcareSpend },
+            { label: "Long-term care", value: outlook.totalLongTermCareSpend },
+            { label: "Later-life facility rent", value: outlook.totalHousingSpend },
+          ]}
+        />
+        <BreakdownCard
           title="Healthcare and care"
           total={outlook.totalMedicalSpend}
-          note={`Totals through the last funded year (age ${outlook.fundedThroughAge}). Routine care uses medical inflation and age steps; long-term care starts at the age you set; facility rent is later-life housing only.`}
+          note={`Medical slice only — ${formatPercent(outlook.healthcareShare)} of all spending. Routine care uses medical inflation and age steps; long-term care starts at the age you set; facility rent is later-life housing only.`}
           rows={[
             { label: "Routine healthcare", value: outlook.totalHealthcareSpend },
             { label: "Long-term care", value: outlook.totalLongTermCareSpend },
