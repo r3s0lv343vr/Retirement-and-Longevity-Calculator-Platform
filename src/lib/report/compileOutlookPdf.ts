@@ -363,9 +363,17 @@ class ReportWriter {
     this.ensure(80);
     this.section("Inputs used for this report", "Copied from the form at the moment you compiled this PDF.");
     for (const group of INPUT_GROUPS) {
-      const keys = (Object.keys(FIELD_META) as (keyof CalculatorInput)[]).filter(
-        (key) => FIELD_META[key].group === group.id,
-      );
+      const keys = (Object.keys(FIELD_META) as (keyof CalculatorInput)[]).filter((key) => {
+        if (FIELD_META[key].group !== group.id) return false;
+        if (
+          !input.twoPerson &&
+          (FIELD_META[key].group === "partner" || key === "partnerCurrentAge" || key === "partnerPlanToAge")
+        ) {
+          return false;
+        }
+        return true;
+      });
+      if (keys.length === 0) continue;
       this.ensure(22 + keys.length * 14);
       this.subhead(group.label);
       for (const key of keys) {

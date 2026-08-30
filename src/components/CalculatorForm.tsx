@@ -25,7 +25,7 @@ const GROUPS: {
   {
     id: "timeline",
     title: "Your timeline",
-    blurb: "When work tapers off, and how long you want the money to last. Turn on two persons for a partner card — these three cells stay put.",
+    blurb: "When work tapers off, and how long you want the money to last. Two persons adds the partner’s age and plan-through age on this card.",
     keys: ["currentAge", "retirementAge", "planToAge", "twoPerson"],
     columns: 3,
   },
@@ -63,10 +63,8 @@ const GROUPS: {
     id: "partner",
     title: "Second person",
     blurb:
-      "Partner age, their plan-through age, their Social Security and pension, a second side hustle, and their care. After the first death, household Social Security becomes the larger check; a pension continues only by the survivor share you set. Lifestyle then uses the survivor factor. One nest egg and one set of market returns.",
+      "Partner Social Security and pension, a second side hustle, and their care. Their age and plan-through age are on Your timeline. After the first death, household Social Security becomes the larger check; a pension continues only by the survivor share you set. Lifestyle then uses the survivor factor. One nest egg and one set of market returns.",
     keys: [
-      "partnerCurrentAge",
-      "partnerPlanToAge",
       "partnerSocialSecurityAnnual",
       "partnerSocialSecurityStartAge",
       "partnerPensionAnnual",
@@ -189,7 +187,7 @@ export function CalculatorForm({ values, onChange, onSubmit, loading, error }: P
                 group.columns === 3 ? "sm:grid-cols-3" : "sm:grid-cols-2"
               }`}
             >
-              {group.keys.map((key) => (
+              {visibleKeys(group, values.twoPerson).map((key) => (
                 <Field
                   key={key}
                   fieldKey={key}
@@ -250,6 +248,16 @@ export function CalculatorForm({ values, onChange, onSubmit, loading, error }: P
   );
 }
 
+function visibleKeys(
+  group: (typeof GROUPS)[number],
+  twoPerson: boolean,
+): (keyof CalculatorInput)[] {
+  if (group.id === "timeline" && twoPerson) {
+    return [...group.keys, "partnerCurrentAge", "partnerPlanToAge"];
+  }
+  return group.keys;
+}
+
 function Field({
   fieldKey,
   values,
@@ -267,7 +275,7 @@ function Field({
   if (meta.kind === "toggle") {
     const on = Boolean(values[fieldKey]);
     return (
-      <div className={`flex min-w-0 flex-col gap-1.5 ${wide ? "sm:col-span-2" : ""}`}>
+      <div className={`flex min-w-0 flex-col gap-1.5 ${wide ? "sm:col-span-full" : ""}`}>
         <span>
           <span className="block text-sm font-medium leading-snug text-ink">{meta.label}</span>
           {meta.hint ? <span className="mt-0.5 block text-xs leading-snug text-muted">{meta.hint}</span> : null}
@@ -302,7 +310,7 @@ function Field({
   const step = meta.kind === "percent" || meta.kind === "multiplier" ? "0.1" : meta.kind === "age" ? "1" : "100";
 
   return (
-    <label htmlFor={id} className={`flex min-w-0 flex-col gap-1.5 ${wide ? "sm:col-span-2" : ""}`}>
+    <label htmlFor={id} className={`flex min-w-0 flex-col gap-1.5 ${wide ? "sm:col-span-full" : ""}`}>
       <span>
         <span className="block text-sm font-medium leading-snug text-ink">{meta.label}</span>
         {meta.hint ? <span className="mt-0.5 block text-xs leading-snug text-muted">{meta.hint}</span> : null}
