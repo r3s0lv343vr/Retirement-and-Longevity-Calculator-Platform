@@ -95,6 +95,13 @@ export type Outlook = {
   straightLineEndingBalance: number;
   longevityGapYears: number;
   lastYearSpend: number;
+  requiredMonths: number;
+  coveredMonths: number;
+  surplusMonths: number;
+  accumulatedMonths: number;
+  surpassesRequiredMonths: boolean;
+  remainingSavings: number;
+  remainingExpenseNeed: number;
 };
 
 export type ComfortEstimate = {
