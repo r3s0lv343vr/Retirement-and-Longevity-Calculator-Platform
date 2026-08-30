@@ -1,4 +1,5 @@
 import { jsPDF } from "jspdf";
+import { buildOutlookChartModel } from "@/lib/chart/outlookChart";
 import { FIELD_META } from "@/lib/engine";
 import type { CalculatorInput, ComfortEstimate, Outlook, ProjectionResult, YearRow } from "@/lib/engine";
 import { formatMoney, formatMonths, formatPercent } from "@/lib/format";
@@ -41,6 +42,7 @@ export function compileOutlookPdf(result: ProjectionResult, generatedAt = new Da
   writer.cover(result);
   writer.comfort(result);
   writer.enteredPlan(result);
+  writer.portfolioChart(result.years);
   writer.capitalMonths(result.outlook);
   writer.yearByYear(result.years);
   writer.assumptions(result.input);
@@ -215,6 +217,19 @@ class ReportWriter {
         this.body(`- ${warning}`);
       }
     }
+  }
+
+  portfolioChart(years: YearRow[]) {
+    const chartH = 168;
+    this.ensure(chartH + 90);
+    this.section("Portfolio vs. changing costs", "Entered-plan chart");
+    this.body(
+      "The green line is the nest egg. The dollar figure at the top left is the peak portfolio, not a year of spending. Bars are each year of drawdown on a smaller scale: beige is total spending, brown is healthcare, long-term care, and facility rent.",
+    );
+    this.space(8);
+    this.drawChart(years, CONTENT_W, chartH);
+    this.y += 10;
+    this.muted("Portfolio line. Beige bars: total spending. Brown bars: healthcare, care, and housing.");
   }
 
   capitalMonths(outlook: Outlook) {
@@ -439,6 +454,60 @@ class ReportWriter {
     this.doc.setDrawColor(220, 214, 200);
     this.doc.setLineWidth(0.4);
     this.doc.line(MARGIN, this.y - 10, PAGE_W - MARGIN, this.y - 10);
+  }
+
+  private drawChart(years: YearRow[], drawW: number, drawH: number) {
+    const model = buildOutlookChartModel(years);
+    const originX = MARGIN;
+    const originY = this.y;
+    const sx = drawW / model.width;
+    const sy = drawH / model.height;
+    const mapX = (x: number) => originX + x * sx;
+    const mapY = (y: number) => originY + y * sy;
+
+    this.doc.setFillColor(255, 255, 255);
+    this.doc.rect(originX, originY, drawW, drawH, "F");
+    this.doc.setDrawColor(220, 214, 200);
+    this.doc.setLineWidth(0.6);
+    this.doc.rect(originX, originY, drawW, drawH, "S");
+
+    const innerH = model.height - model.pad.top - model.pad.bottom;
+    this.doc.setDrawColor(20, 34, 28);
+    this.doc.setLineWidth(0.3);
+    for (let i = 0; i < 4; i += 1) {
+      const yy = mapY(model.pad.top + (innerH * i) / 3);
+      this.doc.line(mapX(model.pad.left), yy, mapX(model.width - model.pad.right), yy);
+    }
+
+    for (const bar of model.bars) {
+      this.doc.setFillColor(230, 212, 168);
+      this.doc.rect(mapX(bar.x), mapY(bar.totalY), bar.width * sx, bar.totalH * sy, "F");
+      this.doc.setFillColor(184, 92, 56);
+      this.doc.rect(mapX(bar.x), mapY(bar.medicalY), bar.width * sx, bar.medicalH * sy, "F");
+    }
+
+    if (model.line.length > 1) {
+      this.doc.setDrawColor(...PINE);
+      this.doc.setLineWidth(1.6);
+      for (let i = 1; i < model.line.length; i += 1) {
+        const a = model.line[i - 1];
+        const b = model.line[i];
+        this.doc.line(mapX(a.x), mapY(a.y), mapX(b.x), mapY(b.y));
+      }
+    }
+
+    this.doc.setFont("helvetica", "normal");
+    this.doc.setFontSize(8);
+    this.doc.setTextColor(...MUTED);
+    this.doc.text(`Peak ${formatMoney(model.maxBalance)}`, mapX(8), mapY(16));
+    const span = Math.max(model.maxAge - model.minAge, 1);
+    for (const age of model.ageTicks) {
+      const x =
+        model.pad.left + ((age - model.minAge) / span) * (model.width - model.pad.left - model.pad.right);
+      this.doc.text(String(age), mapX(x), mapY(model.height - 10), { align: "center" });
+    }
+
+    this.y = originY + drawH + 8;
   }
 }
 

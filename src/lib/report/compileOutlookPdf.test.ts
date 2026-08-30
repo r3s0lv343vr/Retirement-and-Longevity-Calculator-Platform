@@ -29,6 +29,8 @@ describe("compileOutlookPdf", () => {
     expect(text).toContain("Nest egg + later income");
     expect(text).toContain("Comfortable living");
     expect(text).toContain("Year-by-year snapshot");
+    expect(text).toContain("Portfolio vs. changing costs");
+    expect(text).toContain("Peak");
     expect(text).toContain("Current retirement savings");
     expect(text).toContain("Not stored on a server");
     expect(text).toContain(String(result.outlook.fundedThroughAge));
