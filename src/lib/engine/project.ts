@@ -74,9 +74,26 @@ export function badDecadeReturn(usual: number): number {
   return Math.max(0, usual - BAD_DECADE_RETURN_CUT);
 }
 
-/** Accumulation years until full-time work ends. Already retired → 0. */
+/** Partner’s work-end, expressed as the first person’s age that year. */
+export function partnerRetirementPrimaryAge(input: CalculatorInput): number {
+  return input.currentAge + (input.partnerRetirementAge - input.partnerCurrentAge);
+}
+
+/** First year household spending is taken from the nest egg. Earlier of the two work-ends. */
+export function drawdownStartPrimaryAge(input: CalculatorInput): number {
+  if (!input.twoPerson) return input.retirementAge;
+  return Math.min(input.retirementAge, partnerRetirementPrimaryAge(input));
+}
+
+/** Last year household yearly saving is deposited. Later of the two work-ends. */
+export function savingEndPrimaryAge(input: CalculatorInput): number {
+  if (!input.twoPerson) return input.retirementAge;
+  return Math.max(input.retirementAge, partnerRetirementPrimaryAge(input));
+}
+
+/** Accumulation years until household drawdowns begin. Already in drawdown → 0. */
 export function nestEggYears(input: CalculatorInput): number {
-  return Math.max(0, input.retirementAge - input.currentAge);
+  return Math.max(0, drawdownStartPrimaryAge(input) - input.currentAge);
 }
 
 export function nestEggBreakdown(input: CalculatorInput): {
@@ -99,7 +116,7 @@ export function nestEggBreakdown(input: CalculatorInput): {
 }
 
 export function phasedWorkWindow(input: CalculatorInput): { start: number; end: number; years: number } {
-  const start = Math.max(input.partTimeStartAge, input.retirementAge, input.currentAge);
+  const start = Math.max(input.partTimeStartAge, drawdownStartPrimaryAge(input), input.currentAge);
   const end = input.partTimeEndAge;
   if (end < start) return { start, end, years: 0 };
   return { start, end, years: end - start + 1 };
@@ -206,7 +223,7 @@ function personBenefit(
 
 export function socialSecurityAtAge(age: number, input: CalculatorInput, yearsFromNow: number): number {
   if (!input.twoPerson) return onePersonSocialSecurity(age, input, yearsFromNow);
-  const retired = age >= input.retirementAge;
+  const retired = age >= drawdownStartPrimaryAge(input);
   const primaryRecord = personBenefit(
     input.socialSecurityAnnual,
     input.socialSecurityStartAge,
@@ -234,7 +251,7 @@ export function socialSecurityAtAge(age: number, input: CalculatorInput, yearsFr
 
 export function pensionAtAge(age: number, input: CalculatorInput, yearsFromNow: number): number {
   if (!input.twoPerson) return onePersonPension(age, input, yearsFromNow);
-  const retired = age >= input.retirementAge;
+  const retired = age >= drawdownStartPrimaryAge(input);
   const primaryFull = personBenefit(
     input.pensionAnnual,
     input.pensionStartAge,
@@ -266,7 +283,7 @@ function guaranteedIncomeAtAge(age: number, input: CalculatorInput, yearsFromNow
 }
 
 export function lifePhase(age: number, input: CalculatorInput): LifePhase {
-  if (age < input.retirementAge) return "working";
+  if (age < drawdownStartPrimaryAge(input)) return "working";
   if (age <= input.goGoEndAge) return "go-go";
   if (age <= input.slowGoEndAge) return "slow-go";
   return "no-go";
@@ -430,13 +447,14 @@ function runYears(input: CalculatorInput, option: boolean | RunYearOptions): Yea
   let depleted = false;
   const workWindow = phasedWorkWindow(input);
   let investActive = input.partTimeAnnualInvestment > 0;
-  const retirementStartAge = Math.max(input.retirementAge, input.currentAge);
+  const retirementStartAge = Math.max(drawdownStartPrimaryAge(input), input.currentAge);
+  const savingEndAge = savingEndPrimaryAge(input);
   const weakReturn = badDecadeReturn(input.postRetirementReturn);
   const horizon = planHorizonPrimaryAge(input);
 
   for (let age = input.currentAge; age <= horizon; age += 1) {
     const yearsFromNow = age - input.currentAge;
-    const working = age < input.retirementAge;
+    const working = age < drawdownStartPrimaryAge(input);
     const partnerAge = input.twoPerson ? partnerAgeAt(age, input) : null;
     const primaryAlive = primaryAliveAt(age, input);
     const partnerAlive = partnerAliveAt(age, input);
@@ -511,7 +529,13 @@ function runYears(input: CalculatorInput, option: boolean | RunYearOptions): Yea
       investPmt > 0 && investYear > 0
         ? nestEggAtRetirement(0, investPmt, input.partTimeInvestmentReturn, investYear)
         : 0;
-    const contribution = investPmt;
+    const stillSaving = age < savingEndAge && input.annualContribution > 0;
+    const householdSave = stillSaving
+      ? input.savingsGrowWithInflation
+        ? inflate(input.annualContribution, input.inflationRate, yearsFromNow)
+        : input.annualContribution
+      : 0;
+    const contribution = investPmt + householdSave;
     const guaranteedIncome = guaranteedIncomeAtAge(age, input, yearsFromNow);
 
     const primaryPartTime =
@@ -581,7 +605,7 @@ function runYears(input: CalculatorInput, option: boolean | RunYearOptions): Yea
 
     const totalSpend = lifestyleSpend + healthcareSpend + longTermCareSpend + housingSpend;
     const inflow = guaranteedIncome + partTimeIncome;
-    const netCashFlow = inflow - totalSpend;
+    const netCashFlow = inflow - totalSpend + householdSave;
 
     const afterCash = startBalance + netCashFlow;
     let growth: number;
@@ -734,7 +758,7 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
   const longevityGapYears = straightLineFundedThroughAge - fundedThroughAge;
 
   const modeledFromAge = years[0]?.age ?? input.currentAge;
-  const retirementStartAge = Math.max(input.retirementAge, modeledFromAge);
+  const retirementStartAge = Math.max(drawdownStartPrimaryAge(input), modeledFromAge);
   const yearsInRetirement = Math.max(0, horizon - retirementStartAge + 1);
   const yearsCovered = Math.min(
     yearsInRetirement,

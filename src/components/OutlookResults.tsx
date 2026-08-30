@@ -6,7 +6,7 @@ import { OutlookChart } from "@/components/OutlookChart";
 import { PlanSnapshotCard } from "@/components/PlanSnapshotCard";
 import { WhatIfCompare } from "@/components/WhatIfCompare";
 import type { ComfortEstimate, PlanSnapshot, ProjectionResult } from "@/lib/engine";
-import { fundedThroughDeltaCopy, snapshotFromOutlook } from "@/lib/engine";
+import { drawdownStartPrimaryAge, fundedThroughDeltaCopy, savingEndPrimaryAge, snapshotFromOutlook } from "@/lib/engine";
 import { formatMoney, formatMonths, formatPercent } from "@/lib/format";
 
 type AdoptedComfortBudget = {
@@ -309,13 +309,24 @@ function HouseholdSurvivorCard({ result }: { result: ProjectionResult }) {
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Household — entered plan</p>
       <h3 className="mt-2 font-serif text-2xl text-pine">Two persons and the survivor</h3>
       <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
-        One nest egg and one set of market returns. While both are alive, both Social Security and pension checks
-        count. After the first death, Social Security becomes the larger of the two checks; a pension continues only by
-        the survivor share on the form. Lifestyle then uses the survivor factor (
+        One nest egg and one set of market returns. Household drawdowns start at your age{" "}
+        {drawdownStartPrimaryAge(input)} (the earlier work-end). Yearly saving continues through your age{" "}
+        {savingEndPrimaryAge(input)} (the later work-end). While both are alive, both Social Security and pension
+        checks count. After the first death, Social Security becomes the larger of the two checks; a pension continues
+        only by the survivor share on the form. Lifestyle then uses the survivor factor (
         {(input.survivorLifestyleFactor * 100).toFixed(0)}%). If only one person is in nursing, household lifestyle is
         not cut.
       </p>
       <dl className="mt-5 grid gap-4 sm:grid-cols-3">
+        <div>
+          <dt className="text-xs uppercase tracking-wide text-muted">Work ends (you / partner)</dt>
+          <dd className="mt-1 font-serif text-2xl text-ink">
+            {input.retirementAge} / {input.partnerRetirementAge}
+          </dd>
+          <p className="mt-1 text-xs text-muted">
+            Drawdowns start at your age {drawdownStartPrimaryAge(input)}.
+          </p>
+        </div>
         <div>
           <dt className="text-xs uppercase tracking-wide text-muted">Plan through (you / partner)</dt>
           <dd className="mt-1 font-serif text-2xl text-ink">

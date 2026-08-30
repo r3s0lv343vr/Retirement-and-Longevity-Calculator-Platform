@@ -1,6 +1,6 @@
 import { jsPDF } from "jspdf";
 import { buildOutlookChartModel } from "@/lib/chart/outlookChart";
-import { FIELD_META } from "@/lib/engine";
+import { drawdownStartPrimaryAge, FIELD_META, savingEndPrimaryAge } from "@/lib/engine";
 import type { CalculatorInput, ComfortEstimate, Outlook, ProjectionResult, YearRow } from "@/lib/engine";
 import { formatMoney, formatMonths, formatPercent } from "@/lib/format";
 
@@ -205,6 +205,9 @@ class ReportWriter {
     if (input.twoPerson) {
       this.space(8);
       this.subhead("Two persons and the survivor");
+      this.lineKV("Work ends (you / partner)", `${input.retirementAge} / ${input.partnerRetirementAge}`);
+      this.lineKV("Drawdowns start (your age)", `Age ${drawdownStartPrimaryAge(input)}`);
+      this.lineKV("Yearly saving through (your age)", `Age ${savingEndPrimaryAge(input)}`);
       this.lineKV("Plan through (you / partner)", `${input.planToAge} / ${input.partnerPlanToAge}`);
       this.lineKV(
         "Household horizon (your age)",
@@ -221,7 +224,7 @@ class ReportWriter {
           : String(outlook.fundedThroughAge),
       );
       this.body(
-        "One nest egg and one set of market returns. After the first death, Social Security becomes the larger of the two checks; a pension continues only by the survivor share on the form. Lifestyle then uses the survivor factor. If only one person is in nursing, household lifestyle is not cut.",
+        "One nest egg and one set of market returns. Drawdowns start at the earlier work-end; yearly saving continues until the later work-end. After the first death, Social Security becomes the larger of the two checks; a pension continues only by the survivor share on the form. Lifestyle then uses the survivor factor. If only one person is in nursing, household lifestyle is not cut.",
       );
     }
 
@@ -363,9 +366,20 @@ class ReportWriter {
     this.ensure(80);
     this.section("Inputs used for this report", "Copied from the form at the moment you compiled this PDF.");
     for (const group of INPUT_GROUPS) {
-      const keys = (Object.keys(FIELD_META) as (keyof CalculatorInput)[]).filter(
-        (key) => FIELD_META[key].group === group.id,
-      );
+      const keys = (Object.keys(FIELD_META) as (keyof CalculatorInput)[]).filter((key) => {
+        if (FIELD_META[key].group !== group.id) return false;
+        if (
+          !input.twoPerson &&
+          (FIELD_META[key].group === "partner" ||
+            key === "partnerCurrentAge" ||
+            key === "partnerRetirementAge" ||
+            key === "partnerPlanToAge")
+        ) {
+          return false;
+        }
+        return true;
+      });
+      if (keys.length === 0) continue;
       this.ensure(22 + keys.length * 14);
       this.subhead(group.label);
       for (const key of keys) {

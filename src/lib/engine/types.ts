@@ -11,6 +11,8 @@ export type CalculatorInput = {
   /** Off keeps the one-person path. On adds a partner, survivor income, and a second plan-through age. */
   twoPerson: boolean;
   partnerCurrentAge: number;
+  /** Partner’s full-time work ends. Drawdowns start at the earlier of the two work-end dates. */
+  partnerRetirementAge: number;
   partnerPlanToAge: number;
   partnerSocialSecurityAnnual: number;
   partnerSocialSecurityStartAge: number;
