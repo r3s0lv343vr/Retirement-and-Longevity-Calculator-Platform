@@ -110,6 +110,13 @@ describe("project", () => {
     expect(result.outlook.fundedThroughAge).toBe(result.input.planToAge);
     expect(result.outlook.yearsCovered).toBe(result.outlook.yearsInRetirement);
     expect(result.outlook.yearsInRetirement).toBe(DEFAULT_INPUT.planToAge - DEFAULT_INPUT.retirementAge + 1);
+    expect(result.outlook.requiredMonths).toBe(result.outlook.yearsInRetirement * 12);
+    expect(result.outlook.coveredMonths).toBe(result.outlook.requiredMonths);
+    expect(result.outlook.surplusMonths).toBeGreaterThan(0);
+    expect(result.outlook.accumulatedMonths).toBeGreaterThan(result.outlook.requiredMonths);
+    expect(result.outlook.surpassesRequiredMonths).toBe(true);
+    expect(result.outlook.remainingSavings).toBeGreaterThan(0);
+    expect(result.outlook.remainingExpenseNeed).toBe(0);
   });
 
   it("depletes quickly with almost no savings and high spending", () => {
@@ -408,6 +415,12 @@ describe("project", () => {
     expect(result.outlook.totalLifestyleSpend).toBeGreaterThan(0);
     expect(result.outlook.totalHealthcareSpend).toBeGreaterThan(0);
     expect(result.outlook.totalLongTermCareSpend).toBeGreaterThan(0);
+    expect(result.outlook.requiredMonths).toBe(31 * 12);
+    expect(result.outlook.coveredMonths).toBe(26 * 12);
+    expect(result.outlook.accumulatedMonths).toBe(26 * 12);
+    expect(result.outlook.surpassesRequiredMonths).toBe(false);
+    expect(result.outlook.remainingSavings).toBe(0);
+    expect(result.outlook.remainingExpenseNeed).toBeGreaterThan(0);
   });
 
   it("adds phased-work extra savings as amount × years when the rate is 0%", () => {

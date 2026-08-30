@@ -233,6 +233,55 @@ export function OutlookResults({ result }: Props) {
           <p className="mt-2 text-xs text-muted">Showing every fifth retirement year. Full series is computed on the server.</p>
         </div>
       </details>
+
+      <CapitalMonthsCard outlook={outlook} />
+    </section>
+  );
+}
+
+function formatMonths(months: number): string {
+  const whole = Math.round(months);
+  const years = Math.floor(whole / 12);
+  const rem = whole % 12;
+  if (years <= 0) return `${whole} month${whole === 1 ? "" : "s"}`;
+  if (rem === 0) return `${whole} months (${years} year${years === 1 ? "" : "s"})`;
+  return `${whole} months (${years} year${years === 1 ? "" : "s"} ${rem} month${rem === 1 ? "" : "s"})`;
+}
+
+function CapitalMonthsCard({ outlook }: { outlook: ProjectionResult["outlook"] }) {
+  return (
+    <section className="card">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Capital months — entered plan</p>
+      <h3 className="mt-2 font-serif text-2xl text-pine">How long the capital lasts</h3>
+      <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
+        Months of retirement your plan needs, versus months the accumulated capital actually covers. This uses the
+        amounts on the form, not the comfortable-living suggestion.
+      </p>
+      <dl className="mt-5 grid gap-4 sm:grid-cols-2">
+        <div>
+          <dt className="text-xs uppercase tracking-wide text-muted">Months of capital required</dt>
+          <dd className="mt-1 font-serif text-2xl text-ink">{formatMonths(outlook.requiredMonths)}</dd>
+          <p className="mt-1 text-xs text-muted">From full-time work ending through your plan-through age.</p>
+        </div>
+        <div>
+          <dt className="text-xs uppercase tracking-wide text-muted">Months of capital accumulated</dt>
+          <dd className="mt-1 font-serif text-2xl text-ink">{formatMonths(outlook.accumulatedMonths)}</dd>
+          <p className="mt-1 text-xs text-muted">
+            {outlook.surpassesRequiredMonths
+              ? `Until leftover savings would run out. This surpasses the required ${formatMonths(outlook.requiredMonths)}.`
+              : outlook.depleted
+                ? "Until savings run out."
+                : "Until the end of the plan."}
+          </p>
+        </div>
+      </dl>
+      <p className="mt-5 text-sm leading-relaxed text-ink/85">
+        {outlook.surpassesRequiredMonths
+          ? `Savings remaining at the plan-through age: ${formatMoney(outlook.remainingSavings)}.`
+          : outlook.remainingExpenseNeed > 0
+            ? `Savings still required for remaining expenses after capital runs out: ${formatMoney(outlook.remainingExpenseNeed)}.`
+            : `Savings remaining: ${formatMoney(outlook.remainingSavings)}.`}
+      </p>
     </section>
   );
 }

@@ -418,6 +418,18 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
     yearsInRetirement,
     Math.max(0, fundedThroughAge - retirementStartAge + 1),
   );
+  const requiredMonths = yearsInRetirement * 12;
+  const coveredMonths = yearsCovered * 12;
+  const remainingSavings = depleted ? 0 : endingBalance;
+  const remainingExpenseNeed = years
+    .filter((y) => y.phase !== "working" && y.age > fundedThroughAge)
+    .reduce((s, y) => s + Math.max(0, y.totalSpend - y.guaranteedIncome - y.partTimeIncome), 0);
+  const surplusMonths =
+    !depleted && remainingSavings > 0 && lastYearSpend > 0
+      ? remainingSavings / (lastYearSpend / 12)
+      : 0;
+  const accumulatedMonths = coveredMonths + surplusMonths;
+  const surpassesRequiredMonths = !depleted && remainingSavings > 0 && coveredMonths >= requiredMonths;
 
   let status: Outlook["status"];
   if (!depleted && endingBalance >= lastYearSpend * 3) {
@@ -487,6 +499,13 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
     straightLineEndingBalance,
     longevityGapYears,
     lastYearSpend,
+    requiredMonths,
+    coveredMonths,
+    surplusMonths,
+    accumulatedMonths,
+    surpassesRequiredMonths,
+    remainingSavings,
+    remainingExpenseNeed,
   };
 }
 
