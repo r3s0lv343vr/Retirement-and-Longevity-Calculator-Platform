@@ -165,7 +165,9 @@ class ReportWriter {
     this.lineKV("Annuity of annual savings", formatMoney(outlook.nestEggAnnuity));
     this.body(
       outlook.nestEggYears > 0
-        ? `Total future value at age ${input.retirementAge}: current savings grown as a lump, plus annual savings as an ordinary annuity (${outlook.nestEggYears} years at ${(input.preRetirementReturn * 100).toFixed(1)}%).`
+        ? input.savingsGrowWithInflation
+          ? `Total future value at age ${input.retirementAge}: current savings grown as a lump, plus annual savings that rise with inflation (${outlook.nestEggYears} years at ${(input.preRetirementReturn * 100).toFixed(1)}%).`
+          : `Total future value at age ${input.retirementAge}: current savings grown as a lump, plus annual savings as an ordinary annuity (${outlook.nestEggYears} years at ${(input.preRetirementReturn * 100).toFixed(1)}%).`
         : "Full-time work has already ended, so this is the savings on hand today.",
     );
 
@@ -209,6 +211,25 @@ class ReportWriter {
         ? ` -- ${outlook.longevityGapYears} year${outlook.longevityGapYears === 1 ? "" : "s"} sooner.`
         : ".");
     this.body(straight);
+    this.space(4);
+    this.body(
+      `The same plan with a weak first decade -- ${(outlook.badDecadeReturn * 100).toFixed(1)}% a year for the first 10 years of retirement, then your usual ${(input.postRetirementReturn * 100).toFixed(1)}% -- lasts through age ${outlook.badDecadeFundedThroughAge}` +
+        (outlook.badDecadeEndingBalance > 0 ? ` with ${formatMoney(outlook.badDecadeEndingBalance)} left` : "") +
+        (outlook.badDecadeGapYears > 0
+          ? ` -- ${outlook.badDecadeGapYears} year${outlook.badDecadeGapYears === 1 ? "" : "s"} sooner than the usual-return path.`
+          : ".") +
+        " A straight-line return is the optimistic path.",
+    );
+
+    this.space(8);
+    this.subhead("Social Security at 67 vs 70");
+    this.body(
+      `Your outlook still uses the check and start age on the form (${formatMoney(input.socialSecurityAnnual)} starting at ${input.socialSecurityStartAge}). This compare scales that check the way delayed retirement credits work in the U.S. -- full retirement age 67, and age 70 is 24% higher -- then runs the same spending path with fewer years of checks.`,
+    );
+    this.lineKV("Claim at 67 / year (today)", formatMoney(outlook.claiming67Annual));
+    this.lineKV("Claim at 67 funded through", `Age ${outlook.claiming67FundedThroughAge}`);
+    this.lineKV("Claim at 70 / year (today)", formatMoney(outlook.claiming70Annual));
+    this.lineKV("Claim at 70 funded through", `Age ${outlook.claiming70FundedThroughAge}`);
 
     if (result.warnings.length > 0) {
       this.space(8);

@@ -10,6 +10,8 @@ export type CalculatorInput = {
   planToAge: number;
   currentSavings: number;
   annualContribution: number;
+  /** When true, the yearly savings deposit rises with general inflation. Off keeps a level ordinary annuity. */
+  savingsGrowWithInflation: boolean;
   preRetirementReturn: number;
   postRetirementReturn: number;
   inflationRate: number;
@@ -102,6 +104,14 @@ export type Outlook = {
   surpassesRequiredMonths: boolean;
   remainingSavings: number;
   remainingExpenseNeed: number;
+  badDecadeFundedThroughAge: number;
+  badDecadeEndingBalance: number;
+  badDecadeGapYears: number;
+  badDecadeReturn: number;
+  claiming67Annual: number;
+  claiming70Annual: number;
+  claiming67FundedThroughAge: number;
+  claiming70FundedThroughAge: number;
 };
 
 export type PlanSnapshot = {

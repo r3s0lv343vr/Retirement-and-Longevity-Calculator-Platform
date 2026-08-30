@@ -34,6 +34,10 @@ describe("compileOutlookPdf", () => {
     expect(text).toContain("Current retirement savings");
     expect(text).toContain("Not stored on a server");
     expect(text).toContain(String(result.outlook.fundedThroughAge));
+    expect(text).toContain("Social Security at 67 vs 70");
+    expect(text).toContain("Claim at 70");
+    expect(text).toContain("weak first decade");
+    expect(text).toContain("Raise yearly saving with inflation");
   });
 
   it("includes surplus wording when leftover savings last past the plan", () => {

@@ -28,8 +28,8 @@ export function mergeInput(payload: CalculatorPayload | null | undefined): Calcu
   const src = payload ?? {};
   const merged = { ...DEFAULT_INPUT };
   (Object.keys(DEFAULT_INPUT) as (keyof CalculatorInput)[]).forEach((key) => {
-    if (key === "pensionCola") {
-      merged.pensionCola = asBoolean(src.pensionCola, DEFAULT_INPUT.pensionCola);
+    if (key === "pensionCola" || key === "savingsGrowWithInflation") {
+      merged[key] = asBoolean(src[key], DEFAULT_INPUT[key]);
       return;
     }
     merged[key] = asNumber(src[key], DEFAULT_INPUT[key] as number);

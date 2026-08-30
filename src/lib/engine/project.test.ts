@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_INPUT } from "./defaults";
-import { healthcareAgeFactor, inflate, futureValueLump, futureValueOrdinaryAnnuity, nestEggAtRetirement, nestEggBreakdown, guaranteedIncomeAnnuity, guaranteedIncomeWindow, growingPaymentSum, projectBase } from "./project";
+import { healthcareAgeFactor, inflate, futureValueLump, futureValueOrdinaryAnnuity, futureValueGrowingOrdinaryAnnuity, nestEggAtRetirement, nestEggBreakdown, guaranteedIncomeAnnuity, guaranteedIncomeWindow, growingPaymentSum, projectBase, socialSecurityClaimFactor, socialSecurityAnnualAtClaimAge, badDecadeReturn } from "./project";
 import { mergeInput, validateInput } from "./validate";
 import type { CalculatorInput } from "./types";
 
@@ -94,6 +94,26 @@ describe("validateInput", () => {
     expect(mergeInput({}).pensionCola).toBe(true);
     expect(mergeInput({ pensionCola: false }).pensionCola).toBe(false);
     expect(mergeInput({ pensionCola: "off" as unknown as boolean }).pensionCola).toBe(false);
+  });
+
+  it("reads rising yearly saving as a boolean and defaults it to off", () => {
+    expect(mergeInput({}).savingsGrowWithInflation).toBe(false);
+    expect(mergeInput({ savingsGrowWithInflation: true }).savingsGrowWithInflation).toBe(true);
+    expect(mergeInput({ savingsGrowWithInflation: "on" as unknown as boolean }).savingsGrowWithInflation).toBe(true);
+  });
+});
+
+describe("social security claiming factors", () => {
+  it("uses US full-retirement-age 67 factors", () => {
+    expect(socialSecurityClaimFactor(62)).toBeCloseTo(0.7);
+    expect(socialSecurityClaimFactor(67)).toBe(1);
+    expect(socialSecurityClaimFactor(70)).toBeCloseTo(1.24);
+  });
+
+  it("scales the entered check from the entered start age", () => {
+    expect(socialSecurityAnnualAtClaimAge(28800, 67, 67)).toBeCloseTo(28800);
+    expect(socialSecurityAnnualAtClaimAge(28800, 67, 70)).toBeCloseTo(28800 * 1.24);
+    expect(socialSecurityAnnualAtClaimAge(28800, 70, 67)).toBeCloseTo(28800 / 1.24);
   });
 });
 
@@ -571,5 +591,73 @@ describe("project", () => {
     expect(guaranteedIncomeAnnuity(omitted.input)).toBeCloseTo(
       omitted.years.reduce((s, y) => s + y.guaranteedIncome, 0),
     );
+  });
+
+  it("leaves yearly savings level unless the inflation toggle is on", () => {
+    const level = nestEggBreakdown({
+      ...DEFAULT_INPUT,
+      currentAge: 41,
+      retirementAge: 65,
+      currentSavings: 71000,
+      annualContribution: 13000,
+      preRetirementReturn: 0.07,
+      savingsGrowWithInflation: false,
+    });
+    expect(level.annuity).toBeCloseTo(756296.72, 2);
+    expect(level.total).toBeCloseTo(1116434.77, 2);
+
+    const rising = nestEggBreakdown({
+      ...DEFAULT_INPUT,
+      currentAge: 41,
+      retirementAge: 65,
+      currentSavings: 71000,
+      annualContribution: 13000,
+      preRetirementReturn: 0.07,
+      inflationRate: 0.026,
+      savingsGrowWithInflation: true,
+    });
+    expect(rising.annuity).toBeCloseTo(
+      futureValueGrowingOrdinaryAnnuity(13000, 0.07, 0.026, 24),
+      6,
+    );
+    expect(rising.total).toBeGreaterThan(level.total);
+
+    const risingRun = run({
+      currentAge: 41,
+      retirementAge: 65,
+      currentSavings: 71000,
+      annualContribution: 13000,
+      preRetirementReturn: 0.07,
+      inflationRate: 0.026,
+      savingsGrowWithInflation: true,
+    });
+    expect(risingRun.years.find((y) => y.age === 41)?.contribution).toBe(13000);
+    expect(risingRun.years.find((y) => y.age === 64)?.contribution).toBeCloseTo(13000 * 1.026 ** 23);
+    expect(risingRun.years.find((y) => y.age === 65)?.startBalance).toBeCloseTo(rising.total, 6);
+  });
+
+  it("does not change the main Social Security dollars when comparing claim ages", () => {
+    const result = run({
+      socialSecurityAnnual: 28800,
+      socialSecurityStartAge: 67,
+    });
+    expect(result.years.find((y) => y.age === 67)?.guaranteedIncome).toBeCloseTo(
+      inflate(28800, result.input.inflationRate, 67 - result.input.currentAge),
+    );
+    expect(result.outlook.claiming67Annual).toBeCloseTo(28800);
+    expect(result.outlook.claiming70Annual).toBeCloseTo(28800 * 1.24);
+    expect(result.outlook.claiming70Annual).toBeGreaterThan(result.outlook.claiming67Annual);
+  });
+
+  it("funds a weak first decade no farther than the usual-return path", () => {
+    const result = run({
+      currentSavings: 550000,
+      annualContribution: 0,
+      partTimeAnnualIncome: 0,
+      longTermCareAnnual: 24000,
+    });
+    expect(result.outlook.badDecadeReturn).toBeCloseTo(badDecadeReturn(result.input.postRetirementReturn));
+    expect(result.outlook.badDecadeFundedThroughAge).toBeLessThanOrEqual(result.outlook.fundedThroughAge);
+    expect(result.outlook.badDecadeGapYears).toBeGreaterThanOrEqual(0);
   });
 });

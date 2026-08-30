@@ -27,6 +27,13 @@ describe("scenario URL", () => {
     expect(decodeScenarioValue("pensionCola", "off")).toBe(false);
   });
 
+  it("writes rising yearly saving as on or off", () => {
+    expect(encodeScenarioValue("savingsGrowWithInflation", false)).toBe("off");
+    expect(encodeScenarioValue("savingsGrowWithInflation", true)).toBe("on");
+    expect(decodeScenarioValue("savingsGrowWithInflation", "on")).toBe(true);
+    expect(searchParamsToInput("savingsGrowWithInflation=on").savingsGrowWithInflation).toBe(true);
+  });
+
   it("fills missing keys from defaults so a short link still works", () => {
     const input = searchParamsToInput("currentAge=41&currentSavings=71000");
     expect(input.currentAge).toBe(41);

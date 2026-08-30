@@ -32,7 +32,7 @@ export const WHAT_IF_LEVER_COPY: Record<WhatIfLever, { chip: string; hint: strin
   },
   socialSecurityStartAge: {
     chip: "Delay Social Security",
-    hint: "Changes only the start age. The annual benefit stays the amount you entered; this model does not raise the check for claiming later.",
+    hint: "Changes only the start age. The annual benefit stays the amount you entered. For a higher check at 70 versus 67, use the claiming compare below.",
   },
   pensionCola: {
     chip: "Pension COLA",
