@@ -88,8 +88,11 @@ export function OutlookResults({ result }: Props) {
 
       <div className="card">
         <h3 className="font-serif text-xl text-pine">Portfolio vs. changing costs</h3>
-        <p className="mb-4 mt-1 text-sm text-muted">
-          Bars are annual spending in retirement. Darker bars are healthcare, long-term care, and facility rent.
+        <p className="mb-4 mt-1 text-sm leading-relaxed text-muted">
+          The green line is the nest egg. The dollar figure at the top left is the <strong className="font-medium text-ink/70">peak portfolio</strong>, not a year of spending.
+          Bars are that year’s drawdown, drawn on a smaller scale so both fit: beige is total spending, brown is
+          healthcare, long-term care, and facility rent. A brown step-up around 85 is usually long-term care starting
+          and medical costs getting heavier. If the line reaches the axis, savings are depleted.
         </p>
         <OutlookChart years={years} />
       </div>
