@@ -776,6 +776,71 @@ describe("project", () => {
     expect(result.outlook.householdHorizonAge).toBe(77);
   });
 
+  it("starts household drawdowns when the partner leaves work first", () => {
+    const later = run({
+      twoPerson: true,
+      currentAge: 58,
+      retirementAge: 65,
+      partnerCurrentAge: 58,
+      partnerRetirementAge: 65,
+      partnerPlanToAge: 95,
+      partnerSocialSecurityAnnual: 0,
+      partnerHealthcareSpendToday: 0,
+      partnerLongTermCareAnnual: 0,
+      partnerNursingHomeRentAnnual: 0,
+      partnerPartTimeAnnualIncome: 0,
+    });
+    const earlier = run({
+      twoPerson: true,
+      currentAge: 58,
+      retirementAge: 65,
+      partnerCurrentAge: 58,
+      partnerRetirementAge: 62,
+      partnerPlanToAge: 95,
+      partnerSocialSecurityAnnual: 0,
+      partnerHealthcareSpendToday: 0,
+      partnerLongTermCareAnnual: 0,
+      partnerNursingHomeRentAnnual: 0,
+      partnerPartTimeAnnualIncome: 0,
+    });
+    expect(later.years.find((y) => y.age === 62)?.phase).toBe("working");
+    expect(later.years.find((y) => y.age === 62)?.totalSpend).toBe(0);
+    expect(earlier.years.find((y) => y.age === 62)?.phase).not.toBe("working");
+    expect(earlier.years.find((y) => y.age === 62)?.totalSpend).toBeGreaterThan(0);
+    expect(earlier.outlook.nestEggYears).toBe(4);
+    expect(later.outlook.nestEggYears).toBe(7);
+  });
+
+  it("keeps yearly saving after drawdowns if the partner still works", () => {
+    const result = run({
+      twoPerson: true,
+      currentAge: 65,
+      retirementAge: 65,
+      planToAge: 80,
+      partnerCurrentAge: 63,
+      partnerRetirementAge: 70,
+      partnerPlanToAge: 80,
+      currentSavings: 500000,
+      annualContribution: 10000,
+      savingsGrowWithInflation: false,
+      inflationRate: 0,
+      healthcareInflationRate: 0,
+      lifestyleSpendToday: 1000,
+      healthcareSpendToday: 0,
+      partnerHealthcareSpendToday: 0,
+      longTermCareAnnual: 0,
+      socialSecurityAnnual: 0,
+      partnerSocialSecurityAnnual: 0,
+      partTimeAnnualIncome: 0,
+      partnerPartTimeAnnualIncome: 0,
+      goGoLifestyleMultiplier: 1,
+    });
+    expect(result.years.find((y) => y.age === 65)?.phase).not.toBe("working");
+    expect(result.years.find((y) => y.age === 65)?.contribution).toBeCloseTo(10000);
+    expect(result.years.find((y) => y.age === 71)?.contribution).toBeCloseTo(10000);
+    expect(result.years.find((y) => y.age === 72)?.contribution).toBe(0);
+  });
+
   it("does not cut household lifestyle when only one person is in nursing", () => {
     const result = run({
       twoPerson: true,

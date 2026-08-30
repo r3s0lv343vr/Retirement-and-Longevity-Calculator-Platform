@@ -1,5 +1,5 @@
 import type { CalculatorInput, ComfortEstimate } from "./types";
-import { projectBase } from "./project";
+import { nestEggYears, projectBase } from "./project";
 import { snapshotFromOutlook } from "./whatIf";
 
 /** Moderate US planning floor for a comfortable lifestyle (today’s dollars), not a high-cost city. */
@@ -54,7 +54,7 @@ export function estimateComfort(input: CalculatorInput): ComfortEstimate {
   const usedHousingPlaceholder = false;
   const nestEggNeeded = nestEggNeededNow(comfortInput);
   const additionalNestEgg = Math.max(0, nestEggNeeded - input.currentSavings);
-  const yearsToRetirement = Math.max(0, input.retirementAge - input.currentAge);
+  const yearsToRetirement = nestEggYears(input);
   const additionalAnnualSavings = extraAnnualSavings(
     additionalNestEgg,
     yearsToRetirement,

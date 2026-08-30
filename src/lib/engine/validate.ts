@@ -110,8 +110,14 @@ export function validateInput(input: CalculatorInput): string[] {
     if (input.partnerCurrentAge < 18 || input.partnerCurrentAge > 90) {
       errors.push("Partner age must be between 18 and 90.");
     }
+    if (input.partnerRetirementAge < 40 || input.partnerRetirementAge > 90) {
+      errors.push("Partner retirement age must be between 40 and 90.");
+    }
     if (input.partnerPlanToAge < input.partnerCurrentAge) {
       errors.push("Partner plan-through age must be on or after their current age.");
+    }
+    if (input.partnerPlanToAge < input.partnerRetirementAge) {
+      errors.push("Partner plan-through age must be on or after their retirement.");
     }
     if (input.partnerPlanToAge > MAX_AGE) {
       errors.push("Partner plan-through age cannot exceed 120.");
@@ -171,6 +177,16 @@ export function warningsFor(input: CalculatorInput): string[] {
   }
   if (input.twoPerson && input.partnerPlanToAge < 90) {
     warnings.push("The partner plan-through age is below 90. A shorter second horizon can look safer than it is.");
+  }
+  if (input.twoPerson) {
+    const partnerRetireAsPrimary = input.currentAge + (input.partnerRetirementAge - input.partnerCurrentAge);
+    if (partnerRetireAsPrimary !== input.retirementAge) {
+      warnings.push(
+        partnerRetireAsPrimary < input.retirementAge
+          ? "The partner leaves full-time work first, so household drawdowns start then — not at the first person’s work-end."
+          : "The first person leaves full-time work first, so household drawdowns start then. Yearly saving continues until the partner’s work-end.",
+      );
+    }
   }
   if (input.twoPerson && input.partnerNursingHomeRentAnnual > 0 && input.nursingHomeRentAnnual > 0) {
     warnings.push("Two nursing rents can both apply in the same year if both people are alive and in care.");

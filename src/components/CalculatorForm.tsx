@@ -25,7 +25,7 @@ const GROUPS: {
   {
     id: "timeline",
     title: "Your timeline",
-    blurb: "When work tapers off, and how long you want the money to last. Two persons adds the partner’s age and plan-through age on this card.",
+    blurb: "When work tapers off, and how long you want the money to last. Two persons adds the partner’s age, work-end, and plan-through age. Drawdowns start when the first of you leaves full-time work; yearly saving continues until the later work-end.",
     keys: ["currentAge", "retirementAge", "planToAge", "twoPerson"],
     columns: 3,
   },
@@ -170,7 +170,7 @@ export function CalculatorForm({ values, onChange, onSubmit, loading, error }: P
             <p className="mt-1 text-sm leading-relaxed text-muted">
               {group.blurb}
               {values.twoPerson && group.id === "work"
-                ? " This is the first person’s side hustle; the partner’s is on the Second person card."
+                ? " This is the first person’s side hustle; the partner’s is on the Second person card. If one of you is still in full-time work after household drawdowns start, put those remaining wages on the matching side-hustle line."
                 : ""}
               {values.twoPerson && group.id === "income"
                 ? " These are the first person’s checks; the partner’s are on the Second person card."
@@ -253,7 +253,7 @@ function visibleKeys(
   twoPerson: boolean,
 ): (keyof CalculatorInput)[] {
   if (group.id === "timeline" && twoPerson) {
-    return [...group.keys, "partnerCurrentAge", "partnerPlanToAge"];
+    return [...group.keys, "partnerCurrentAge", "partnerRetirementAge", "partnerPlanToAge"];
   }
   return group.keys;
 }
