@@ -74,7 +74,7 @@ export function OutlookChart({ years }: Props) {
           </text>
         ))}
         <text x="8" y="16" fontSize="11" fill="#5a6b62">
-          {formatMoney(maxBalance)}
+          Peak {formatMoney(maxBalance)}
         </text>
       </svg>
       <div className="mt-2 flex flex-wrap gap-4 text-xs text-muted">
