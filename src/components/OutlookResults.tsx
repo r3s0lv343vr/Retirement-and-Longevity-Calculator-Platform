@@ -1,9 +1,10 @@
 "use client";
 
 import { AdSlot } from "@/components/AdSlot";
+import { CompileDownloadButton } from "@/components/CompileDownloadButton";
 import { OutlookChart } from "@/components/OutlookChart";
 import type { ComfortEstimate, ProjectionResult } from "@/lib/engine";
-import { formatMoney, formatPercent } from "@/lib/format";
+import { formatMoney, formatMonths, formatPercent } from "@/lib/format";
 
 type Props = {
   result: ProjectionResult;
@@ -235,17 +236,9 @@ export function OutlookResults({ result }: Props) {
       </details>
 
       <CapitalMonthsCard outlook={outlook} />
+      <CompileDownloadButton result={result} />
     </section>
   );
-}
-
-function formatMonths(months: number): string {
-  const whole = Math.round(months);
-  const years = Math.floor(whole / 12);
-  const rem = whole % 12;
-  if (years <= 0) return `${whole} month${whole === 1 ? "" : "s"}`;
-  if (rem === 0) return `${whole} months (${years} year${years === 1 ? "" : "s"})`;
-  return `${whole} months (${years} year${years === 1 ? "" : "s"} ${rem} month${rem === 1 ? "" : "s"})`;
 }
 
 function CapitalMonthsCard({ outlook }: { outlook: ProjectionResult["outlook"] }) {
