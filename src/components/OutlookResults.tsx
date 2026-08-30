@@ -413,7 +413,7 @@ function ComfortEstimateCard({
                 type="button"
                 onClick={onAdopt}
                 disabled={adopting}
-                className="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-pine px-6 text-sm font-semibold text-paper shadow-sm transition hover:bg-pine-2 disabled:opacity-60 sm:w-auto"
+                className="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full border border-pine/20 bg-paper/80 px-6 text-sm font-medium text-pine/75 transition hover:border-pine/30 hover:bg-paper hover:text-pine/90 disabled:opacity-60 sm:w-auto"
               >
                 {adopting ? "Updating entered plan…" : "Make this my entered plan"}
               </button>
