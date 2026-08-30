@@ -394,6 +394,7 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
   );
   const retirementIncomeTotal = socialSecurityTotal + pensionTotal + partTimeTotal;
   const totalMedicalSpend = totalHealthcareSpend + totalLongTermCareSpend + totalHousingSpend;
+  const totalRetirementSpend = totalLifestyleSpend + totalMedicalSpend;
 
   let peakHealthcareAge: number | null = null;
   let peakHealthcareSpend = 0;
@@ -466,6 +467,7 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
     totalLongTermCareSpend,
     totalHousingSpend,
     totalMedicalSpend,
+    totalRetirementSpend,
     healthcareShare,
     peakHealthcareAge,
     peakHealthcareSpend,

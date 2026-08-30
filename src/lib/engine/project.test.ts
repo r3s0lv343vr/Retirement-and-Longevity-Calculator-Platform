@@ -399,6 +399,10 @@ describe("project", () => {
     expect(result.outlook.totalMedicalSpend).toBeCloseTo(
       result.outlook.totalHealthcareSpend + result.outlook.totalLongTermCareSpend + result.outlook.totalHousingSpend,
     );
+    expect(result.outlook.totalRetirementSpend).toBeCloseTo(
+      result.outlook.totalLifestyleSpend + result.outlook.totalMedicalSpend,
+    );
+    expect(result.outlook.totalLifestyleSpend).toBeGreaterThan(0);
     expect(result.outlook.totalHealthcareSpend).toBeGreaterThan(0);
     expect(result.outlook.totalLongTermCareSpend).toBeGreaterThan(0);
   });

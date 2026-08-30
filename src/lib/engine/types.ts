@@ -76,6 +76,7 @@ export type Outlook = {
   totalLongTermCareSpend: number;
   totalHousingSpend: number;
   totalMedicalSpend: number;
+  totalRetirementSpend: number;
   healthcareShare: number;
   peakHealthcareAge: number | null;
   peakHealthcareSpend: number;
