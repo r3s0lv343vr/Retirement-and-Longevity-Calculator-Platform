@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_INPUT } from "./defaults";
-import { healthcareAgeFactor, inflate, futureValueLump, futureValueOrdinaryAnnuity, nestEggAtRetirement, guaranteedIncomeAnnuity, guaranteedIncomeWindow, growingPaymentSum, projectBase } from "./project";
+import { healthcareAgeFactor, inflate, futureValueLump, futureValueOrdinaryAnnuity, nestEggAtRetirement, nestEggBreakdown, guaranteedIncomeAnnuity, guaranteedIncomeWindow, growingPaymentSum, projectBase } from "./project";
 import { mergeInput, validateInput } from "./validate";
 import type { CalculatorInput } from "./types";
 
@@ -39,6 +39,35 @@ describe("nest egg formulas", () => {
       nestEggAtRetirement(71000, 13000, 0.07, 24),
       6,
     );
+  });
+
+  it("breaks the retirement nest egg into lump plus annuity", () => {
+    const nest = nestEggBreakdown({
+      ...DEFAULT_INPUT,
+      currentAge: 41,
+      retirementAge: 65,
+      currentSavings: 71000,
+      annualContribution: 13000,
+      preRetirementReturn: 0.07,
+    });
+    expect(nest.years).toBe(24);
+    expect(nest.lump).toBeCloseTo(360138.05, 2);
+    expect(nest.annuity).toBeCloseTo(756296.72, 2);
+    expect(nest.total).toBeCloseTo(1116434.77, 2);
+  });
+
+  it("treats an already-retired plan as savings on hand", () => {
+    const nest = nestEggBreakdown({
+      ...DEFAULT_INPUT,
+      currentAge: 70,
+      retirementAge: 65,
+      currentSavings: 500000,
+      annualContribution: 13000,
+    });
+    expect(nest.years).toBe(0);
+    expect(nest.lump).toBe(500000);
+    expect(nest.annuity).toBe(0);
+    expect(nest.total).toBe(500000);
   });
 });
 
@@ -355,6 +384,23 @@ describe("project", () => {
     expect(result.outlook.totalHousingSpend).toBe(0);
     expect(result.outlook.peakHealthcareAge).toBe(90);
     expect(result.outlook.partTimeTotal).toBeCloseTo(371720, 0);
+    const nest = nestEggBreakdown(result.input);
+    expect(nest.lump).toBeCloseTo(360138.05, 0);
+    expect(nest.annuity).toBeCloseTo(756296.72, 0);
+    expect(result.outlook.nestEggLump).toBeCloseTo(nest.lump, 0);
+    expect(result.outlook.nestEggAnnuity).toBeCloseTo(nest.annuity, 0);
+    expect(result.outlook.nestEggAtRetirement).toBeCloseTo(1_116_434.77, 0);
+    expect(result.outlook.partTimeWages).toBeCloseTo(371720, 0);
+    expect(result.outlook.partTimeInvested).toBe(0);
+    expect(result.outlook.pensionTotal).toBeGreaterThan(result.outlook.socialSecurityTotal);
+    expect(result.outlook.retirementIncomeTotal).toBeCloseTo(
+      result.outlook.socialSecurityTotal + result.outlook.pensionTotal + result.outlook.partTimeTotal,
+    );
+    expect(result.outlook.totalMedicalSpend).toBeCloseTo(
+      result.outlook.totalHealthcareSpend + result.outlook.totalLongTermCareSpend + result.outlook.totalHousingSpend,
+    );
+    expect(result.outlook.totalHealthcareSpend).toBeGreaterThan(0);
+    expect(result.outlook.totalLongTermCareSpend).toBeGreaterThan(0);
   });
 
   it("adds phased-work extra savings as amount × years when the rate is 0%", () => {
