@@ -396,6 +396,9 @@ describe("project", () => {
     expect(result.outlook.retirementIncomeTotal).toBeCloseTo(
       result.outlook.socialSecurityTotal + result.outlook.pensionTotal + result.outlook.partTimeTotal,
     );
+    expect(result.outlook.fundingTotal).toBeCloseTo(
+      result.outlook.nestEggAtRetirement + result.outlook.retirementIncomeTotal,
+    );
     expect(result.outlook.totalMedicalSpend).toBeCloseTo(
       result.outlook.totalHealthcareSpend + result.outlook.totalLongTermCareSpend + result.outlook.totalHousingSpend,
     );

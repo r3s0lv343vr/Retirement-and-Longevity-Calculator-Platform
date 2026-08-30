@@ -90,6 +90,7 @@ export type Outlook = {
   partTimeInvested: number;
   partTimeTotal: number;
   retirementIncomeTotal: number;
+  fundingTotal: number;
   straightLineFundedThroughAge: number;
   straightLineEndingBalance: number;
   longevityGapYears: number;

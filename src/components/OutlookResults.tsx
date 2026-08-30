@@ -46,7 +46,18 @@ export function OutlookResults({ result }: Props) {
 
       {comfort ? <ComfortEstimateCard comfort={comfort} currentSavings={result.input.currentSavings} /> : null}
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="space-y-4">
+        <div className="card flex flex-col gap-1 p-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-wide text-muted">Nest egg + later income</p>
+            <p className="mt-1 text-sm text-muted">
+              {formatMoney(outlook.nestEggAtRetirement)} at retirement + {formatMoney(outlook.retirementIncomeTotal)} after
+              full-time work ends
+            </p>
+          </div>
+          <p className="font-serif text-3xl text-pine">{formatMoney(outlook.fundingTotal)}</p>
+        </div>
+        <div className="grid gap-4 lg:grid-cols-2">
         <BreakdownCard
           title="Nest egg at retirement"
           total={outlook.nestEggAtRetirement}
@@ -74,7 +85,7 @@ export function OutlookResults({ result }: Props) {
         <BreakdownCard
           title="All spending through last funded year"
           total={outlook.totalRetirementSpend}
-          note={`Lifestyle plus healthcare through age ${outlook.fundedThroughAge}. Healthcare is only part of this total. Nest egg plus later income is ${formatMoney(outlook.nestEggAtRetirement + outlook.retirementIncomeTotal)}; remaining-balance growth in retirement covers some of the difference.`}
+          note={`Lifestyle plus healthcare through age ${outlook.fundedThroughAge}. Healthcare is only part of this total. Nest egg plus later income is ${formatMoney(outlook.fundingTotal)}; remaining-balance growth in retirement covers some of the difference.`}
           rows={[
             { label: "Lifestyle", value: outlook.totalLifestyleSpend },
             { label: "Routine healthcare", value: outlook.totalHealthcareSpend },
@@ -92,6 +103,7 @@ export function OutlookResults({ result }: Props) {
             { label: "Later-life facility rent", value: outlook.totalHousingSpend },
           ]}
         />
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

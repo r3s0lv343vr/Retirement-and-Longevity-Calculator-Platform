@@ -393,6 +393,7 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
     0,
   );
   const retirementIncomeTotal = socialSecurityTotal + pensionTotal + partTimeTotal;
+  const fundingTotal = nestEgg.total + retirementIncomeTotal;
   const totalMedicalSpend = totalHealthcareSpend + totalLongTermCareSpend + totalHousingSpend;
   const totalRetirementSpend = totalLifestyleSpend + totalMedicalSpend;
 
@@ -481,6 +482,7 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
     partTimeInvested,
     partTimeTotal,
     retirementIncomeTotal,
+    fundingTotal,
     straightLineFundedThroughAge,
     straightLineEndingBalance,
     longevityGapYears,
