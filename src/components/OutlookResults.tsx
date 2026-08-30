@@ -87,6 +87,8 @@ export function OutlookResults({ result, adoptedBudget = null, onAdoptComfort, a
 
       <WhatIfCompare result={result} />
 
+      <ClaimingCompareCard result={result} />
+
       <div className="space-y-4">
         <div className="card flex flex-col gap-1 p-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -104,12 +106,19 @@ export function OutlookResults({ result, adoptedBudget = null, onAdoptComfort, a
           total={outlook.nestEggAtRetirement}
           note={
             outlook.nestEggYears > 0
-              ? `Total future value at age ${result.input.retirementAge}: current savings grown as a lump, plus annual savings as an ordinary annuity (${outlook.nestEggYears} years at ${(result.input.preRetirementReturn * 100).toFixed(1)}%).`
+              ? result.input.savingsGrowWithInflation
+                ? `Total future value at age ${result.input.retirementAge}: current savings grown as a lump, plus annual savings that rise with inflation (${outlook.nestEggYears} years at ${(result.input.preRetirementReturn * 100).toFixed(1)}%).`
+                : `Total future value at age ${result.input.retirementAge}: current savings grown as a lump, plus annual savings as an ordinary annuity (${outlook.nestEggYears} years at ${(result.input.preRetirementReturn * 100).toFixed(1)}%).`
               : "Full-time work has already ended, so this is the savings on hand today."
           }
           rows={[
             { label: "Future value of current savings", value: outlook.nestEggLump },
-            { label: "Annuity of annual savings", value: outlook.nestEggAnnuity },
+            {
+              label: result.input.savingsGrowWithInflation
+                ? "Growing annuity of annual savings"
+                : "Annuity of annual savings",
+              value: outlook.nestEggAnnuity,
+            },
           ]}
         />
         <BreakdownCard
@@ -212,6 +221,18 @@ export function OutlookResults({ result, adoptedBudget = null, onAdoptComfort, a
             ? ` — ${outlook.longevityGapYears} year${outlook.longevityGapYears === 1 ? "" : "s"} sooner.`
             : "."}
         </p>
+        <p className="mt-3 text-sm leading-relaxed text-ink/85">
+          The same plan with a weak first decade — {(outlook.badDecadeReturn * 100).toFixed(1)}% a year for the first
+          10 years of retirement, then your usual {(result.input.postRetirementReturn * 100).toFixed(1)}% — lasts
+          through age <strong>{outlook.badDecadeFundedThroughAge}</strong>
+          {outlook.badDecadeEndingBalance > 0
+            ? ` with ${formatMoney(outlook.badDecadeEndingBalance)} left`
+            : ""}
+          {outlook.badDecadeGapYears > 0
+            ? ` — ${outlook.badDecadeGapYears} year${outlook.badDecadeGapYears === 1 ? "" : "s"} sooner than the usual-return path.`
+            : "."}{" "}
+          A straight-line return is the optimistic path.
+        </p>
       </div>
 
       <AdSlot placement="after-comparison" />
@@ -259,6 +280,41 @@ export function OutlookResults({ result, adoptedBudget = null, onAdoptComfort, a
 
       <CapitalMonthsCard outlook={outlook} />
       <CompileDownloadButton result={result} />
+    </section>
+  );
+}
+
+function ClaimingCompareCard({ result }: { result: ProjectionResult }) {
+  const { outlook, input } = result;
+  const enteredAnnual = input.socialSecurityAnnual;
+  return (
+    <section className="card">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Social Security — entered plan</p>
+      <h3 className="mt-2 font-serif text-2xl text-pine">Claim at 67 vs 70</h3>
+      <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
+        Your outlook still uses the check and start age on the form ({formatMoney(enteredAnnual)} starting at{" "}
+        {input.socialSecurityStartAge}). This compare scales that check the way delayed retirement credits work in the
+        U.S. — full retirement age 67, and age 70 is 24% higher — then runs the same spending path with fewer years of
+        checks.
+      </p>
+      <dl className="mt-5 grid gap-4 sm:grid-cols-2">
+        <div className="rounded-xl border border-pine/10 bg-paper-2/40 p-4">
+          <dt className="text-xs uppercase tracking-wide text-muted">Claim at 67</dt>
+          <dd className="mt-1 font-serif text-2xl text-ink">{formatMoney(outlook.claiming67Annual)} / year</dd>
+          <p className="mt-1 text-sm text-ink/85">
+            Funded through age <strong>{outlook.claiming67FundedThroughAge}</strong>
+          </p>
+          <p className="mt-1 text-xs text-muted">Today’s dollars, then COLA from that start age.</p>
+        </div>
+        <div className="rounded-xl border border-pine/10 bg-paper-2/40 p-4">
+          <dt className="text-xs uppercase tracking-wide text-muted">Claim at 70</dt>
+          <dd className="mt-1 font-serif text-2xl text-ink">{formatMoney(outlook.claiming70Annual)} / year</dd>
+          <p className="mt-1 text-sm text-ink/85">
+            Funded through age <strong>{outlook.claiming70FundedThroughAge}</strong>
+          </p>
+          <p className="mt-1 text-xs text-muted">Higher benefit, three fewer years of checks.</p>
+        </div>
+      </dl>
     </section>
   );
 }

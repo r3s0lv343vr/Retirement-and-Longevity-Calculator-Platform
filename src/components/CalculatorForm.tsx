@@ -33,8 +33,8 @@ const GROUPS: {
     id: "savings",
     title: "Nest egg",
     blurb:
-      "Current savings grow as a future value. Annual savings are a level deposit each year (ordinary annuity). Inflation does not raise the deposit; it raises later spending.",
-    keys: ["currentSavings", "annualContribution", "preRetirementReturn"],
+      "Current savings grow as a future value. Annual savings are a level deposit each year (ordinary annuity) unless you turn on the inflation toggle below. Inflation always raises later spending.",
+    keys: ["currentSavings", "annualContribution", "preRetirementReturn", "savingsGrowWithInflation"],
     columns: 3,
   },
   {
@@ -156,7 +156,8 @@ export function CalculatorForm({ values, onChange, onSubmit, loading, error }: P
                   onChange={setField}
                   wide={
                     (group.id === "work" && key === "partTimeAnnualIncome") ||
-                    (group.id === "income" && key === "pensionCola")
+                    (group.id === "income" && key === "pensionCola") ||
+                    (group.id === "savings" && key === "savingsGrowWithInflation")
                   }
                 />
               ))}

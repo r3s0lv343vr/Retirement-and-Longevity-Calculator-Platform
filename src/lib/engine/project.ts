@@ -28,6 +28,52 @@ export function nestEggAtRetirement(
   return futureValueLump(presentValue, rate, years) + futureValueOrdinaryAnnuity(annualSavings, rate, years);
 }
 
+/**
+ * Ordinary annuity whose payment grows at `growth` each year.
+ * First deposit is `payment`; deposit k is payment × (1+g)^(k-1).
+ */
+export function futureValueGrowingOrdinaryAnnuity(
+  payment: number,
+  rate: number,
+  growth: number,
+  years: number,
+): number {
+  if (years <= 0 || payment === 0) return 0;
+  if (Math.abs(rate - growth) < 1e-12) return payment * years * (1 + rate) ** Math.max(years - 1, 0);
+  return (payment * ((1 + rate) ** years - (1 + growth) ** years)) / (rate - growth);
+}
+
+export const SS_FRA_AGE = 67;
+export const SS_MAX_CLAIM_AGE = 70;
+export const BAD_DECADE_YEARS = 10;
+export const BAD_DECADE_RETURN_CUT = 0.04;
+
+/** US-style factor vs full retirement age 67. Age 70 is 124%. Entered annual is the benefit at the entered start age. */
+export function socialSecurityClaimFactor(claimAge: number): number {
+  const age = Math.min(SS_MAX_CLAIM_AGE, Math.max(62, Math.round(claimAge)));
+  if (age >= SS_FRA_AGE) return 1 + 0.08 * (age - SS_FRA_AGE);
+  const monthsEarly = (SS_FRA_AGE - age) * 12;
+  const first36 = Math.min(monthsEarly, 36);
+  let reduction = first36 * (5 / 9) / 100;
+  if (monthsEarly > 36) reduction += (monthsEarly - 36) * (5 / 12) / 100;
+  return 1 - reduction;
+}
+
+export function socialSecurityAnnualAtClaimAge(
+  annualAtEnteredStart: number,
+  enteredStartAge: number,
+  claimAge: number,
+): number {
+  const from = socialSecurityClaimFactor(enteredStartAge);
+  const to = socialSecurityClaimFactor(claimAge);
+  if (from <= 0) return annualAtEnteredStart;
+  return annualAtEnteredStart * (to / from);
+}
+
+export function badDecadeReturn(usual: number): number {
+  return Math.max(0, usual - BAD_DECADE_RETURN_CUT);
+}
+
 /** Accumulation years until full-time work ends. Already retired → 0. */
 export function nestEggYears(input: CalculatorInput): number {
   return Math.max(0, input.retirementAge - input.currentAge);
@@ -41,7 +87,14 @@ export function nestEggBreakdown(input: CalculatorInput): {
 } {
   const years = nestEggYears(input);
   const lump = futureValueLump(input.currentSavings, input.preRetirementReturn, years);
-  const annuity = futureValueOrdinaryAnnuity(input.annualContribution, input.preRetirementReturn, years);
+  const annuity = input.savingsGrowWithInflation
+    ? futureValueGrowingOrdinaryAnnuity(
+        input.annualContribution,
+        input.preRetirementReturn,
+        input.inflationRate,
+        years,
+      )
+    : futureValueOrdinaryAnnuity(input.annualContribution, input.preRetirementReturn, years);
   return { years, lump, annuity, total: lump + annuity };
 }
 
@@ -179,12 +232,22 @@ export function healthcareAgeFactor(age: number): number {
   return 2.45;
 }
 
-function runYears(input: CalculatorInput, straightLine: boolean): YearRow[] {
+type RunYearOptions = {
+  straightLine?: boolean;
+  badFirstDecade?: boolean;
+};
+
+function runYears(input: CalculatorInput, option: boolean | RunYearOptions): YearRow[] {
+  const opts: RunYearOptions = typeof option === "boolean" ? { straightLine: option } : option;
+  const straightLine = Boolean(opts.straightLine);
+  const badFirstDecade = Boolean(opts.badFirstDecade);
   const years: YearRow[] = [];
   let balance = input.currentSavings;
   let depleted = false;
   const workWindow = phasedWorkWindow(input);
   let investActive = input.partTimeAnnualInvestment > 0;
+  const retirementStartAge = Math.max(input.retirementAge, input.currentAge);
+  const weakReturn = badDecadeReturn(input.postRetirementReturn);
 
   for (let age = input.currentAge; age <= input.planToAge; age += 1) {
     const yearsFromNow = age - input.currentAge;
@@ -193,20 +256,31 @@ function runYears(input: CalculatorInput, straightLine: boolean): YearRow[] {
     if (working) {
       const yearsDone = age - input.currentAge;
       const rate = input.preRetirementReturn;
-      const startBalance = nestEggAtRetirement(
-        input.currentSavings,
-        input.annualContribution,
-        rate,
-        yearsDone,
-      );
-      const endBalance = nestEggAtRetirement(
-        input.currentSavings,
-        input.annualContribution,
-        rate,
-        yearsDone + 1,
-      );
-      const contribution = input.annualContribution;
-      const growth = startBalance * rate;
+      const contribution = input.savingsGrowWithInflation
+        ? inflate(input.annualContribution, input.inflationRate, yearsFromNow)
+        : input.annualContribution;
+      let startBalance: number;
+      let endBalance: number;
+      let growth: number;
+      if (input.savingsGrowWithInflation) {
+        startBalance = balance;
+        growth = startBalance * rate;
+        endBalance = startBalance + growth + contribution;
+      } else {
+        startBalance = nestEggAtRetirement(
+          input.currentSavings,
+          input.annualContribution,
+          rate,
+          yearsDone,
+        );
+        endBalance = nestEggAtRetirement(
+          input.currentSavings,
+          input.annualContribution,
+          rate,
+          yearsDone + 1,
+        );
+        growth = startBalance * rate;
+      }
       balance = endBalance;
       years.push({
         age,
@@ -230,7 +304,11 @@ function runYears(input: CalculatorInput, straightLine: boolean): YearRow[] {
     }
 
     const startBalance = Math.max(balance, 0);
-    const rate = input.postRetirementReturn;
+    const yearsIntoRetirement = age - retirementStartAge;
+    const rate =
+      badFirstDecade && yearsIntoRetirement < BAD_DECADE_YEARS
+        ? weakReturn
+        : input.postRetirementReturn;
     const inPhasedWork = age >= workWindow.start && age <= workWindow.end && workWindow.years > 0;
     const investPmt =
       investActive && inPhasedWork && input.partTimeAnnualInvestment > 0 ? input.partTimeAnnualInvestment : 0;
@@ -506,6 +584,54 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
     surpassesRequiredMonths,
     remainingSavings,
     remainingExpenseNeed,
+    ...longevityToolExtras(input, fundedThroughAge),
+  };
+}
+
+function longevityToolExtras(
+  input: CalculatorInput,
+  mainFundedThroughAge: number,
+): Pick<
+  Outlook,
+  | "badDecadeFundedThroughAge"
+  | "badDecadeEndingBalance"
+  | "badDecadeGapYears"
+  | "badDecadeReturn"
+  | "claiming67Annual"
+  | "claiming70Annual"
+  | "claiming67FundedThroughAge"
+  | "claiming70FundedThroughAge"
+> {
+  const claiming67Annual = socialSecurityAnnualAtClaimAge(
+    input.socialSecurityAnnual,
+    input.socialSecurityStartAge,
+    67,
+  );
+  const claiming70Annual = socialSecurityAnnualAtClaimAge(
+    input.socialSecurityAnnual,
+    input.socialSecurityStartAge,
+    70,
+  );
+  const years67 = runYears(
+    { ...input, socialSecurityAnnual: claiming67Annual, socialSecurityStartAge: 67 },
+    false,
+  );
+  const years70 = runYears(
+    { ...input, socialSecurityAnnual: claiming70Annual, socialSecurityStartAge: 70 },
+    false,
+  );
+  const bad = runYears(input, { badFirstDecade: true });
+  const badDecadeFundedThroughAge = fundedThrough(bad, input.planToAge);
+  const badDepleted = firstDepletionAge(bad) != null;
+  return {
+    claiming67Annual,
+    claiming70Annual,
+    claiming67FundedThroughAge: fundedThrough(years67, input.planToAge),
+    claiming70FundedThroughAge: fundedThrough(years70, input.planToAge),
+    badDecadeFundedThroughAge,
+    badDecadeEndingBalance: badDepleted ? 0 : bad.at(-1)?.endBalance ?? 0,
+    badDecadeGapYears: Math.max(0, mainFundedThroughAge - badDecadeFundedThroughAge),
+    badDecadeReturn: badDecadeReturn(input.postRetirementReturn),
   };
 }
 
