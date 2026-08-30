@@ -9,7 +9,7 @@ export function project(input: CalculatorInput): ProjectionResult {
 export { DEFAULT_INPUT, FIELD_META } from "./defaults";
 export { mergeInput, validateInput, warningsFor } from "./validate";
 export { inflate, futureValueLump, futureValueOrdinaryAnnuity, nestEggAtRetirement, nestEggYears, nestEggBreakdown, phasedWorkWindow, guaranteedIncomeWindow, guaranteedIncomeAnnuity, growingPaymentSum, socialSecurityAtAge, pensionAtAge, lifePhase, lifestyleMultiplier, healthcareAgeFactor, facilityHousing, projectBase } from "./project";
-export { estimateComfort, extraAnnualSavings, nestEggNeededNow, comfortInputFrom } from "./comfort";
+export { estimateComfort, extraAnnualSavings, nestEggNeededNow, comfortInputFrom, adoptComfortBudget, sameSpendAmounts } from "./comfort";
 export {
   WHAT_IF_LEVERS,
   WHAT_IF_LEVER_COPY,
@@ -30,6 +30,7 @@ export type {
   LifePhase,
   Outlook,
   OutlookStatus,
+  PlanSnapshot,
   ProjectionResult,
   YearRow,
 } from "./types";

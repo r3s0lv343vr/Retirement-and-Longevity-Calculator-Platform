@@ -3,12 +3,22 @@
 import { AdSlot } from "@/components/AdSlot";
 import { CompileDownloadButton } from "@/components/CompileDownloadButton";
 import { OutlookChart } from "@/components/OutlookChart";
+import { PlanSnapshotCard } from "@/components/PlanSnapshotCard";
 import { WhatIfCompare } from "@/components/WhatIfCompare";
-import type { ComfortEstimate, ProjectionResult } from "@/lib/engine";
+import type { ComfortEstimate, PlanSnapshot, ProjectionResult } from "@/lib/engine";
+import { fundedThroughDeltaCopy, snapshotFromOutlook } from "@/lib/engine";
 import { formatMoney, formatMonths, formatPercent } from "@/lib/format";
+
+type AdoptedComfortBudget = {
+  lifestyle: number;
+  healthcare: number;
+};
 
 type Props = {
   result: ProjectionResult;
+  adoptedBudget?: AdoptedComfortBudget | null;
+  onAdoptComfort?: () => void;
+  adoptingComfort?: boolean;
 };
 
 const STATUS_STYLES: Record<string, string> = {
@@ -38,7 +48,7 @@ function SectionBreak({ label, note }: { label: string; note: string }) {
   );
 }
 
-export function OutlookResults({ result }: Props) {
+export function OutlookResults({ result, adoptedBudget = null, onAdoptComfort, adoptingComfort = false }: Props) {
   const { outlook, years, warnings, comfort } = result;
   const retiredYears = years.filter((y) => y.phase !== "working");
   const sampleYears = retiredYears.filter((_, i, arr) => i % 5 === 0 || i === arr.length - 1);
@@ -59,7 +69,16 @@ export function OutlookResults({ result }: Props) {
         </dl>
       </header>
 
-      {comfort ? <ComfortEstimateCard comfort={comfort} currentSavings={result.input.currentSavings} /> : null}
+      {comfort ? (
+        <ComfortEstimateCard
+          comfort={comfort}
+          currentSavings={result.input.currentSavings}
+          thisRun={snapshotFromOutlook(outlook)}
+          adoptedBudget={adoptedBudget}
+          onAdopt={onAdoptComfort}
+          adopting={adoptingComfort}
+        />
+      ) : null}
 
       <SectionBreak
         label="Your entered plan"
@@ -294,10 +313,20 @@ function Metric({ label, value }: { label: string; value: string }) {
 function ComfortEstimateCard({
   comfort,
   currentSavings,
+  thisRun,
+  adoptedBudget,
+  onAdopt,
+  adopting,
 }: {
   comfort: ComfortEstimate;
   currentSavings: number;
+  thisRun: PlanSnapshot;
+  adoptedBudget: AdoptedComfortBudget | null;
+  onAdopt?: () => void;
+  adopting: boolean;
 }) {
+  const adopted = Boolean(adoptedBudget);
+  const spendDelta = comfort.spendIfAdopted.fundedThroughAge - thisRun.fundedThroughAge;
   const saveLine =
     comfort.additionalNestEgg <= 0
       ? "On this suggested budget, your current nest egg is already enough in this model. The breakdown below still uses the amounts you entered."
@@ -307,44 +336,93 @@ function ComfortEstimateCard({
 
   return (
     <section className="card border-gold/40 bg-gold/10">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Suggested alternative — not your entered plan</p>
-      <h3 className="mt-2 font-serif text-2xl text-pine">Comfortable living</h3>
-      <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink/80">
-        Optional. This is a higher national-style budget you can aim for — not the outlook from the form. If you adopt
-        it, the extra saving shown may help you last through your plan-through age. It uses the higher of your lifestyle
-        spending and a $65,000 floor, adds a 10% buffer, and keeps healthcare no lower than a typical premium-plus-care
-        amount. Later-life housing is included only if you entered it.
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">
+        {adopted ? "Now your entered plan" : "Suggested alternative — not your entered plan"}
       </p>
-      <dl className="mt-5 grid gap-4 sm:grid-cols-3">
-        <div>
-          <dt className="text-xs uppercase tracking-wide text-muted">Comfortable budget / year</dt>
-          <dd className="mt-1 font-serif text-2xl text-ink">{formatMoney(comfort.suggestedAnnualBudgetToday)}</dd>
-          <p className="mt-1 text-xs text-muted">
-            {formatMoney(comfort.suggestedLifestyleToday)} lifestyle + {formatMoney(comfort.suggestedHealthcareToday)}{" "}
-            healthcare, in today’s dollars.
-          </p>
-        </div>
-        <div>
-          <dt className="text-xs uppercase tracking-wide text-muted">Nest egg to fund it</dt>
-          <dd className="mt-1 font-serif text-2xl text-ink">{formatMoney(comfort.nestEggNeededNow)}</dd>
-          <p className="mt-1 text-xs text-muted">
-            Savings needed today to last through your plan age.
-          </p>
-        </div>
-        <div>
-          <dt className="text-xs uppercase tracking-wide text-muted">Extra to save / year</dt>
-          <dd className="mt-1 font-serif text-2xl text-ink">
-            {comfort.additionalNestEgg <= 0 ? "$0" : formatMoney(comfort.additionalAnnualSavings)}
-          </dd>
-          <p className="mt-1 text-xs text-muted">On top of the annual savings already on the form, until full-time work ends.</p>
-        </div>
-      </dl>
-      <p className="mt-4 text-sm leading-relaxed text-ink/85">{saveLine}</p>
-      {comfort.usedHousingPlaceholder ? (
-        <p className="mt-2 text-xs text-muted">
-          Housing placeholder is included in the nest-egg figure. Enter your own senior, nursing, or CCRC rent to replace
-          it.
+      <h3 className="mt-2 font-serif text-2xl text-pine">Comfortable living</h3>
+      {adopted && adoptedBudget ? (
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink/80">
+          You chose this budget. Lifestyle {formatMoney(adoptedBudget.lifestyle)} and healthcare{" "}
+          {formatMoney(adoptedBudget.healthcare)} are now on the form. The entered-plan cards, chart, capital months,
+          what-if, and PDF below use it. Comfort will not raise that budget again unless you change those two cells.
         </p>
+      ) : (
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink/80">
+          Optional. This is a higher national-style budget you can aim for — not the outlook from the form. Compare it
+          to this run first. If you adopt it, only lifestyle and healthcare on the form change, then the outlook
+          re-runs. It uses the higher of your lifestyle spending and a $65,000 floor, adds a 10% buffer, and keeps
+          healthcare no lower than a typical premium-plus-care amount. Later-life housing is included only if you
+          entered it.
+        </p>
+      )}
+      {!adopted ? (
+        <>
+          <dl className="mt-5 grid gap-4 sm:grid-cols-3">
+            <div>
+              <dt className="text-xs uppercase tracking-wide text-muted">Comfortable budget / year</dt>
+              <dd className="mt-1 font-serif text-2xl text-ink">{formatMoney(comfort.suggestedAnnualBudgetToday)}</dd>
+              <p className="mt-1 text-xs text-muted">
+                {formatMoney(comfort.suggestedLifestyleToday)} lifestyle + {formatMoney(comfort.suggestedHealthcareToday)}{" "}
+                healthcare, in today’s dollars.
+              </p>
+            </div>
+            <div>
+              <dt className="text-xs uppercase tracking-wide text-muted">Nest egg to fund it</dt>
+              <dd className="mt-1 font-serif text-2xl text-ink">{formatMoney(comfort.nestEggNeededNow)}</dd>
+              <p className="mt-1 text-xs text-muted">
+                Savings needed today to last through your plan age.
+              </p>
+            </div>
+            <div>
+              <dt className="text-xs uppercase tracking-wide text-muted">Extra to save / year</dt>
+              <dd className="mt-1 font-serif text-2xl text-ink">
+                {comfort.additionalNestEgg <= 0 ? "$0" : formatMoney(comfort.additionalAnnualSavings)}
+              </dd>
+              <p className="mt-1 text-xs text-muted">On top of the annual savings already on the form, until full-time work ends.</p>
+            </div>
+          </dl>
+          <p className="mt-4 text-sm leading-relaxed text-ink/85">{saveLine}</p>
+          {comfort.usedHousingPlaceholder ? (
+            <p className="mt-2 text-xs text-muted">
+              Housing placeholder is included in the nest-egg figure. Enter your own senior, nursing, or CCRC rent to replace
+              it.
+            </p>
+          ) : null}
+
+          <div className="mt-6 border-t border-gold/30 pt-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Compare, then adopt</p>
+            <p className="mt-2 text-sm leading-relaxed text-muted">
+              Same nest egg and later income as this run. Only lifestyle and healthcare move to{" "}
+              {formatMoney(comfort.suggestedLifestyleToday)} and {formatMoney(comfort.suggestedHealthcareToday)}.
+            </p>
+            <dl className="mt-4 grid gap-4 sm:grid-cols-2">
+              <PlanSnapshotCard
+                label="This run"
+                snapshot={thisRun}
+                note="The amounts still on the form."
+              />
+              <PlanSnapshotCard
+                label="This comfortable budget"
+                snapshot={comfort.spendIfAdopted}
+                note="Current savings, suggested spend."
+              />
+            </dl>
+            <p className="mt-4 text-sm font-medium text-pine">{fundedThroughDeltaCopy(spendDelta)}</p>
+            {onAdopt ? (
+              <button
+                type="button"
+                onClick={onAdopt}
+                disabled={adopting}
+                className="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-pine px-6 text-sm font-semibold text-paper shadow-sm transition hover:bg-pine-2 disabled:opacity-60 sm:w-auto"
+              >
+                {adopting ? "Updating entered plan…" : "Make this my entered plan"}
+              </button>
+            ) : null}
+            <p className="mt-2 text-xs text-muted">
+              Copies those two spending amounts onto the form and re-runs. You can edit the cells again anytime.
+            </p>
+          </div>
+        </>
       ) : null}
     </section>
   );

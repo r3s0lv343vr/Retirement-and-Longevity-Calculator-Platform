@@ -1,6 +1,6 @@
 import { FIELD_META } from "./defaults";
 import { projectBase } from "./project";
-import type { CalculatorInput, Outlook } from "./types";
+import type { CalculatorInput, Outlook, PlanSnapshot } from "./types";
 import { validateInput } from "./validate";
 
 export const WHAT_IF_LEVERS = [
@@ -12,17 +12,7 @@ export const WHAT_IF_LEVERS = [
 
 export type WhatIfLever = (typeof WHAT_IF_LEVERS)[number];
 
-export type WhatIfSnapshot = {
-  fundedThroughAge: number;
-  yearsCovered: number;
-  yearsInRetirement: number;
-  depleted: boolean;
-  endingBalance: number;
-  remainingSavings: number;
-  remainingExpenseNeed: number;
-  requiredMonths: number;
-  accumulatedMonths: number;
-};
+export type WhatIfSnapshot = PlanSnapshot;
 
 export type WhatIfComparison = {
   lever: WhatIfLever;

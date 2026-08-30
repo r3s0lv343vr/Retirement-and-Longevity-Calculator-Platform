@@ -104,6 +104,18 @@ export type Outlook = {
   remainingExpenseNeed: number;
 };
 
+export type PlanSnapshot = {
+  fundedThroughAge: number;
+  yearsCovered: number;
+  yearsInRetirement: number;
+  depleted: boolean;
+  endingBalance: number;
+  remainingSavings: number;
+  remainingExpenseNeed: number;
+  requiredMonths: number;
+  accumulatedMonths: number;
+};
+
 export type ComfortEstimate = {
   suggestedLifestyleToday: number;
   suggestedHealthcareToday: number;
@@ -116,6 +128,8 @@ export type ComfortEstimate = {
   additionalAnnualSavings: number;
   yearsToRetirement: number;
   fundedThroughIfFunded: number;
+  /** Current nest egg and income, with only lifestyle and healthcare set to the suggested budget. */
+  spendIfAdopted: PlanSnapshot;
 };
 
 export type ProjectionResult = {

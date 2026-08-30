@@ -1,5 +1,6 @@
 import type { CalculatorInput, ComfortEstimate } from "./types";
 import { projectBase } from "./project";
+import { snapshotFromOutlook } from "./whatIf";
 
 /** Moderate US planning floor for a comfortable lifestyle (today’s dollars), not a high-cost city. */
 export const COMFORT_LIFESTYLE_FLOOR = 65_000;
@@ -59,6 +60,7 @@ export function estimateComfort(input: CalculatorInput): ComfortEstimate {
     yearsToRetirement,
     input.preRetirementReturn,
   );
+  const spendRun = projectBase(comfortInput);
   const comfortRun = projectBase({ ...comfortInput, currentSavings: Math.max(input.currentSavings, nestEggNeeded) });
 
   return {
@@ -73,5 +75,20 @@ export function estimateComfort(input: CalculatorInput): ComfortEstimate {
     additionalAnnualSavings,
     yearsToRetirement,
     fundedThroughIfFunded: comfortRun.outlook.fundedThroughAge,
+    spendIfAdopted: snapshotFromOutlook(spendRun.outlook),
   };
+}
+
+/** Copy only the suggested lifestyle and healthcare onto the entered plan. */
+export function adoptComfortBudget(input: CalculatorInput): CalculatorInput {
+  const comfort = comfortInputFrom(input);
+  return {
+    ...input,
+    lifestyleSpendToday: comfort.lifestyleSpendToday,
+    healthcareSpendToday: comfort.healthcareSpendToday,
+  };
+}
+
+export function sameSpendAmounts(input: CalculatorInput, lifestyle: number, healthcare: number): boolean {
+  return Math.round(input.lifestyleSpendToday) === Math.round(lifestyle) && Math.round(input.healthcareSpendToday) === Math.round(healthcare);
 }
