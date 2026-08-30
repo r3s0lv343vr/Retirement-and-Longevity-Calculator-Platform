@@ -3,6 +3,7 @@
 import { AdSlot } from "@/components/AdSlot";
 import { CompileDownloadButton } from "@/components/CompileDownloadButton";
 import { OutlookChart } from "@/components/OutlookChart";
+import { WhatIfCompare } from "@/components/WhatIfCompare";
 import type { ComfortEstimate, ProjectionResult } from "@/lib/engine";
 import { formatMoney, formatMonths, formatPercent } from "@/lib/format";
 
@@ -64,6 +65,8 @@ export function OutlookResults({ result }: Props) {
         label="Your entered plan"
         note="The figures below use the amounts on the form. They are not the comfortable-living suggestion."
       />
+
+      <WhatIfCompare result={result} />
 
       <div className="space-y-4">
         <div className="card flex flex-col gap-1 p-5 sm:flex-row sm:items-end sm:justify-between">
