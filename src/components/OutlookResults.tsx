@@ -46,13 +46,18 @@ export function OutlookResults({ result }: Props) {
 
       {comfort ? <ComfortEstimateCard comfort={comfort} currentSavings={result.input.currentSavings} /> : null}
 
+      <SectionBreak
+        label="Your entered plan"
+        note="The figures below use the amounts on the form. They are not the comfortable-living suggestion."
+      />
+
       <div className="space-y-4">
         <div className="card flex flex-col gap-1 p-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs uppercase tracking-wide text-muted">Nest egg + later income</p>
             <p className="mt-1 text-sm text-muted">
-              {formatMoney(outlook.nestEggAtRetirement)} at retirement + {formatMoney(outlook.retirementIncomeTotal)} after
-              full-time work ends
+              From your entered plan: {formatMoney(outlook.nestEggAtRetirement)} at retirement +{" "}
+              {formatMoney(outlook.retirementIncomeTotal)} after full-time work ends
             </p>
           </div>
           <p className="font-serif text-3xl text-pine">{formatMoney(outlook.fundingTotal)}</p>
@@ -237,20 +242,20 @@ function ComfortEstimateCard({
 }) {
   const saveLine =
     comfort.additionalNestEgg <= 0
-      ? "Your current nest egg is at or above this comfortable estimate, given the other assumptions on the form."
+      ? "On this suggested budget, your current nest egg is already enough in this model. The breakdown below still uses the amounts you entered."
       : comfort.yearsToRetirement > 0
-        ? `That is ${formatMoney(comfort.additionalNestEgg)} more than the ${formatMoney(currentSavings)} entered. Saving about ${formatMoney(comfort.additionalAnnualSavings)} extra per year until retirement would close the gap in this model.`
-        : `That is ${formatMoney(comfort.additionalNestEgg)} more than the ${formatMoney(currentSavings)} entered. Because retirement is already here, the gap is a nest-egg shortfall rather than extra yearly saving.`;
+        ? `That is ${formatMoney(comfort.additionalNestEgg)} more than the ${formatMoney(currentSavings)} you entered. Saving about ${formatMoney(comfort.additionalAnnualSavings)} extra per year until retirement is one way this alternative may last through your plan age.`
+        : `That is ${formatMoney(comfort.additionalNestEgg)} more than the ${formatMoney(currentSavings)} you entered. Because retirement is already here, this alternative is a nest-egg gap rather than extra yearly saving.`;
 
   return (
-    <section className="card border-pine/20">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Suggested estimate</p>
-      <h3 className="mt-2 font-serif text-2xl text-pine">Comfortable living — what to save toward</h3>
-      <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
-        A national-style planning figure, not a quote for your city. It uses the higher of your lifestyle spending and
-        a $65,000 comfort floor, adds a 10% buffer, and keeps healthcare from falling below a typical premium-plus-care
-        amount. Later-life housing is included only if you entered it — lifestyle spending already covers ordinary
-        housing.
+    <section className="card border-gold/40 bg-gold/10">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Suggested alternative — not your entered plan</p>
+      <h3 className="mt-2 font-serif text-2xl text-pine">Comfortable living</h3>
+      <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink/80">
+        Optional. This is a higher national-style budget you can aim for — not the outlook from the form. If you adopt
+        it, the extra saving shown may help you last through your plan-through age. It uses the higher of your lifestyle
+        spending and a $65,000 floor, adds a 10% buffer, and keeps healthcare no lower than a typical premium-plus-care
+        amount. Later-life housing is included only if you entered it.
       </p>
       <dl className="mt-5 grid gap-4 sm:grid-cols-3">
         <div>
@@ -284,6 +289,19 @@ function ComfortEstimateCard({
         </p>
       ) : null}
     </section>
+  );
+}
+
+function SectionBreak({ label, note }: { label: string; note: string }) {
+  return (
+    <div className="pt-2" role="separator" aria-label={label}>
+      <div className="flex items-center gap-3">
+        <div className="h-1.5 min-w-8 flex-1 rounded-full bg-pine" />
+        <p className="shrink-0 text-xs font-semibold uppercase tracking-[0.18em] text-pine">{label}</p>
+        <div className="h-1.5 min-w-8 flex-1 rounded-full bg-pine" />
+      </div>
+      <p className="mt-2 text-center text-sm text-muted">{note}</p>
+    </div>
   );
 }
 
