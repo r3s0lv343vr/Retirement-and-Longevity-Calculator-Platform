@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { PlanSnapshotCard } from "@/components/PlanSnapshotCard";
 import {
   WHAT_IF_LEVER_COPY,
   WHAT_IF_LEVERS,
@@ -9,7 +10,6 @@ import {
   suggestedWhatIfValue,
 } from "@/lib/engine";
 import type { CalculatorInput, ProjectionResult, WhatIfLever } from "@/lib/engine";
-import { formatMoney, formatMonths } from "@/lib/format";
 
 type Props = {
   result: ProjectionResult;
@@ -147,12 +147,12 @@ export function WhatIfCompare({ result }: Props) {
       ) : (
         <>
           <dl className="mt-5 grid gap-4 sm:grid-cols-2">
-            <CompareSide
+            <PlanSnapshotCard
               label="This run"
               snapshot={compare.baseline}
               note="The outlook you just calculated."
             />
-            <CompareSide
+            <PlanSnapshotCard
               label="This what-if"
               snapshot={compare.variant}
               note={compare.sameAsBaseline ? "Same as this run — pick a different value." : "One change only."}
@@ -234,49 +234,3 @@ function NumberField({
   );
 }
 
-function CompareSide({
-  label,
-  snapshot,
-  note,
-}: {
-  label: string;
-  snapshot: {
-    fundedThroughAge: number;
-    yearsCovered: number;
-    yearsInRetirement: number;
-    depleted: boolean;
-    remainingSavings: number;
-    remainingExpenseNeed: number;
-    requiredMonths: number;
-    accumulatedMonths: number;
-  } | null;
-  note: string;
-}) {
-  return (
-    <div className="rounded-xl border border-pine/10 bg-paper/60 p-4">
-      <p className="text-xs uppercase tracking-wide text-muted">{label}</p>
-      {snapshot ? (
-        <>
-          <p className="mt-2 text-xs uppercase tracking-wide text-muted">Funded through age</p>
-          <p className="mt-1 font-serif text-3xl text-ink">{snapshot.fundedThroughAge}</p>
-          <p className="mt-2 text-sm text-ink/85">
-            {snapshot.yearsCovered} of {snapshot.yearsInRetirement} retirement years
-          </p>
-          <p className="mt-1 text-xs text-muted">
-            {formatMonths(snapshot.accumulatedMonths)} accumulated / {formatMonths(snapshot.requiredMonths)} required
-          </p>
-          <p className="mt-2 text-xs text-muted">
-            {snapshot.depleted
-              ? snapshot.remainingExpenseNeed > 0
-                ? `Still needed after capital runs out: ${formatMoney(snapshot.remainingExpenseNeed)}`
-                : "Savings depleted"
-              : `Savings remaining: ${formatMoney(snapshot.remainingSavings)}`}
-          </p>
-        </>
-      ) : (
-        <p className="mt-3 text-sm text-muted">Enter a valid value to compare.</p>
-      )}
-      <p className="mt-3 text-xs text-muted">{note}</p>
-    </div>
-  );
-}

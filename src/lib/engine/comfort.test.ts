@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_INPUT } from "./defaults";
-import { COMFORT_LIFESTYLE_FLOOR, comfortInputFrom, estimateComfort, extraAnnualSavings } from "./comfort";
+import { project } from "./index";
+import {
+  COMFORT_LIFESTYLE_FLOOR,
+  adoptComfortBudget,
+  comfortInputFrom,
+  estimateComfort,
+  extraAnnualSavings,
+  sameSpendAmounts,
+} from "./comfort";
 
 describe("comfortInputFrom", () => {
   it("raises low lifestyle spend to a comfortable floor plus buffer", () => {
@@ -70,5 +78,32 @@ describe("estimateComfort", () => {
     expect(comfort.usedHousingPlaceholder).toBe(false);
     expect(comfort.additionalAnnualSavings).toBeLessThan(25000);
     expect(comfort.additionalAnnualSavings).toBeGreaterThan(0);
+  });
+
+  it("compares current savings at the suggested spend, without adopting yet", () => {
+    const result = project(DEFAULT_INPUT);
+    expect(result.comfort.suggestedLifestyleToday).toBeCloseTo(71_500);
+    expect(result.comfort.suggestedHealthcareToday).toBe(8_400);
+    expect(result.comfort.spendIfAdopted.fundedThroughAge).toBeLessThanOrEqual(result.outlook.fundedThroughAge);
+    expect(result.input.lifestyleSpendToday).toBe(62_000);
+  });
+});
+
+describe("adoptComfortBudget", () => {
+  it("copies only lifestyle and healthcare", () => {
+    const next = adoptComfortBudget(DEFAULT_INPUT);
+    expect(next.lifestyleSpendToday).toBeCloseTo(71_500);
+    expect(next.healthcareSpendToday).toBe(8_400);
+    expect(next.currentSavings).toBe(DEFAULT_INPUT.currentSavings);
+    expect(next.retirementAge).toBe(DEFAULT_INPUT.retirementAge);
+    expect(next.socialSecurityAnnual).toBe(DEFAULT_INPUT.socialSecurityAnnual);
+  });
+
+  it("would ratchet if applied twice, so the UI remembers the chosen amounts", () => {
+    const adopted = adoptComfortBudget(DEFAULT_INPUT);
+    const again = adoptComfortBudget(adopted);
+    expect(again.lifestyleSpendToday).toBeGreaterThan(adopted.lifestyleSpendToday);
+    expect(sameSpendAmounts(adopted, 71_500, 8_400)).toBe(true);
+    expect(sameSpendAmounts(DEFAULT_INPUT, 71_500, 8_400)).toBe(false);
   });
 });

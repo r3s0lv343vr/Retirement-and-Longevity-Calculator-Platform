@@ -4,23 +4,39 @@ import { useMemo, useState } from "react";
 import { AdSlot } from "@/components/AdSlot";
 import { CalculatorForm } from "@/components/CalculatorForm";
 import { OutlookResults } from "@/components/OutlookResults";
-import { DEFAULT_INPUT } from "@/lib/engine";
+import { DEFAULT_INPUT, adoptComfortBudget, sameSpendAmounts } from "@/lib/engine";
 import type { CalculatorInput, ProjectionResult } from "@/lib/engine";
+
+type AdoptedComfortBudget = {
+  lifestyle: number;
+  healthcare: number;
+};
 
 export function CalculatorApp() {
   const [values, setValues] = useState<CalculatorInput>(DEFAULT_INPUT);
   const [result, setResult] = useState<ProjectionResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [adoptingComfort, setAdoptingComfort] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [adoptedBudget, setAdoptedBudget] = useState<AdoptedComfortBudget | null>(null);
 
-  async function calculate() {
+  function changeValues(next: CalculatorInput) {
+    setValues(next);
+    if (adoptedBudget && !sameSpendAmounts(next, adoptedBudget.lifestyle, adoptedBudget.healthcare)) {
+      setAdoptedBudget(null);
+    }
+  }
+
+  async function calculate(nextValues?: CalculatorInput) {
+    const payload = nextValues ?? values;
+    if (nextValues) setValues(nextValues);
     setLoading(true);
     setError(null);
     try {
       const response = await fetch("/api/calculate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify(payload),
       });
       const data = (await response.json()) as ProjectionResult & { error?: string; errors?: string[] };
       if (!response.ok) {
@@ -36,6 +52,21 @@ export function CalculatorApp() {
       setError("Network error. Try again.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function adoptComfort() {
+    if (!result) return;
+    const next = adoptComfortBudget(result.input);
+    setAdoptedBudget({
+      lifestyle: next.lifestyleSpendToday,
+      healthcare: next.healthcareSpendToday,
+    });
+    setAdoptingComfort(true);
+    try {
+      await calculate(next);
+    } finally {
+      setAdoptingComfort(false);
     }
   }
 
@@ -61,8 +92,8 @@ export function CalculatorApp() {
 
         <CalculatorForm
           values={values}
-          onChange={setValues}
-          onSubmit={calculate}
+          onChange={changeValues}
+          onSubmit={() => void calculate()}
           loading={loading}
           error={error}
         />
@@ -72,7 +103,12 @@ export function CalculatorApp() {
         {result ? (
           <>
             <AdSlot placement="pre-outlook" />
-            <OutlookResults result={result} />
+            <OutlookResults
+              result={result}
+              adoptedBudget={adoptedBudget}
+              onAdoptComfort={() => void adoptComfort()}
+              adoptingComfort={adoptingComfort}
+            />
           </>
         ) : null}
       </div>
