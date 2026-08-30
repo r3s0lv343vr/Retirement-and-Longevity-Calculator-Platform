@@ -8,7 +8,7 @@ export function project(input: CalculatorInput): ProjectionResult {
 
 export { DEFAULT_INPUT, FIELD_META } from "./defaults";
 export { mergeInput, validateInput, warningsFor } from "./validate";
-export { inflate, futureValueLump, futureValueOrdinaryAnnuity, nestEggAtRetirement, phasedWorkWindow, guaranteedIncomeWindow, guaranteedIncomeAnnuity, growingPaymentSum, lifePhase, lifestyleMultiplier, healthcareAgeFactor, facilityHousing, projectBase } from "./project";
+export { inflate, futureValueLump, futureValueOrdinaryAnnuity, nestEggAtRetirement, nestEggYears, nestEggBreakdown, phasedWorkWindow, guaranteedIncomeWindow, guaranteedIncomeAnnuity, growingPaymentSum, socialSecurityAtAge, pensionAtAge, lifePhase, lifestyleMultiplier, healthcareAgeFactor, facilityHousing, projectBase } from "./project";
 export { estimateComfort, extraAnnualSavings, nestEggNeededNow, comfortInputFrom } from "./comfort";
 export type {
   CalculatorInput,

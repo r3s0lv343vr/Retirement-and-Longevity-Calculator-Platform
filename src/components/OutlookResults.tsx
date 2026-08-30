@@ -46,6 +46,43 @@ export function OutlookResults({ result }: Props) {
 
       {comfort ? <ComfortEstimateCard comfort={comfort} currentSavings={result.input.currentSavings} /> : null}
 
+      <div className="grid gap-4 lg:grid-cols-3">
+        <BreakdownCard
+          title="Nest egg at retirement"
+          total={outlook.nestEggAtRetirement}
+          note={
+            outlook.nestEggYears > 0
+              ? `Total future value at age ${result.input.retirementAge}: current savings grown as a lump, plus annual savings as an ordinary annuity (${outlook.nestEggYears} years at ${(result.input.preRetirementReturn * 100).toFixed(1)}%).`
+              : "Full-time work has already ended, so this is the savings on hand today."
+          }
+          rows={[
+            { label: "Future value of current savings", value: outlook.nestEggLump },
+            { label: "Annuity of annual savings", value: outlook.nestEggAnnuity },
+          ]}
+        />
+        <BreakdownCard
+          title="Income after full-time work ends"
+          total={outlook.retirementIncomeTotal}
+          note="Social Security, pension, and phased-work wages through the last funded year, plus extra savings during the work window as an ordinary annuity (or amount × years if the rate is 0%)."
+          rows={[
+            { label: "Social Security", value: outlook.socialSecurityTotal },
+            { label: "Pension", value: outlook.pensionTotal },
+            { label: "Part-time / side-hustle wages", value: outlook.partTimeWages },
+            { label: "Extra savings during phased work", value: outlook.partTimeInvested },
+          ]}
+        />
+        <BreakdownCard
+          title="Healthcare and care"
+          total={outlook.totalMedicalSpend}
+          note={`Totals through the last funded year (age ${outlook.fundedThroughAge}). Routine care uses medical inflation and age steps; long-term care starts at the age you set; facility rent is later-life housing only.`}
+          rows={[
+            { label: "Routine healthcare", value: outlook.totalHealthcareSpend },
+            { label: "Long-term care", value: outlook.totalLongTermCareSpend },
+            { label: "Later-life facility rent", value: outlook.totalHousingSpend },
+          ]}
+        />
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Healthcare & housing share"
@@ -233,6 +270,34 @@ function StatCard({ label, value, note }: { label: string; value: string; note: 
       <p className="text-xs uppercase tracking-wide text-muted">{label}</p>
       <p className="mt-1 font-serif text-2xl text-pine">{value}</p>
       {note ? <p className="mt-2 text-xs text-muted">{note}</p> : null}
+    </article>
+  );
+}
+
+function BreakdownCard({
+  title,
+  total,
+  note,
+  rows,
+}: {
+  title: string;
+  total: number;
+  note: string;
+  rows: { label: string; value: number }[];
+}) {
+  return (
+    <article className="card p-5">
+      <p className="text-xs uppercase tracking-wide text-muted">{title}</p>
+      <p className="mt-1 font-serif text-2xl text-pine">{formatMoney(total)}</p>
+      <p className="mt-2 text-xs leading-relaxed text-muted">{note}</p>
+      <dl className="mt-4 space-y-2 border-t border-pine/10 pt-3">
+        {rows.map((row) => (
+          <div key={row.label} className="flex items-baseline justify-between gap-3 text-sm">
+            <dt className="text-muted">{row.label}</dt>
+            <dd className="font-medium text-ink">{formatMoney(row.value)}</dd>
+          </div>
+        ))}
+      </dl>
     </article>
   );
 }

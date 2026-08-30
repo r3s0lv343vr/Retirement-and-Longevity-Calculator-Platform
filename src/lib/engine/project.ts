@@ -28,6 +28,23 @@ export function nestEggAtRetirement(
   return futureValueLump(presentValue, rate, years) + futureValueOrdinaryAnnuity(annualSavings, rate, years);
 }
 
+/** Accumulation years until full-time work ends. Already retired → 0. */
+export function nestEggYears(input: CalculatorInput): number {
+  return Math.max(0, input.retirementAge - input.currentAge);
+}
+
+export function nestEggBreakdown(input: CalculatorInput): {
+  years: number;
+  lump: number;
+  annuity: number;
+  total: number;
+} {
+  const years = nestEggYears(input);
+  const lump = futureValueLump(input.currentSavings, input.preRetirementReturn, years);
+  const annuity = futureValueOrdinaryAnnuity(input.annualContribution, input.preRetirementReturn, years);
+  return { years, lump, annuity, total: lump + annuity };
+}
+
 export function phasedWorkWindow(input: CalculatorInput): { start: number; end: number; years: number } {
   const start = Math.max(input.partTimeStartAge, input.retirementAge, input.currentAge);
   const end = input.partTimeEndAge;
@@ -86,19 +103,21 @@ function streamPay(annual: number, cola: boolean, inflationRate: number, yearsFr
   return cola ? inflate(annual, inflationRate, yearsFromNow) : annual;
 }
 
-function guaranteedIncomeAtAge(age: number, input: CalculatorInput, yearsFromNow: number): number {
+export function socialSecurityAtAge(age: number, input: CalculatorInput, yearsFromNow: number): number {
   const ss = guaranteedIncomeWindow(input.socialSecurityStartAge, input);
-  const socialSecurity =
-    ss.years > 0 && age >= ss.start && age <= ss.end
-      ? streamPay(input.socialSecurityAnnual, true, input.inflationRate, yearsFromNow)
-      : 0;
-  if (input.pensionAnnual <= 0) return socialSecurity;
+  if (ss.years <= 0 || age < ss.start || age > ss.end) return 0;
+  return streamPay(input.socialSecurityAnnual, true, input.inflationRate, yearsFromNow);
+}
+
+export function pensionAtAge(age: number, input: CalculatorInput, yearsFromNow: number): number {
+  if (input.pensionAnnual <= 0) return 0;
   const pension = guaranteedIncomeWindow(input.pensionStartAge, input);
-  const pensionPay =
-    pension.years > 0 && age >= pension.start && age <= pension.end
-      ? streamPay(input.pensionAnnual, input.pensionCola, input.inflationRate, yearsFromNow)
-      : 0;
-  return socialSecurity + pensionPay;
+  if (pension.years <= 0 || age < pension.start || age > pension.end) return 0;
+  return streamPay(input.pensionAnnual, input.pensionCola, input.inflationRate, yearsFromNow);
+}
+
+function guaranteedIncomeAtAge(age: number, input: CalculatorInput, yearsFromNow: number): number {
+  return socialSecurityAtAge(age, input, yearsFromNow) + pensionAtAge(age, input, yearsFromNow);
 }
 
 export function lifePhase(age: number, input: CalculatorInput): LifePhase {
@@ -354,7 +373,8 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
   const totalHousingSpend = fundedYears.reduce((s, y) => s + y.housingSpend, 0);
   const totalSpend = totalHealthcareSpend + totalLifestyleSpend + totalLongTermCareSpend + totalHousingSpend;
   const healthcareShare = totalSpend > 0 ? (totalHealthcareSpend + totalLongTermCareSpend + totalHousingSpend) / totalSpend : 0;
-  const partTimeEarned = fundedYears.reduce((s, y) => s + y.partTimeIncome, 0);
+  const nestEgg = nestEggBreakdown(input);
+  const partTimeWages = fundedYears.reduce((s, y) => s + y.partTimeIncome, 0);
   const window = phasedWorkWindow(input);
   const investedYears = fundedYears.filter((y) => y.age >= window.start && y.age <= window.end).length;
   const partTimeInvested = nestEggAtRetirement(
@@ -363,7 +383,17 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
     input.partTimeInvestmentReturn,
     investedYears,
   );
-  const partTimeTotal = partTimeEarned + partTimeInvested;
+  const partTimeTotal = partTimeWages + partTimeInvested;
+  const socialSecurityTotal = fundedYears.reduce(
+    (s, y) => s + socialSecurityAtAge(y.age, input, y.age - input.currentAge),
+    0,
+  );
+  const pensionTotal = fundedYears.reduce(
+    (s, y) => s + pensionAtAge(y.age, input, y.age - input.currentAge),
+    0,
+  );
+  const retirementIncomeTotal = socialSecurityTotal + pensionTotal + partTimeTotal;
+  const totalMedicalSpend = totalHealthcareSpend + totalLongTermCareSpend + totalHousingSpend;
 
   let peakHealthcareAge: number | null = null;
   let peakHealthcareSpend = 0;
@@ -435,10 +465,20 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
     totalLifestyleSpend,
     totalLongTermCareSpend,
     totalHousingSpend,
+    totalMedicalSpend,
     healthcareShare,
     peakHealthcareAge,
     peakHealthcareSpend,
+    nestEggYears: nestEgg.years,
+    nestEggLump: nestEgg.lump,
+    nestEggAnnuity: nestEgg.annuity,
+    nestEggAtRetirement: nestEgg.total,
+    socialSecurityTotal,
+    pensionTotal,
+    partTimeWages,
+    partTimeInvested,
     partTimeTotal,
+    retirementIncomeTotal,
     straightLineFundedThroughAge,
     straightLineEndingBalance,
     longevityGapYears,
