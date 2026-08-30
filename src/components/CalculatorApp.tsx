@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AdSlot } from "@/components/AdSlot";
 import { CalculatorForm } from "@/components/CalculatorForm";
 import { OutlookResults } from "@/components/OutlookResults";
 import { DEFAULT_INPUT, adoptComfortBudget, sameSpendAmounts } from "@/lib/engine";
 import type { CalculatorInput, ProjectionResult } from "@/lib/engine";
+import { readScenarioFromLocation, writeScenarioUrl } from "@/lib/scenarioUrl";
 
 type AdoptedComfortBudget = {
   lifestyle: number;
@@ -19,9 +20,11 @@ export function CalculatorApp() {
   const [adoptingComfort, setAdoptingComfort] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [adoptedBudget, setAdoptedBudget] = useState<AdoptedComfortBudget | null>(null);
+  const urlReady = useRef(false);
 
   function changeValues(next: CalculatorInput) {
     setValues(next);
+    if (urlReady.current) writeScenarioUrl(next);
     if (adoptedBudget && !sameSpendAmounts(next, adoptedBudget.lifestyle, adoptedBudget.healthcare)) {
       setAdoptedBudget(null);
     }
@@ -30,6 +33,7 @@ export function CalculatorApp() {
   async function calculate(nextValues?: CalculatorInput) {
     const payload = nextValues ?? values;
     if (nextValues) setValues(nextValues);
+    writeScenarioUrl(payload);
     setLoading(true);
     setError(null);
     try {
@@ -54,6 +58,16 @@ export function CalculatorApp() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    const fromUrl = readScenarioFromLocation();
+    urlReady.current = true;
+    if (!fromUrl) return;
+    setValues(fromUrl);
+    void calculate(fromUrl);
+    // Shared links hydrate once from the query string.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intended one-shot
+  }, []);
 
   async function adoptComfort() {
     if (!result) return;
@@ -85,6 +99,10 @@ export function CalculatorApp() {
           <p className="mt-3">
             The engine projects <strong className="text-ink">{yearCount} years</strong> on the server — one pass with
             real-world cost curves, and one straight-line comparison so you can see the gap.
+          </p>
+          <p className="mt-3">
+            Your numbers stay in the address bar so you can bookmark or send this scenario. Nothing is stored on a
+            server.
           </p>
         </aside>
 
