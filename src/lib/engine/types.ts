@@ -8,6 +8,29 @@ export type CalculatorInput = {
   currentAge: number;
   retirementAge: number;
   planToAge: number;
+  /** Off keeps the one-person path. On adds a partner, survivor income, and a second plan-through age. */
+  twoPerson: boolean;
+  partnerCurrentAge: number;
+  partnerPlanToAge: number;
+  partnerSocialSecurityAnnual: number;
+  partnerSocialSecurityStartAge: number;
+  partnerPensionAnnual: number;
+  partnerPensionStartAge: number;
+  partnerPensionCola: boolean;
+  /** Share of the first person’s pension that continues after they die. 0 = the pension ends. */
+  pensionSurvivorPercent: number;
+  /** Share of the partner’s pension that continues after they die. */
+  partnerPensionSurvivorPercent: number;
+  partnerPartTimeAnnualIncome: number;
+  partnerPartTimeStartAge: number;
+  partnerPartTimeEndAge: number;
+  partnerHealthcareSpendToday: number;
+  partnerLongTermCareAnnual: number;
+  partnerLongTermCareStartAge: number;
+  partnerNursingHomeRentAnnual: number;
+  partnerNursingHomeStartAge: number;
+  /** Scales household lifestyle after the first death. */
+  survivorLifestyleFactor: number;
   currentSavings: number;
   annualContribution: number;
   /** When true, the yearly savings deposit rises with general inflation. Off keeps a level ordinary annuity. */
@@ -46,6 +69,9 @@ export type CalculatorInput = {
 
 export type YearRow = {
   age: number;
+  partnerAge: number | null;
+  primaryAlive: boolean;
+  partnerAlive: boolean;
   phase: LifePhase;
   startBalance: number;
   growth: number;
@@ -112,6 +138,9 @@ export type Outlook = {
   claiming70Annual: number;
   claiming67FundedThroughAge: number;
   claiming70FundedThroughAge: number;
+  householdHorizonAge: number;
+  firstDeathPrimaryAge: number | null;
+  partnerFundedThroughAge: number | null;
 };
 
 export type PlanSnapshot = {

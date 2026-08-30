@@ -156,17 +156,109 @@ function streamPay(annual: number, cola: boolean, inflationRate: number, yearsFr
   return cola ? inflate(annual, inflationRate, yearsFromNow) : annual;
 }
 
-export function socialSecurityAtAge(age: number, input: CalculatorInput, yearsFromNow: number): number {
+export function partnerAgeAt(primaryAge: number, input: CalculatorInput): number {
+  return input.partnerCurrentAge + (primaryAge - input.currentAge);
+}
+
+/** Last primary-age year modeled: one-person plan-through, or the later of the two lives. */
+export function planHorizonPrimaryAge(input: CalculatorInput): number {
+  if (!input.twoPerson) return input.planToAge;
+  return (
+    input.currentAge +
+    Math.max(input.planToAge - input.currentAge, input.partnerPlanToAge - input.partnerCurrentAge)
+  );
+}
+
+export function primaryAliveAt(primaryAge: number, input: CalculatorInput): boolean {
+  return primaryAge <= input.planToAge;
+}
+
+export function partnerAliveAt(primaryAge: number, input: CalculatorInput): boolean {
+  if (!input.twoPerson) return false;
+  return partnerAgeAt(primaryAge, input) <= input.partnerPlanToAge;
+}
+
+function onePersonSocialSecurity(age: number, input: CalculatorInput, yearsFromNow: number): number {
   const ss = guaranteedIncomeWindow(input.socialSecurityStartAge, input);
   if (ss.years <= 0 || age < ss.start || age > ss.end) return 0;
   return streamPay(input.socialSecurityAnnual, true, input.inflationRate, yearsFromNow);
 }
 
-export function pensionAtAge(age: number, input: CalculatorInput, yearsFromNow: number): number {
+function onePersonPension(age: number, input: CalculatorInput, yearsFromNow: number): number {
   if (input.pensionAnnual <= 0) return 0;
   const pension = guaranteedIncomeWindow(input.pensionStartAge, input);
   if (pension.years <= 0 || age < pension.start || age > pension.end) return 0;
   return streamPay(input.pensionAnnual, input.pensionCola, input.inflationRate, yearsFromNow);
+}
+
+function personBenefit(
+  annual: number,
+  startAge: number,
+  personAge: number,
+  cola: boolean,
+  inflationRate: number,
+  yearsFromNow: number,
+  retired: boolean,
+): number {
+  if (!retired || annual <= 0 || personAge < startAge) return 0;
+  return streamPay(annual, cola, inflationRate, yearsFromNow);
+}
+
+export function socialSecurityAtAge(age: number, input: CalculatorInput, yearsFromNow: number): number {
+  if (!input.twoPerson) return onePersonSocialSecurity(age, input, yearsFromNow);
+  const retired = age >= input.retirementAge;
+  const primaryRecord = personBenefit(
+    input.socialSecurityAnnual,
+    input.socialSecurityStartAge,
+    age,
+    true,
+    input.inflationRate,
+    yearsFromNow,
+    retired,
+  );
+  const partnerRecord = personBenefit(
+    input.partnerSocialSecurityAnnual,
+    input.partnerSocialSecurityStartAge,
+    partnerAgeAt(age, input),
+    true,
+    input.inflationRate,
+    yearsFromNow,
+    retired,
+  );
+  const primaryAlive = primaryAliveAt(age, input);
+  const partnerAlive = partnerAliveAt(age, input);
+  if (primaryAlive && partnerAlive) return primaryRecord + partnerRecord;
+  if (primaryAlive || partnerAlive) return Math.max(primaryRecord, partnerRecord);
+  return 0;
+}
+
+export function pensionAtAge(age: number, input: CalculatorInput, yearsFromNow: number): number {
+  if (!input.twoPerson) return onePersonPension(age, input, yearsFromNow);
+  const retired = age >= input.retirementAge;
+  const primaryFull = personBenefit(
+    input.pensionAnnual,
+    input.pensionStartAge,
+    age,
+    input.pensionCola,
+    input.inflationRate,
+    yearsFromNow,
+    retired,
+  );
+  const partnerFull = personBenefit(
+    input.partnerPensionAnnual,
+    input.partnerPensionStartAge,
+    partnerAgeAt(age, input),
+    input.partnerPensionCola,
+    input.inflationRate,
+    yearsFromNow,
+    retired,
+  );
+  const primaryAlive = primaryAliveAt(age, input);
+  const partnerAlive = partnerAliveAt(age, input);
+  const primaryPay = primaryAlive ? primaryFull : primaryFull * input.pensionSurvivorPercent;
+  const partnerPay = partnerAlive ? partnerFull : partnerFull * input.partnerPensionSurvivorPercent;
+  if (!primaryAlive && !partnerAlive) return 0;
+  return primaryPay + partnerPay;
 }
 
 function guaranteedIncomeAtAge(age: number, input: CalculatorInput, yearsFromNow: number): number {
@@ -232,6 +324,98 @@ export function healthcareAgeFactor(age: number): number {
   return 2.45;
 }
 
+function emptyHousing(): { rent: number; kind: HousingKind; lifestyleFactor: number } {
+  return { rent: 0, kind: null, lifestyleFactor: 1 };
+}
+
+function partnerNursingHousing(
+  partnerAge: number,
+  input: CalculatorInput,
+  yearsFromNow: number,
+  medicalRate: number,
+): { rent: number; kind: HousingKind; lifestyleFactor: number } {
+  if (input.partnerNursingHomeRentAnnual > 0 && partnerAge >= input.partnerNursingHomeStartAge) {
+    return {
+      rent: inflate(input.partnerNursingHomeRentAnnual, medicalRate, yearsFromNow),
+      kind: "nursing",
+      lifestyleFactor: HOUSING_LIFESTYLE_FACTOR.nursing,
+    };
+  }
+  return emptyHousing();
+}
+
+function householdHousing(
+  age: number,
+  partnerAge: number | null,
+  primaryAlive: boolean,
+  partnerAlive: boolean,
+  input: CalculatorInput,
+  yearsFromNow: number,
+  medicalRate: number,
+  straightLine: boolean,
+): {
+  rent: number;
+  kind: HousingKind;
+  lifestyleFactor: number;
+  primaryCareFacility: boolean;
+  partnerCareFacility: boolean;
+} {
+  if (straightLine) {
+    return { ...emptyHousing(), primaryCareFacility: false, partnerCareFacility: false };
+  }
+  if (!input.twoPerson) {
+    const housing = facilityHousing(age, input, yearsFromNow, medicalRate);
+    const care = housing.kind === "nursing" || housing.kind === "ccrc";
+    return { ...housing, primaryCareFacility: care, partnerCareFacility: false };
+  }
+
+  if (input.ccrcRentAnnual > 0 && age >= input.ccrcStartAge && (primaryAlive || partnerAlive)) {
+    return {
+      rent: inflate(input.ccrcRentAnnual, medicalRate, yearsFromNow),
+      kind: "ccrc",
+      lifestyleFactor: HOUSING_LIFESTYLE_FACTOR.ccrc,
+      primaryCareFacility: primaryAlive,
+      partnerCareFacility: partnerAlive,
+    };
+  }
+
+  const withoutHouseholdCcrc = { ...input, ccrcRentAnnual: 0 };
+  const primaryH = primaryAlive
+    ? facilityHousing(age, withoutHouseholdCcrc, yearsFromNow, medicalRate)
+    : emptyHousing();
+  const partnerH =
+    partnerAlive && partnerAge != null
+      ? partnerNursingHousing(partnerAge, input, yearsFromNow, medicalRate)
+      : emptyHousing();
+  const primaryCare = primaryH.kind === "nursing";
+  const partnerCare = partnerH.kind === "nursing";
+  const bothAlive = primaryAlive && partnerAlive;
+  let lifestyleFactor = 1;
+  if (bothAlive && ((primaryCare && !partnerCare) || (!primaryCare && partnerCare))) {
+    lifestyleFactor = 1;
+  } else if (bothAlive) {
+    lifestyleFactor =
+      primaryCare && partnerCare
+        ? Math.min(primaryH.lifestyleFactor, partnerH.lifestyleFactor)
+        : primaryH.kind
+          ? primaryH.lifestyleFactor
+          : partnerH.lifestyleFactor;
+  } else {
+    lifestyleFactor = primaryAlive ? primaryH.lifestyleFactor : partnerH.lifestyleFactor;
+  }
+  const kind: HousingKind =
+    primaryH.kind === "nursing" || partnerH.kind === "nursing"
+      ? "nursing"
+      : primaryH.kind ?? partnerH.kind;
+  return {
+    rent: primaryH.rent + partnerH.rent,
+    kind,
+    lifestyleFactor,
+    primaryCareFacility: primaryCare,
+    partnerCareFacility: partnerCare,
+  };
+}
+
 type RunYearOptions = {
   straightLine?: boolean;
   badFirstDecade?: boolean;
@@ -248,10 +432,14 @@ function runYears(input: CalculatorInput, option: boolean | RunYearOptions): Yea
   let investActive = input.partTimeAnnualInvestment > 0;
   const retirementStartAge = Math.max(input.retirementAge, input.currentAge);
   const weakReturn = badDecadeReturn(input.postRetirementReturn);
+  const horizon = planHorizonPrimaryAge(input);
 
-  for (let age = input.currentAge; age <= input.planToAge; age += 1) {
+  for (let age = input.currentAge; age <= horizon; age += 1) {
     const yearsFromNow = age - input.currentAge;
     const working = age < input.retirementAge;
+    const partnerAge = input.twoPerson ? partnerAgeAt(age, input) : null;
+    const primaryAlive = primaryAliveAt(age, input);
+    const partnerAlive = partnerAliveAt(age, input);
 
     if (working) {
       const yearsDone = age - input.currentAge;
@@ -284,6 +472,9 @@ function runYears(input: CalculatorInput, option: boolean | RunYearOptions): Yea
       balance = endBalance;
       years.push({
         age,
+        partnerAge,
+        primaryAlive,
+        partnerAlive,
         phase: "working",
         startBalance,
         growth,
@@ -309,7 +500,10 @@ function runYears(input: CalculatorInput, option: boolean | RunYearOptions): Yea
       badFirstDecade && yearsIntoRetirement < BAD_DECADE_YEARS
         ? weakReturn
         : input.postRetirementReturn;
-    const inPhasedWork = age >= workWindow.start && age <= workWindow.end && workWindow.years > 0;
+    if (!primaryAlive && !partnerAlive) continue;
+
+    const inPhasedWork =
+      primaryAlive && age >= workWindow.start && age <= workWindow.end && workWindow.years > 0;
     const investPmt =
       investActive && inPhasedWork && input.partTimeAnnualInvestment > 0 ? input.partTimeAnnualInvestment : 0;
     const investYear = inPhasedWork ? age - workWindow.start + 1 : 0;
@@ -320,33 +514,70 @@ function runYears(input: CalculatorInput, option: boolean | RunYearOptions): Yea
     const contribution = investPmt;
     const guaranteedIncome = guaranteedIncomeAtAge(age, input, yearsFromNow);
 
-    const partTimeIncome =
+    const primaryPartTime =
+      primaryAlive &&
       input.partTimeAnnualIncome > 0 &&
       age >= input.partTimeStartAge &&
       age <= input.partTimeEndAge
         ? inflate(input.partTimeAnnualIncome, input.inflationRate, yearsFromNow)
         : 0;
+    const partnerPartTime =
+      partnerAlive &&
+      input.partnerPartTimeAnnualIncome > 0 &&
+      partnerAge != null &&
+      partnerAge >= input.partnerPartTimeStartAge &&
+      partnerAge <= input.partnerPartTimeEndAge
+        ? inflate(input.partnerPartTimeAnnualIncome, input.inflationRate, yearsFromNow)
+        : 0;
+    const partTimeIncome = primaryPartTime + partnerPartTime;
 
     const healthInflation = straightLine ? input.inflationRate : input.healthcareInflationRate;
     const lifeMult = straightLine ? 1 : lifestyleMultiplier(age, input);
-    const healthMult = straightLine ? 1 : healthcareAgeFactor(age);
-
-    const housing = straightLine
-      ? { rent: 0, kind: null as HousingKind, lifestyleFactor: 1 }
-      : facilityHousing(age, input, yearsFromNow, healthInflation);
+    const housing = householdHousing(
+      age,
+      partnerAge,
+      primaryAlive,
+      partnerAlive,
+      input,
+      yearsFromNow,
+      healthInflation,
+      straightLine,
+    );
     const housingSpend = housing.rent;
     const housingKind = housing.kind;
+    const survivor =
+      input.twoPerson && (primaryAlive || partnerAlive) && !(primaryAlive && partnerAlive);
     const lifestyleSpend =
-      inflate(input.lifestyleSpendToday, input.inflationRate, yearsFromNow) * lifeMult * housing.lifestyleFactor;
-    const healthcareSpend = inflate(input.healthcareSpendToday, healthInflation, yearsFromNow) * healthMult;
-    const facilityIncludesCare = housing.kind === "nursing" || housing.kind === "ccrc";
+      inflate(input.lifestyleSpendToday, input.inflationRate, yearsFromNow) *
+      lifeMult *
+      (survivor ? input.survivorLifestyleFactor : 1) *
+      housing.lifestyleFactor;
+    const primaryHealthcare = primaryAlive
+      ? inflate(input.healthcareSpendToday, healthInflation, yearsFromNow) *
+        (straightLine ? 1 : healthcareAgeFactor(age))
+      : 0;
+    const partnerHealthcare =
+      partnerAlive && input.partnerHealthcareSpendToday > 0
+        ? inflate(input.partnerHealthcareSpendToday, healthInflation, yearsFromNow) *
+          (straightLine ? 1 : healthcareAgeFactor(partnerAge ?? age))
+        : 0;
+    const healthcareSpend = primaryHealthcare + partnerHealthcare;
     const longTermCareSpend =
-      !straightLine &&
-      !facilityIncludesCare &&
+      (!straightLine &&
+      primaryAlive &&
+      !housing.primaryCareFacility &&
       age >= input.longTermCareStartAge &&
       input.longTermCareAnnual > 0
         ? inflate(input.longTermCareAnnual, healthInflation, yearsFromNow)
-        : 0;
+        : 0) +
+      (!straightLine &&
+      partnerAlive &&
+      !housing.partnerCareFacility &&
+      partnerAge != null &&
+      partnerAge >= input.partnerLongTermCareStartAge &&
+      input.partnerLongTermCareAnnual > 0
+        ? inflate(input.partnerLongTermCareAnnual, healthInflation, yearsFromNow)
+        : 0);
 
     const totalSpend = lifestyleSpend + healthcareSpend + longTermCareSpend + housingSpend;
     const inflow = guaranteedIncome + partTimeIncome;
@@ -394,6 +625,9 @@ function runYears(input: CalculatorInput, option: boolean | RunYearOptions): Yea
 
     years.push({
       age,
+      partnerAge,
+      primaryAlive,
+      partnerAlive,
       phase: lifePhase(age, input),
       startBalance,
       growth,
@@ -420,10 +654,19 @@ function firstDepletionAge(years: YearRow[]): number | null {
   return row ? row.age : null;
 }
 
-function fundedThrough(years: YearRow[], planToAge: number): number {
+function fundedThrough(years: YearRow[], horizonAge: number): number {
   const depletion = firstDepletionAge(years);
-  if (depletion == null) return planToAge;
+  if (depletion == null) return horizonAge;
   return Math.max(depletion, years[0]?.age ?? depletion);
+}
+
+function firstDeathPrimaryAge(years: YearRow[]): number | null {
+  let lastBoth: number | null = null;
+  for (const row of years) {
+    if (row.primaryAlive && row.partnerAlive) lastBoth = row.age;
+  }
+  const hasSurvivor = years.some((row) => row.primaryAlive !== row.partnerAlive);
+  return hasSurvivor ? lastBoth : null;
 }
 
 function fundedRetirementYears(years: YearRow[]): YearRow[] {
@@ -441,7 +684,8 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
   const last = years[years.length - 1];
   const depletionAge = firstDepletionAge(years);
   const depleted = depletionAge != null;
-  const fundedThroughAge = fundedThrough(years, input.planToAge);
+  const horizon = planHorizonPrimaryAge(input);
+  const fundedThroughAge = fundedThrough(years, horizon);
   const endingBalance = depleted ? 0 : last?.endBalance ?? 0;
   const lastYearSpend = fundedYears.at(-1)?.totalSpend ?? 0;
 
@@ -485,13 +729,13 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
     }
   }
 
-  const straightLineFundedThroughAge = fundedThrough(straight, input.planToAge);
+  const straightLineFundedThroughAge = fundedThrough(straight, horizon);
   const straightLineEndingBalance = firstDepletionAge(straight) != null ? 0 : straight.at(-1)?.endBalance ?? 0;
   const longevityGapYears = straightLineFundedThroughAge - fundedThroughAge;
 
   const modeledFromAge = years[0]?.age ?? input.currentAge;
   const retirementStartAge = Math.max(input.retirementAge, modeledFromAge);
-  const yearsInRetirement = Math.max(0, input.planToAge - retirementStartAge + 1);
+  const yearsInRetirement = Math.max(0, horizon - retirementStartAge + 1);
   const yearsCovered = Math.min(
     yearsInRetirement,
     Math.max(0, fundedThroughAge - retirementStartAge + 1),
@@ -514,7 +758,7 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
     status = "strong";
   } else if (!depleted) {
     status = "watchful";
-  } else if (depletionAge != null && depletionAge >= input.planToAge - 4) {
+  } else if (depletionAge != null && depletionAge >= horizon - 4) {
     status = "watchful";
   } else if (depletionAge != null && depletionAge >= retirementStartAge + 12) {
     status = "at-risk";
@@ -522,24 +766,32 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
     status = "shortfall";
   }
 
+  const targetAge = horizon;
+  const partnerAtFunded =
+    input.twoPerson ? partnerAgeAt(fundedThroughAge, input) : null;
+  const twoPersonNote = input.twoPerson
+    ? partnerAtFunded != null
+      ? ` Ages are the first person’s; the partner is ${partnerAtFunded} in that year.`
+      : ""
+    : "";
   const copy: Record<Outlook["status"], { title: string; summary: string }> = {
     strong: {
       title: "On track through your longevity target",
-      summary: `Under these assumptions, savings last through age ${fundedThroughAge} with a cushion of ${formatCompact(endingBalance)} remaining.`,
+      summary: `Under these assumptions, savings last through age ${fundedThroughAge} with a cushion of ${formatCompact(endingBalance)} remaining.${twoPersonNote}`,
     },
     watchful: {
       title: "Likely to last — with little slack",
       summary: depleted
-        ? `Savings reach about age ${fundedThroughAge}, close to your target of ${input.planToAge}. Small changes in health costs or returns could tip the result.`
-        : `You reach age ${fundedThroughAge}, but the remaining balance is thin relative to later-life medical costs.`,
+        ? `Savings reach about age ${fundedThroughAge}, close to your target of ${targetAge}. Small changes in health costs or returns could tip the result.${twoPersonNote}`
+        : `You reach age ${fundedThroughAge}, but the remaining balance is thin relative to later-life medical costs.${twoPersonNote}`,
     },
     "at-risk": {
       title: "Savings may not outlive you",
-      summary: `The portfolio is modeled to run out around age ${fundedThroughAge}, ${input.planToAge - fundedThroughAge} years before your longevity target.`,
+      summary: `The portfolio is modeled to run out around age ${fundedThroughAge}, ${Math.max(0, targetAge - fundedThroughAge)} years before your longevity target.${twoPersonNote}`,
     },
     shortfall: {
       title: "A meaningful longevity gap",
-      summary: `Funds are modeled to last only to about age ${fundedThroughAge}. Healthcare inflation and later-life care are the largest pressure points.`,
+      summary: `Funds are modeled to last only to about age ${fundedThroughAge}. Healthcare inflation and later-life care are the largest pressure points.${twoPersonNote}`,
     },
   };
 
@@ -584,6 +836,9 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
     surpassesRequiredMonths,
     remainingSavings,
     remainingExpenseNeed,
+    householdHorizonAge: horizon,
+    firstDeathPrimaryAge: input.twoPerson ? firstDeathPrimaryAge(years) : null,
+    partnerFundedThroughAge: input.twoPerson ? partnerAgeAt(fundedThroughAge, input) : null,
     ...longevityToolExtras(input, fundedThroughAge),
   };
 }
@@ -621,13 +876,14 @@ function longevityToolExtras(
     false,
   );
   const bad = runYears(input, { badFirstDecade: true });
-  const badDecadeFundedThroughAge = fundedThrough(bad, input.planToAge);
+  const horizon = planHorizonPrimaryAge(input);
+  const badDecadeFundedThroughAge = fundedThrough(bad, horizon);
   const badDepleted = firstDepletionAge(bad) != null;
   return {
     claiming67Annual,
     claiming70Annual,
-    claiming67FundedThroughAge: fundedThrough(years67, input.planToAge),
-    claiming70FundedThroughAge: fundedThrough(years70, input.planToAge),
+    claiming67FundedThroughAge: fundedThrough(years67, horizon),
+    claiming70FundedThroughAge: fundedThrough(years70, horizon),
     badDecadeFundedThroughAge,
     badDecadeEndingBalance: badDepleted ? 0 : bad.at(-1)?.endBalance ?? 0,
     badDecadeGapYears: Math.max(0, mainFundedThroughAge - badDecadeFundedThroughAge),

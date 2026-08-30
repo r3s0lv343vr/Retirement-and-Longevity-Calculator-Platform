@@ -34,6 +34,13 @@ describe("scenario URL", () => {
     expect(searchParamsToInput("savingsGrowWithInflation=on").savingsGrowWithInflation).toBe(true);
   });
 
+  it("writes two persons as on or off", () => {
+    expect(encodeScenarioValue("twoPerson", false)).toBe("off");
+    expect(encodeScenarioValue("twoPerson", true)).toBe("on");
+    expect(searchParamsToInput("twoPerson=on&partnerSocialSecurityAnnual=18000").twoPerson).toBe(true);
+    expect(searchParamsToInput("twoPerson=on&partnerSocialSecurityAnnual=18000").partnerSocialSecurityAnnual).toBe(18000);
+  });
+
   it("fills missing keys from defaults so a short link still works", () => {
     const input = searchParamsToInput("currentAge=41&currentSavings=71000");
     expect(input.currentAge).toBe(41);

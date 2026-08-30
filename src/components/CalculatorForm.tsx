@@ -25,8 +25,8 @@ const GROUPS: {
   {
     id: "timeline",
     title: "Your timeline",
-    blurb: "When work tapers off, and how long you want the money to last.",
-    keys: ["currentAge", "retirementAge", "planToAge"],
+    blurb: "When work tapers off, and how long you want the money to last. Turn on two persons for a partner card — these three cells stay put.",
+    keys: ["currentAge", "retirementAge", "planToAge", "twoPerson"],
     columns: 3,
   },
   {
@@ -57,6 +57,33 @@ const GROUPS: {
     blurb:
       "Social Security has COLA (rises with general inflation). Pension is added from its start age through the plan-through age, not before the nest-egg cutoff. Turn pension COLA off if that pension does not adjust. If pension is $0, only Social Security is used.",
     keys: ["socialSecurityAnnual", "socialSecurityStartAge", "pensionAnnual", "pensionStartAge", "pensionCola"],
+    columns: 2,
+  },
+  {
+    id: "partner",
+    title: "Second person",
+    blurb:
+      "Partner age, their plan-through age, their Social Security and pension, a second side hustle, and their care. After the first death, household Social Security becomes the larger check; a pension continues only by the survivor share you set. Lifestyle then uses the survivor factor. One nest egg and one set of market returns.",
+    keys: [
+      "partnerCurrentAge",
+      "partnerPlanToAge",
+      "partnerSocialSecurityAnnual",
+      "partnerSocialSecurityStartAge",
+      "partnerPensionAnnual",
+      "partnerPensionStartAge",
+      "partnerPensionCola",
+      "pensionSurvivorPercent",
+      "partnerPensionSurvivorPercent",
+      "partnerPartTimeAnnualIncome",
+      "partnerPartTimeStartAge",
+      "partnerPartTimeEndAge",
+      "partnerHealthcareSpendToday",
+      "partnerLongTermCareAnnual",
+      "partnerLongTermCareStartAge",
+      "partnerNursingHomeRentAnnual",
+      "partnerNursingHomeStartAge",
+      "survivorLifestyleFactor",
+    ],
     columns: 2,
   },
   {
@@ -138,11 +165,25 @@ export function CalculatorForm({ values, onChange, onSubmit, loading, error }: P
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {GROUPS.filter((g) => !g.advanced).map((group) => (
+      {GROUPS.filter((g) => !g.advanced && (g.id !== "partner" || values.twoPerson)).map((group) => (
         <div key={group.id} className="space-y-5">
           <section className="card">
             <h2 className="font-serif text-xl leading-tight text-pine">{group.title}</h2>
-            <p className="mt-1 text-sm leading-relaxed text-muted">{group.blurb}</p>
+            <p className="mt-1 text-sm leading-relaxed text-muted">
+              {group.blurb}
+              {values.twoPerson && group.id === "work"
+                ? " This is the first person’s side hustle; the partner’s is on the Second person card."
+                : ""}
+              {values.twoPerson && group.id === "income"
+                ? " These are the first person’s checks; the partner’s are on the Second person card."
+                : ""}
+              {values.twoPerson && group.id === "spending"
+                ? " Healthcare and long-term care here are the first person’s."
+                : ""}
+              {values.twoPerson && group.id === "housing"
+                ? " These rents are the first person’s (or a shared CCRC). If only one person is in nursing, household lifestyle is not cut."
+                : ""}
+            </p>
             <div
               className={`mt-5 grid items-end gap-x-6 gap-y-6 ${
                 group.columns === 3 ? "sm:grid-cols-3" : "sm:grid-cols-2"
@@ -157,7 +198,9 @@ export function CalculatorForm({ values, onChange, onSubmit, loading, error }: P
                   wide={
                     (group.id === "work" && key === "partTimeAnnualIncome") ||
                     (group.id === "income" && key === "pensionCola") ||
-                    (group.id === "savings" && key === "savingsGrowWithInflation")
+                    (group.id === "savings" && key === "savingsGrowWithInflation") ||
+                    (group.id === "timeline" && key === "twoPerson") ||
+                    (group.id === "partner" && key === "partnerPensionCola")
                   }
                 />
               ))}

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AdSlot } from "@/components/AdSlot";
 import { CalculatorForm } from "@/components/CalculatorForm";
 import { OutlookResults } from "@/components/OutlookResults";
-import { DEFAULT_INPUT, adoptComfortBudget, sameSpendAmounts } from "@/lib/engine";
+import { DEFAULT_INPUT, adoptComfortBudget, planHorizonPrimaryAge, sameSpendAmounts } from "@/lib/engine";
 import type { CalculatorInput, ProjectionResult } from "@/lib/engine";
 import { readScenarioFromLocation, writeScenarioUrl } from "@/lib/scenarioUrl";
 
@@ -84,7 +84,7 @@ export function CalculatorApp() {
     }
   }
 
-  const yearCount = useMemo(() => values.planToAge - values.currentAge + 1, [values]);
+  const yearCount = useMemo(() => planHorizonPrimaryAge(values) - values.currentAge + 1, [values]);
 
   return (
     <div className="grid items-start gap-8 xl:grid-cols-[minmax(0,1fr)_160px]">
