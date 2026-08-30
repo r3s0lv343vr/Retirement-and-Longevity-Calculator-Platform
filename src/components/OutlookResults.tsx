@@ -23,6 +23,19 @@ const PHASE_LABEL: Record<string, string> = {
   "no-go": "No-go",
 };
 
+function SectionBreak({ label, note }: { label: string; note: string }) {
+  return (
+    <div className="pt-2" role="separator" aria-label={label}>
+      <div className="flex items-center gap-3">
+        <div className="h-1.5 min-w-8 flex-1 rounded-full bg-pine" />
+        <p className="shrink-0 text-xs font-semibold uppercase tracking-[0.18em] text-pine">{label}</p>
+        <div className="h-1.5 min-w-8 flex-1 rounded-full bg-pine" />
+      </div>
+      <p className="mt-2 text-center text-sm text-muted">{note}</p>
+    </div>
+  );
+}
+
 export function OutlookResults({ result }: Props) {
   const { outlook, years, warnings, comfort } = result;
   const retiredYears = years.filter((y) => y.phase !== "working");
@@ -292,18 +305,7 @@ function ComfortEstimateCard({
   );
 }
 
-function SectionBreak({ label, note }: { label: string; note: string }) {
-  return (
-    <div className="pt-2" role="separator" aria-label={label}>
-      <div className="flex items-center gap-3">
-        <div className="h-1.5 min-w-8 flex-1 rounded-full bg-pine" />
-        <p className="shrink-0 text-xs font-semibold uppercase tracking-[0.18em] text-pine">{label}</p>
-        <div className="h-1.5 min-w-8 flex-1 rounded-full bg-pine" />
-      </div>
-      <p className="mt-2 text-center text-sm text-muted">{note}</p>
-    </div>
-  );
-}
+
 
 function StatCard({ label, value, note }: { label: string; value: string; note: string }) {
   return (
