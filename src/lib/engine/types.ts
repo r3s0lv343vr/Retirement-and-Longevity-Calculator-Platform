@@ -39,6 +39,8 @@ export type CalculatorInput = {
   survivorLifestyleFactor: number;
   /** Face amount paid into the nest egg the first survivor year. $0 skips. Nominal, no CPI. */
   lifeInsuranceLump: number;
+  /** Funeral / final-expense cost, today’s dollars. Charged the year each person leaves the plan. $0 skips. */
+  funeralCost: number;
   currentSavings: number;
   annualContribution: number;
   /** When true, the yearly savings deposit rises with general inflation. Off keeps a level ordinary annuity. */
@@ -92,6 +94,7 @@ export type YearRow = {
   healthcareSpend: number;
   longTermCareSpend: number;
   housingSpend: number;
+  funeralSpend: number;
   housingKind: HousingKind;
   totalSpend: number;
   netCashFlow: number;
@@ -113,6 +116,7 @@ export type Outlook = {
   totalLifestyleSpend: number;
   totalLongTermCareSpend: number;
   totalHousingSpend: number;
+  funeralTotal: number;
   totalMedicalSpend: number;
   totalRetirementSpend: number;
   healthcareShare: number;

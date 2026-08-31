@@ -196,6 +196,9 @@ class ReportWriter {
     this.lineKV("Routine healthcare", formatMoney(outlook.totalHealthcareSpend));
     this.lineKV("Long-term care", formatMoney(outlook.totalLongTermCareSpend));
     this.lineKV("Later-life facility rent", formatMoney(outlook.totalHousingSpend));
+    if (input.twoPerson && (input.funeralCost > 0 || outlook.funeralTotal > 0)) {
+      this.lineKV("Funeral cost", formatMoney(outlook.funeralTotal));
+    }
     this.body(
       `Lifestyle plus healthcare through age ${outlook.fundedThroughAge}. Healthcare is only part of this total. Nest egg plus later income is ${formatMoney(outlook.fundingTotal)}; remaining-balance growth in retirement covers some of the difference.`,
     );
@@ -236,6 +239,9 @@ class ReportWriter {
         "One nest egg and one set of market returns. Drawdowns start at the earlier work-end; yearly saving continues until the later work-end. After the first death, Social Security becomes the larger of the two checks; a pension continues only by the survivor share on the form. Lifestyle then uses the survivor factor." +
           (input.lifeInsuranceLump > 0
             ? ` A life-insurance lump of ${formatMoney(input.lifeInsuranceLump)} enters the pot the first survivor year.`
+            : "") +
+          (input.funeralCost > 0
+            ? ` Funeral cost of ${formatMoney(input.funeralCost)} (today) is charged the year each person leaves the plan.`
             : "") +
           " If only one person is in nursing, household lifestyle is not cut.",
       );

@@ -28,6 +28,7 @@ export const DEFAULT_INPUT: CalculatorInput = {
   partnerNursingHomeStartAge: 85,
   survivorLifestyleFactor: 0.75,
   lifeInsuranceLump: 0,
+  funeralCost: 0,
   currentSavings: 720000,
   annualContribution: 18000,
   savingsGrowWithInflation: false,
@@ -134,6 +135,12 @@ export const FIELD_META: Record<
   lifeInsuranceLump: {
     label: "Life insurance lump",
     hint: "Face amount into the nest egg the first survivor year. Today’s dollars, no CPI. $0 skips.",
+    group: "partner",
+    kind: "money",
+  },
+  funeralCost: {
+    label: "Funeral cost",
+    hint: "Today’s dollars, with CPI. Charged the year each person leaves the plan. $0 skips.",
     group: "partner",
     kind: "money",
   },

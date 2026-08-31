@@ -31,6 +31,7 @@ export {
   primaryAliveAt,
   partnerAliveAt,
   lifeInsuranceAtAge,
+  funeralCostAtAge,
   socialSecurityClaimFactor,
   socialSecurityAnnualAtClaimAge,
   badDecadeReturn,

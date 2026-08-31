@@ -999,4 +999,85 @@ describe("project", () => {
     expect(omitted.years.map((y) => y.endBalance)).toEqual(one.years.map((y) => y.endBalance));
     expect(omitted.outlook.lifeInsuranceTotal).toBe(0);
   });
+
+  it("charges funeral cost the year each person leaves the plan", () => {
+    const result = run({
+      twoPerson: true,
+      currentAge: 65,
+      retirementAge: 65,
+      planToAge: 80,
+      partnerCurrentAge: 65,
+      partnerPlanToAge: 70,
+      currentSavings: 5_000_000,
+      inflationRate: 0,
+      healthcareInflationRate: 0,
+      socialSecurityAnnual: 0,
+      partnerSocialSecurityAnnual: 0,
+      pensionAnnual: 0,
+      partnerPensionAnnual: 0,
+      partTimeAnnualIncome: 0,
+      partnerPartTimeAnnualIncome: 0,
+      lifestyleSpendToday: 1000,
+      healthcareSpendToday: 0,
+      partnerHealthcareSpendToday: 0,
+      longTermCareAnnual: 0,
+      goGoLifestyleMultiplier: 1,
+      funeralCost: 12000,
+    });
+    expect(result.years.find((y) => y.age === 69)?.funeralSpend).toBe(0);
+    expect(result.years.find((y) => y.age === 70)?.funeralSpend).toBeCloseTo(12000);
+    expect(result.years.find((y) => y.age === 71)?.funeralSpend).toBe(0);
+    expect(result.years.find((y) => y.age === 80)?.funeralSpend).toBeCloseTo(12000);
+    expect(result.outlook.funeralTotal).toBeCloseTo(24000);
+  });
+
+  it("charges two funerals if both leave the plan the same year", () => {
+    const result = run({
+      twoPerson: true,
+      currentAge: 65,
+      retirementAge: 65,
+      planToAge: 70,
+      partnerCurrentAge: 65,
+      partnerPlanToAge: 70,
+      currentSavings: 5_000_000,
+      inflationRate: 0,
+      healthcareInflationRate: 0,
+      socialSecurityAnnual: 0,
+      partnerSocialSecurityAnnual: 0,
+      lifestyleSpendToday: 1000,
+      healthcareSpendToday: 0,
+      partnerHealthcareSpendToday: 0,
+      longTermCareAnnual: 0,
+      goGoLifestyleMultiplier: 1,
+      funeralCost: 10000,
+    });
+    expect(result.years.find((y) => y.age === 70)?.funeralSpend).toBeCloseTo(20000);
+    expect(result.outlook.funeralTotal).toBeCloseTo(20000);
+  });
+
+  it("leaves balances unchanged when funeral cost is $0", () => {
+    const none = run({
+      twoPerson: true,
+      partnerCurrentAge: DEFAULT_INPUT.currentAge,
+      partnerPlanToAge: DEFAULT_INPUT.planToAge,
+      partnerSocialSecurityAnnual: 0,
+      partnerHealthcareSpendToday: 0,
+      partnerLongTermCareAnnual: 0,
+      partnerNursingHomeRentAnnual: 0,
+      partnerPartTimeAnnualIncome: 0,
+      funeralCost: 0,
+    });
+    const omitted = run({
+      twoPerson: true,
+      partnerCurrentAge: DEFAULT_INPUT.currentAge,
+      partnerPlanToAge: DEFAULT_INPUT.planToAge,
+      partnerSocialSecurityAnnual: 0,
+      partnerHealthcareSpendToday: 0,
+      partnerLongTermCareAnnual: 0,
+      partnerNursingHomeRentAnnual: 0,
+      partnerPartTimeAnnualIncome: 0,
+    });
+    expect(omitted.years.map((y) => y.endBalance)).toEqual(none.years.map((y) => y.endBalance));
+    expect(omitted.outlook.funeralTotal).toBe(0);
+  });
 });

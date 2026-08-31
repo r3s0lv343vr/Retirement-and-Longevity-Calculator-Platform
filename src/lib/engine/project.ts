@@ -227,6 +227,16 @@ export function lifeInsuranceAtAge(age: number, input: CalculatorInput): number 
   return input.lifeInsuranceLump;
 }
 
+/** Funeral cost the year each person leaves the plan. One amount per death; $0 skips. */
+export function funeralCostAtAge(age: number, input: CalculatorInput, yearsFromNow: number): number {
+  if (!input.twoPerson || input.funeralCost <= 0) return 0;
+  const primaryDies = primaryAliveAt(age, input) && !primaryAliveAt(age + 1, input);
+  const partnerDies = partnerAliveAt(age, input) && !partnerAliveAt(age + 1, input);
+  const deaths = (primaryDies ? 1 : 0) + (partnerDies ? 1 : 0);
+  if (deaths === 0) return 0;
+  return deaths * inflate(input.funeralCost, input.inflationRate, yearsFromNow);
+}
+
 function onePersonSocialSecurity(age: number, input: CalculatorInput, yearsFromNow: number): number {
   const ss = guaranteedIncomeWindow(input.socialSecurityStartAge, input);
   if (ss.years <= 0 || age < ss.start || age > ss.end) return 0;
@@ -499,13 +509,14 @@ function runYears(input: CalculatorInput, option: boolean | RunYearOptions): Yea
         ? inflate(input.annualContribution, input.inflationRate, yearsFromNow)
         : input.annualContribution;
       const lifeInsurance = lifeInsuranceAtAge(age, input);
+      const funeralSpend = funeralCostAtAge(age, input, yearsFromNow);
       let startBalance: number;
       let endBalance: number;
       let growth: number;
       if (input.savingsGrowWithInflation || forceWorkingIncremental) {
         startBalance = balance;
         growth = startBalance * rate;
-        endBalance = startBalance + growth + contribution + lifeInsurance;
+        endBalance = startBalance + growth + contribution + lifeInsurance - funeralSpend;
       } else {
         startBalance = nestEggAtRetirement(
           input.currentSavings,
@@ -520,9 +531,9 @@ function runYears(input: CalculatorInput, option: boolean | RunYearOptions): Yea
           yearsDone + 1,
         );
         growth = startBalance * rate;
-        endBalance += lifeInsurance;
+        endBalance += lifeInsurance - funeralSpend;
       }
-      if (lifeInsurance > 0) forceWorkingIncremental = true;
+      if (lifeInsurance > 0 || funeralSpend > 0) forceWorkingIncremental = true;
       balance = endBalance;
       years.push({
         age,
@@ -541,9 +552,10 @@ function runYears(input: CalculatorInput, option: boolean | RunYearOptions): Yea
         healthcareSpend: 0,
         longTermCareSpend: 0,
         housingSpend: 0,
+        funeralSpend,
         housingKind: null,
-        totalSpend: 0,
-        netCashFlow: contribution + lifeInsurance,
+        totalSpend: funeralSpend,
+        netCashFlow: contribution + lifeInsurance - funeralSpend,
         endBalance,
         depleted: false,
       });
@@ -594,6 +606,7 @@ function runYears(input: CalculatorInput, option: boolean | RunYearOptions): Yea
     const partTimeIncome = primaryPartTime + partnerPartTime;
     const workIncome = remainingWorkIncomeAtAge(age, input, yearsFromNow);
     const lifeInsurance = lifeInsuranceAtAge(age, input);
+    const funeralSpend = funeralCostAtAge(age, input, yearsFromNow);
 
     const healthInflation = straightLine ? input.inflationRate : input.healthcareInflationRate;
     const lifeMult = straightLine ? 1 : lifestyleMultiplier(age, input);
@@ -643,7 +656,7 @@ function runYears(input: CalculatorInput, option: boolean | RunYearOptions): Yea
         ? inflate(input.partnerLongTermCareAnnual, healthInflation, yearsFromNow)
         : 0);
 
-    const totalSpend = lifestyleSpend + healthcareSpend + longTermCareSpend + housingSpend;
+    const totalSpend = lifestyleSpend + healthcareSpend + longTermCareSpend + housingSpend + funeralSpend;
     const inflow = guaranteedIncome + partTimeIncome + workIncome + lifeInsurance;
     const netCashFlow = inflow - totalSpend + householdSave;
 
@@ -704,6 +717,7 @@ function runYears(input: CalculatorInput, option: boolean | RunYearOptions): Yea
       healthcareSpend,
       longTermCareSpend,
       housingSpend,
+      funeralSpend,
       housingKind,
       totalSpend,
       netCashFlow,
@@ -759,7 +773,8 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
   const totalLifestyleSpend = fundedYears.reduce((s, y) => s + y.lifestyleSpend, 0);
   const totalLongTermCareSpend = fundedYears.reduce((s, y) => s + y.longTermCareSpend, 0);
   const totalHousingSpend = fundedYears.reduce((s, y) => s + y.housingSpend, 0);
-  const totalSpend = totalHealthcareSpend + totalLifestyleSpend + totalLongTermCareSpend + totalHousingSpend;
+  const funeralTotal = fundedYears.reduce((s, y) => s + y.funeralSpend, 0);
+  const totalSpend = totalHealthcareSpend + totalLifestyleSpend + totalLongTermCareSpend + totalHousingSpend + funeralTotal;
   const healthcareShare = totalSpend > 0 ? (totalHealthcareSpend + totalLongTermCareSpend + totalHousingSpend) / totalSpend : 0;
   const nestEgg = nestEggBreakdown(input);
   const partTimeWages = fundedYears.reduce((s, y) => s + y.partTimeIncome, 0);
@@ -785,7 +800,7 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
   const retirementIncomeTotal = socialSecurityTotal + pensionTotal + partTimeTotal + workIncomeTotal + lifeInsuranceTotal;
   const fundingTotal = nestEgg.total + retirementIncomeTotal;
   const totalMedicalSpend = totalHealthcareSpend + totalLongTermCareSpend + totalHousingSpend;
-  const totalRetirementSpend = totalLifestyleSpend + totalMedicalSpend;
+  const totalRetirementSpend = totalLifestyleSpend + totalMedicalSpend + funeralTotal;
 
   let peakHealthcareAge: number | null = null;
   let peakHealthcareSpend = 0;
@@ -877,6 +892,7 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
     totalLifestyleSpend,
     totalLongTermCareSpend,
     totalHousingSpend,
+    funeralTotal,
     totalMedicalSpend,
     totalRetirementSpend,
     healthcareShare,

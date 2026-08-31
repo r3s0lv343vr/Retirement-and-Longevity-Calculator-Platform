@@ -80,6 +80,18 @@ describe("compileOutlookPdf", () => {
     expect(text).toContain(formatMoney(result.outlook.lifeInsuranceTotal));
   });
 
+  it("includes funeral cost on a two-person report when set", () => {
+    const result = project({
+      ...DEFAULT_INPUT,
+      twoPerson: true,
+      partnerPlanToAge: 80,
+      funeralCost: 12000,
+    });
+    const text = pdfLatin1(compileOutlookPdf(result));
+    expect(text).toContain("Funeral cost");
+    expect(text).toContain(formatMoney(result.outlook.funeralTotal));
+  });
+
   it("includes remaining-expense wording when capital runs out", () => {
     const result = project(DEFAULT_INPUT);
     const text = pdfLatin1(compileOutlookPdf(result));

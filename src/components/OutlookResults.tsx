@@ -149,6 +149,9 @@ export function OutlookResults({ result, adoptedBudget = null, onAdoptComfort, a
             { label: "Routine healthcare", value: outlook.totalHealthcareSpend },
             { label: "Long-term care", value: outlook.totalLongTermCareSpend },
             { label: "Later-life facility rent", value: outlook.totalHousingSpend },
+            ...(result.input.twoPerson && (result.input.funeralCost > 0 || outlook.funeralTotal > 0)
+              ? [{ label: "Funeral cost", value: outlook.funeralTotal }]
+              : []),
           ]}
         />
         <BreakdownCard
@@ -326,6 +329,9 @@ function HouseholdSurvivorCard({ result }: { result: ProjectionResult }) {
         side-hustle line.
         {input.lifeInsuranceLump > 0
           ? ` A life-insurance lump of ${formatMoney(input.lifeInsuranceLump)} enters the pot the first survivor year.`
+          : ""}
+        {input.funeralCost > 0
+          ? ` Funeral cost of ${formatMoney(input.funeralCost)} (today) is charged the year each person leaves the plan.`
           : ""}{" "}
         If only one person is in nursing, household lifestyle is not cut.
       </p>
