@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { mergeInput, project, validateInput } from "@/lib/engine";
 import type { CalculatorPayload } from "@/lib/engine";
+import { withRunTracking } from "@/lib/admin/request";
 
 export async function POST(request: Request) {
   let payload: CalculatorPayload = {};
@@ -20,5 +21,5 @@ export async function POST(request: Request) {
   }
 
   const result = project(input);
-  return NextResponse.json(result);
+  return withRunTracking(request, "longevity", NextResponse.json(result));
 }

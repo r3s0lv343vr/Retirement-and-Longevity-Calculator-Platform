@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { mergeInput } from "@/lib/engine";
 import type { CalculatorPayload } from "@/lib/engine";
 import { estimateWorkEnd, validateWhenInput } from "@/lib/when/estimateWorkEnd";
+import { withRunTracking } from "@/lib/admin/request";
 
 export async function POST(request: Request) {
   let payload: CalculatorPayload = {};
@@ -20,5 +21,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid input.", errors }, { status: 400 });
   }
 
-  return NextResponse.json(estimateWorkEnd(input));
+  return withRunTracking(request, "when", NextResponse.json(estimateWorkEnd(input)));
 }

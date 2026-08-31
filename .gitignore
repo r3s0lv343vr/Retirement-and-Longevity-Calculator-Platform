@@ -4,6 +4,7 @@ out
 .vercel
 .env
 .env*.local
+.data
 *.tsbuildinfo
 coverage
 .DS_Store

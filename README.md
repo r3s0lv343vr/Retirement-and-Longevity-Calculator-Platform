@@ -25,7 +25,8 @@ This is an educational model, not tax, investment, or medical advice.
 ## Stack
 
 - **Frontend:** Next.js App Router, React, Tailwind CSS — a single page
-- **Backend:** Next.js Route Handlers (`/api/calculate`, `/api/assumptions`, `/api/health`)
+- **Backend:** Next.js Route Handlers (`/api/calculate`, `/api/need`, `/api/when`, `/api/claim`, `/api/housing`, `/api/assumptions`, `/api/health`, `/api/collect`, `/api/admin/*`)
+- **Admin:** `/admin` — visitors, site users, and calculator runs
 - **Engine:** Deterministic TypeScript projection in `src/lib/engine`
 
 ## Ads
@@ -64,6 +65,14 @@ Production: https://retirement-and-longevity-calculator.vercel.app
 Framework: Next.js · Root directory: repository root · No required environment variables.
 
 The GitHub repo is connected. Pushes to `main` deploy production; other branches get preview URLs.
+
+## Admin
+
+`/admin` is a password-protected dashboard. It shows unique **visitors** (browsers that loaded a public page), **site users** (visitors who ran a calculator), page views, and runs per tool. It does not store savings or other plan numbers.
+
+Set `ADMIN_PASSWORD` in Vercel (or `.env.local`). Locally, if it is unset, the password is `dev-admin`.
+
+On Vercel, add Upstash Redis (or Vercel KV) `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` so counts survive deploys. Without Redis, counts are kept in `.data/analytics.json` on a long-running server, or in memory on serverless.
 
 ## License
 

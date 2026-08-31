@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans, Source_Serif_4 } from "next/font/google";
+import { VisitBeacon } from "@/components/VisitBeacon";
 import "./globals.css";
 
 const sans = DM_Sans({
@@ -32,7 +33,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${sans.variable} ${serif.variable} font-sans antialiased`}>{children}</body>
+      <body className={`${sans.variable} ${serif.variable} font-sans antialiased`}>
+        {children}
+        <VisitBeacon />
+      </body>
     </html>
   );
 }
