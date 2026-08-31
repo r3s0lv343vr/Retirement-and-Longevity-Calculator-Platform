@@ -15,13 +15,16 @@ const serif = Source_Serif_4({
 });
 
 export const metadata: Metadata = {
-  title: "How Long Before I Go Broke Calculator",
+  title: {
+    default: "Retirement and Longevity Calculators",
+    template: "%s",
+  },
   description:
-    "Retirement and Longevity Calculator. Find out if your savings will last while accounting for healthcare inflation, lifestyle phases, and part-time work.",
+    "Retirement and longevity calculators. How long savings last, and how much you need so a plan lasts through a given age.",
   openGraph: {
-    title: "How Long Before I Go Broke Calculator",
+    title: "Retirement and Longevity Calculators",
     description:
-      "Retirement and Longevity Calculator that does not assume a straight line of spending.",
+      "A small cluster of retirement calculators. The original longevity outlook is unchanged.",
     type: "website",
   },
 };
