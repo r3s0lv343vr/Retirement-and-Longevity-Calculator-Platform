@@ -1,3 +1,4 @@
+import { AdSlot } from "@/components/AdSlot";
 import { ClusterNav } from "@/components/ClusterNav";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -5,7 +6,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Retirement and Longevity Calculators",
   description:
-    "A small cluster of retirement calculators. How long savings last, and how much you need so the plan lasts through a given age.",
+    "A small cluster of retirement calculators. How long savings last, how much nest egg you need, and when full-time work can end.",
 };
 
 const TOOLS = [
@@ -20,6 +21,12 @@ const TOOLS = [
     title: "How much do I need to last",
     question: "How much nest egg today funds this plan through a given age?",
     note: "The inverse. Short form. Uses your entered spending and income, not the comfortable-living suggestion.",
+  },
+  {
+    href: "/when",
+    title: "When can I stop working",
+    question: "Given what I have, how soon can full-time work end?",
+    note: "Solves for work-end age, not nest egg. Same entered plan as How much; earliest age that still lasts.",
   },
 ] as const;
 
@@ -36,12 +43,16 @@ export default function HubPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-5 pb-16 pt-8 sm:px-6">
+      <div className="mx-auto max-w-5xl px-5 py-4 sm:px-6">
+        <AdSlot placement="header-leaderboard" />
+      </div>
+
+      <main className="mx-auto max-w-5xl px-5 pb-16 pt-4 sm:px-6">
         <p className="max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
-          The longevity calculator is unchanged. This hub is only a front door. A second tool asks the inverse: how
-          much you need today so the plan lasts through the age you set.
+          The longevity calculator is unchanged. This hub is only a front door. Sibling tools ask how much nest egg
+          you need today, and how soon full-time work can end, so the same kind of plan lasts through the age you set.
         </p>
-        <ul className="mt-8 grid gap-5 sm:grid-cols-2">
+        <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {TOOLS.map((tool) => (
             <li key={tool.href}>
               <Link href={tool.href} className="card block h-full transition hover:border-pine/30">
@@ -57,6 +68,8 @@ export default function HubPage() {
 
       <footer className="border-t border-pine/10 bg-pine text-paper">
         <div className="mx-auto max-w-5xl px-5 py-8 sm:px-6">
+          <AdSlot placement="footer" className="mb-4 border-paper/20 bg-paper/10 text-paper/80" />
+          <AdSlot placement="footer-2" className="mb-6 border-paper/20 bg-paper/10 text-paper/80" />
           <p className="font-serif text-xl leading-snug">Retirement and Longevity Calculators</p>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-paper/75">
             Educational projection only. It is not tax, investment, or medical advice. Markets, inflation, health, and
