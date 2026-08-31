@@ -1,5 +1,6 @@
 "use client";
 
+import { AdSlot } from "@/components/AdSlot";
 import { FIELD_META, mergeInput } from "@/lib/engine";
 import type { CalculatorInput } from "@/lib/engine";
 import type { FormEvent } from "react";
@@ -73,6 +74,8 @@ export function NeedForm({ values, onChange, onSubmit, loading, error }: Props) 
           ))}
         </div>
       </section>
+
+      <AdSlot placement="form-break-1" />
 
       <details className="card group">
         <summary className="cursor-pointer list-none font-medium text-pine marker:content-none [&::-webkit-details-marker]:hidden">
