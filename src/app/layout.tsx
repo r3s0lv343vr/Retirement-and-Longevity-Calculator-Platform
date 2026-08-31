@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     template: "%s",
   },
   description:
-    "Retirement and longevity calculators. How long savings last, how much nest egg you need, and when full-time work can end.",
+    "Retirement and longevity calculators. How long savings last, how much nest egg you need, when work can end, and claiming Social Security at 67 vs 70.",
   openGraph: {
     title: "Retirement and Longevity Calculators",
     description:
