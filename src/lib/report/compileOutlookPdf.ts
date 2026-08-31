@@ -122,9 +122,14 @@ class ReportWriter {
   comfort(result: ProjectionResult) {
     const { comfort, input } = result;
     this.ensure(120);
-    this.section("Comfortable living", "Suggested alternative -- not your entered plan");
+    this.section(
+      input.twoPerson ? "Household comfortable living" : "Comfortable living",
+      "Suggested alternative -- not your entered plan",
+    );
     this.body(
-      "Optional. This is a higher national-style budget you can aim for -- not the outlook from the form. It uses the higher of your lifestyle spending and a $65,000 floor, adds a 10% buffer, and keeps healthcare no lower than a typical premium-plus-care amount. Later-life housing is included only if you entered it.",
+      input.twoPerson
+        ? "Optional. This is a higher household budget you can aim for -- not the outlook from the form. It uses the higher of your household lifestyle spending and a $104,000 floor ($65,000 x 1.6), adds a 10% buffer, and keeps each person's healthcare no lower than a typical premium-plus-care amount. Later-life housing is included only if you entered it."
+        : "Optional. This is a higher national-style budget you can aim for -- not the outlook from the form. It uses the higher of your lifestyle spending and a $65,000 floor, adds a 10% buffer, and keeps healthcare no lower than a typical premium-plus-care amount. Later-life housing is included only if you entered it.",
     );
     this.space(8);
     const col = CONTENT_W / 3;
@@ -179,6 +184,9 @@ class ReportWriter {
     this.lineKV("Pension", formatMoney(outlook.pensionTotal));
     this.lineKV("Part-time / side-hustle wages", formatMoney(outlook.partTimeWages));
     this.lineKV("Extra savings during phased work", formatMoney(outlook.partTimeInvested));
+    if (input.twoPerson && (input.lifeInsuranceLump > 0 || outlook.lifeInsuranceTotal > 0)) {
+      this.lineKV("Life insurance lump", formatMoney(outlook.lifeInsuranceTotal));
+    }
 
     this.space(8);
     this.subhead("All spending through last funded year");
@@ -224,7 +232,11 @@ class ReportWriter {
           : String(outlook.fundedThroughAge),
       );
       this.body(
-        "One nest egg and one set of market returns. Drawdowns start at the earlier work-end; yearly saving continues until the later work-end. After the first death, Social Security becomes the larger of the two checks; a pension continues only by the survivor share on the form. Lifestyle then uses the survivor factor. If only one person is in nursing, household lifestyle is not cut.",
+        "One nest egg and one set of market returns. Drawdowns start at the earlier work-end; yearly saving continues until the later work-end. After the first death, Social Security becomes the larger of the two checks; a pension continues only by the survivor share on the form. Lifestyle then uses the survivor factor." +
+          (input.lifeInsuranceLump > 0
+            ? ` A life-insurance lump of ${formatMoney(input.lifeInsuranceLump)} enters the pot the first survivor year.`
+            : "") +
+          " If only one person is in nursing, household lifestyle is not cut.",
       );
     }
 
@@ -346,7 +358,7 @@ class ReportWriter {
             formatMoney(row.lifestyleSpend),
             formatMoney(row.healthcareSpend + row.longTermCareSpend),
             formatMoney(row.housingSpend),
-            formatMoney(row.guaranteedIncome + row.partTimeIncome),
+            formatMoney(row.guaranteedIncome + row.partTimeIncome + row.lifeInsurance),
             formatMoney(row.endBalance),
           ]
         : [
@@ -355,7 +367,7 @@ class ReportWriter {
             formatMoney(row.lifestyleSpend),
             formatMoney(row.healthcareSpend + row.longTermCareSpend),
             formatMoney(row.housingSpend),
-            formatMoney(row.guaranteedIncome + row.partTimeIncome),
+            formatMoney(row.guaranteedIncome + row.partTimeIncome + row.lifeInsurance),
             formatMoney(row.endBalance),
           ];
       this.tableRow(cols, values);

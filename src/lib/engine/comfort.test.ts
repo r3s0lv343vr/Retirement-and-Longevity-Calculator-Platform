@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_INPUT } from "./defaults";
 import { project } from "./index";
 import {
+  COMFORT_HEALTHCARE_FLOOR,
+  COMFORT_LIFESTYLE_BUFFER,
   COMFORT_LIFESTYLE_FLOOR,
+  HOUSEHOLD_LIFESTYLE_SCALE,
   adoptComfortBudget,
   comfortInputFrom,
   estimateComfort,
@@ -14,6 +17,19 @@ describe("comfortInputFrom", () => {
   it("raises low lifestyle spend to a comfortable floor plus buffer", () => {
     const next = comfortInputFrom({ ...DEFAULT_INPUT, lifestyleSpendToday: 40000 });
     expect(next.lifestyleSpendToday).toBeCloseTo(COMFORT_LIFESTYLE_FLOOR * 1.1);
+    expect(next.partnerHealthcareSpendToday).toBe(DEFAULT_INPUT.partnerHealthcareSpendToday);
+  });
+
+  it("raises household lifestyle and each healthcare line when two persons is on", () => {
+    const next = comfortInputFrom({
+      ...DEFAULT_INPUT,
+      twoPerson: true,
+      lifestyleSpendToday: 40000,
+      partnerHealthcareSpendToday: 0,
+    });
+    expect(next.lifestyleSpendToday).toBeCloseTo(COMFORT_LIFESTYLE_FLOOR * HOUSEHOLD_LIFESTYLE_SCALE * 1.1);
+    expect(next.healthcareSpendToday).toBe(COMFORT_HEALTHCARE_FLOOR);
+    expect(next.partnerHealthcareSpendToday).toBe(COMFORT_HEALTHCARE_FLOOR);
   });
 
   it("keeps a higher entered lifestyle and adds a buffer", () => {
@@ -105,5 +121,18 @@ describe("adoptComfortBudget", () => {
     expect(again.lifestyleSpendToday).toBeGreaterThan(adopted.lifestyleSpendToday);
     expect(sameSpendAmounts(adopted, 71_500, 8_400)).toBe(true);
     expect(sameSpendAmounts(DEFAULT_INPUT, 71_500, 8_400)).toBe(false);
+  });
+
+  it("uses a household lifestyle floor and both healthcare floors when two persons is on", () => {
+    const householdFloor = COMFORT_LIFESTYLE_FLOOR * HOUSEHOLD_LIFESTYLE_SCALE * COMFORT_LIFESTYLE_BUFFER;
+    const next = adoptComfortBudget({
+      ...DEFAULT_INPUT,
+      twoPerson: true,
+      partnerHealthcareSpendToday: 0,
+    });
+    expect(next.lifestyleSpendToday).toBeCloseTo(householdFloor);
+    expect(next.healthcareSpendToday).toBe(COMFORT_HEALTHCARE_FLOOR);
+    expect(next.partnerHealthcareSpendToday).toBe(COMFORT_HEALTHCARE_FLOOR);
+    expect(sameSpendAmounts(next, householdFloor, COMFORT_HEALTHCARE_FLOOR, COMFORT_HEALTHCARE_FLOOR)).toBe(true);
   });
 });

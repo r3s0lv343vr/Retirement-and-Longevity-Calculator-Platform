@@ -6,17 +6,27 @@ import { snapshotFromOutlook } from "./whatIf";
 export const COMFORT_LIFESTYLE_FLOOR = 65_000;
 export const COMFORT_HEALTHCARE_FLOOR = 8_400;
 export const COMFORT_LIFESTYLE_BUFFER = 1.1;
+/** Two-person household lifestyle floor is this times the one-person floor, then the usual buffer. */
+export const HOUSEHOLD_LIFESTYLE_SCALE = 1.6;
 export const COMFORT_HOUSING_PLACEHOLDER = 36_000;
 export const COMFORT_HOUSING_START_AGE = 80;
 
+export function comfortLifestyleFloor(input: CalculatorInput): number {
+  return input.twoPerson ? COMFORT_LIFESTYLE_FLOOR * HOUSEHOLD_LIFESTYLE_SCALE : COMFORT_LIFESTYLE_FLOOR;
+}
+
 export function comfortInputFrom(input: CalculatorInput): CalculatorInput {
-  const suggestedLifestyle = Math.max(input.lifestyleSpendToday, COMFORT_LIFESTYLE_FLOOR) * COMFORT_LIFESTYLE_BUFFER;
+  const suggestedLifestyle = Math.max(input.lifestyleSpendToday, comfortLifestyleFloor(input)) * COMFORT_LIFESTYLE_BUFFER;
   const suggestedHealthcare = Math.max(input.healthcareSpendToday, COMFORT_HEALTHCARE_FLOOR);
+  const suggestedPartnerHealthcare = input.twoPerson
+    ? Math.max(input.partnerHealthcareSpendToday, COMFORT_HEALTHCARE_FLOOR)
+    : input.partnerHealthcareSpendToday;
 
   return {
     ...input,
     lifestyleSpendToday: suggestedLifestyle,
     healthcareSpendToday: suggestedHealthcare,
+    partnerHealthcareSpendToday: suggestedPartnerHealthcare,
   };
 }
 
@@ -63,10 +73,12 @@ export function estimateComfort(input: CalculatorInput): ComfortEstimate {
   const spendRun = projectBase(comfortInput);
   const comfortRun = projectBase({ ...comfortInput, currentSavings: Math.max(input.currentSavings, nestEggNeeded) });
 
+  const partnerHealthcare = input.twoPerson ? comfortInput.partnerHealthcareSpendToday : 0;
   return {
     suggestedLifestyleToday: comfortInput.lifestyleSpendToday,
     suggestedHealthcareToday: comfortInput.healthcareSpendToday,
-    suggestedAnnualBudgetToday: comfortInput.lifestyleSpendToday + comfortInput.healthcareSpendToday,
+    suggestedPartnerHealthcareToday: partnerHealthcare,
+    suggestedAnnualBudgetToday: comfortInput.lifestyleSpendToday + comfortInput.healthcareSpendToday + partnerHealthcare,
     usedHousingPlaceholder,
     placeholderHousingAnnual: usedHousingPlaceholder ? COMFORT_HOUSING_PLACEHOLDER : 0,
     placeholderHousingStartAge: usedHousingPlaceholder ? COMFORT_HOUSING_START_AGE : 0,
@@ -86,9 +98,20 @@ export function adoptComfortBudget(input: CalculatorInput): CalculatorInput {
     ...input,
     lifestyleSpendToday: comfort.lifestyleSpendToday,
     healthcareSpendToday: comfort.healthcareSpendToday,
+    partnerHealthcareSpendToday: input.twoPerson
+      ? comfort.partnerHealthcareSpendToday
+      : input.partnerHealthcareSpendToday,
   };
 }
 
-export function sameSpendAmounts(input: CalculatorInput, lifestyle: number, healthcare: number): boolean {
-  return Math.round(input.lifestyleSpendToday) === Math.round(lifestyle) && Math.round(input.healthcareSpendToday) === Math.round(healthcare);
+export function sameSpendAmounts(
+  input: CalculatorInput,
+  lifestyle: number,
+  healthcare: number,
+  partnerHealthcare = 0,
+): boolean {
+  const lifestyleOk = Math.round(input.lifestyleSpendToday) === Math.round(lifestyle);
+  const healthcareOk = Math.round(input.healthcareSpendToday) === Math.round(healthcare);
+  if (!input.twoPerson) return lifestyleOk && healthcareOk;
+  return lifestyleOk && healthcareOk && Math.round(input.partnerHealthcareSpendToday) === Math.round(partnerHealthcare);
 }

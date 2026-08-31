@@ -63,7 +63,7 @@ const GROUPS: {
     id: "partner",
     title: "Second person",
     blurb:
-      "Partner Social Security and pension, a second side hustle, and their care. Their age and plan-through age are on Your timeline. After the first death, household Social Security becomes the larger check; a pension continues only by the survivor share you set. Lifestyle then uses the survivor factor. One nest egg and one set of market returns.",
+      "Partner Social Security and pension, a second side hustle, and their care. Their age and plan-through age are on Your timeline. After the first death, household Social Security becomes the larger check; a pension continues only by the survivor share you set. Lifestyle then uses the survivor factor. Optional life-insurance face amount enters the pot the first survivor year; $0 skips. One nest egg and one set of market returns.",
     keys: [
       "partnerSocialSecurityAnnual",
       "partnerSocialSecurityStartAge",
@@ -81,6 +81,7 @@ const GROUPS: {
       "partnerNursingHomeRentAnnual",
       "partnerNursingHomeStartAge",
       "survivorLifestyleFactor",
+      "lifeInsuranceLump",
     ],
     columns: 2,
   },

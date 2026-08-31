@@ -33,6 +33,8 @@ export type CalculatorInput = {
   partnerNursingHomeStartAge: number;
   /** Scales household lifestyle after the first death. */
   survivorLifestyleFactor: number;
+  /** Face amount paid into the nest egg the first survivor year. $0 skips. Nominal, no CPI. */
+  lifeInsuranceLump: number;
   currentSavings: number;
   annualContribution: number;
   /** When true, the yearly savings deposit rises with general inflation. Off keeps a level ordinary annuity. */
@@ -80,6 +82,7 @@ export type YearRow = {
   contribution: number;
   guaranteedIncome: number;
   partTimeIncome: number;
+  lifeInsurance: number;
   lifestyleSpend: number;
   healthcareSpend: number;
   longTermCareSpend: number;
@@ -120,6 +123,7 @@ export type Outlook = {
   partTimeInvested: number;
   partTimeTotal: number;
   retirementIncomeTotal: number;
+  lifeInsuranceTotal: number;
   fundingTotal: number;
   straightLineFundedThroughAge: number;
   straightLineEndingBalance: number;
@@ -160,6 +164,7 @@ export type PlanSnapshot = {
 export type ComfortEstimate = {
   suggestedLifestyleToday: number;
   suggestedHealthcareToday: number;
+  suggestedPartnerHealthcareToday: number;
   suggestedAnnualBudgetToday: number;
   usedHousingPlaceholder: boolean;
   placeholderHousingAnnual: number;

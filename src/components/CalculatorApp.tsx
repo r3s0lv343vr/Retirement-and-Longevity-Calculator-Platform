@@ -11,6 +11,7 @@ import { readScenarioFromLocation, writeScenarioUrl } from "@/lib/scenarioUrl";
 type AdoptedComfortBudget = {
   lifestyle: number;
   healthcare: number;
+  partnerHealthcare: number;
 };
 
 export function CalculatorApp() {
@@ -25,7 +26,10 @@ export function CalculatorApp() {
   function changeValues(next: CalculatorInput) {
     setValues(next);
     if (urlReady.current) writeScenarioUrl(next);
-    if (adoptedBudget && !sameSpendAmounts(next, adoptedBudget.lifestyle, adoptedBudget.healthcare)) {
+    if (
+      adoptedBudget &&
+      !sameSpendAmounts(next, adoptedBudget.lifestyle, adoptedBudget.healthcare, adoptedBudget.partnerHealthcare)
+    ) {
       setAdoptedBudget(null);
     }
   }
@@ -75,6 +79,7 @@ export function CalculatorApp() {
     setAdoptedBudget({
       lifestyle: next.lifestyleSpendToday,
       healthcare: next.healthcareSpendToday,
+      partnerHealthcare: next.twoPerson ? next.partnerHealthcareSpendToday : 0,
     });
     setAdoptingComfort(true);
     try {

@@ -873,4 +873,71 @@ describe("project", () => {
     expect(row?.housingSpend).toBeCloseTo(100000);
     expect(row?.lifestyleSpend).toBeCloseTo(50000);
   });
+
+  it("adds a life-insurance lump in the first survivor year only", () => {
+    const none = run({
+      twoPerson: true,
+      currentAge: 65,
+      retirementAge: 65,
+      planToAge: 80,
+      partnerCurrentAge: 65,
+      partnerPlanToAge: 70,
+      currentSavings: 5_000_000,
+      inflationRate: 0,
+      healthcareInflationRate: 0,
+      socialSecurityAnnual: 0,
+      partnerSocialSecurityAnnual: 0,
+      pensionAnnual: 0,
+      partnerPensionAnnual: 0,
+      partTimeAnnualIncome: 0,
+      partnerPartTimeAnnualIncome: 0,
+      lifestyleSpendToday: 1000,
+      healthcareSpendToday: 0,
+      partnerHealthcareSpendToday: 0,
+      longTermCareAnnual: 0,
+      goGoLifestyleMultiplier: 1,
+      lifeInsuranceLump: 0,
+    });
+    const insured = run({
+      ...none.input,
+      lifeInsuranceLump: 100_000,
+    });
+    expect(none.years.find((y) => y.age === 70)?.lifeInsurance).toBe(0);
+    expect(none.years.find((y) => y.age === 71)?.lifeInsurance).toBe(0);
+    expect(insured.years.find((y) => y.age === 70)?.lifeInsurance).toBe(0);
+    expect(insured.years.find((y) => y.age === 71)?.lifeInsurance).toBe(100_000);
+    expect(insured.years.find((y) => y.age === 72)?.lifeInsurance).toBe(0);
+    expect(insured.outlook.lifeInsuranceTotal).toBe(100_000);
+    expect(insured.years.find((y) => y.age === 71)?.endBalance).toBeGreaterThan(
+      none.years.find((y) => y.age === 71)?.endBalance ?? 0,
+    );
+  });
+
+  it("leaves balances unchanged when the life-insurance lump is $0", () => {
+    const one = run({
+      twoPerson: true,
+      partnerCurrentAge: DEFAULT_INPUT.currentAge,
+      partnerPlanToAge: DEFAULT_INPUT.planToAge,
+      partnerSocialSecurityAnnual: 0,
+      partnerPensionAnnual: 0,
+      partnerPartTimeAnnualIncome: 0,
+      partnerHealthcareSpendToday: 0,
+      partnerLongTermCareAnnual: 0,
+      partnerNursingHomeRentAnnual: 0,
+      lifeInsuranceLump: 0,
+    });
+    const omitted = run({
+      twoPerson: true,
+      partnerCurrentAge: DEFAULT_INPUT.currentAge,
+      partnerPlanToAge: DEFAULT_INPUT.planToAge,
+      partnerSocialSecurityAnnual: 0,
+      partnerPensionAnnual: 0,
+      partnerPartTimeAnnualIncome: 0,
+      partnerHealthcareSpendToday: 0,
+      partnerLongTermCareAnnual: 0,
+      partnerNursingHomeRentAnnual: 0,
+    });
+    expect(omitted.years.map((y) => y.endBalance)).toEqual(one.years.map((y) => y.endBalance));
+    expect(omitted.outlook.lifeInsuranceTotal).toBe(0);
+  });
 });

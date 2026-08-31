@@ -63,6 +63,7 @@ export function validateInput(input: CalculatorInput): string[] {
     "partnerHealthcareSpendToday",
     "partnerLongTermCareAnnual",
     "partnerNursingHomeRentAnnual",
+    "lifeInsuranceLump",
   ];
   const rateKeys: (keyof CalculatorInput)[] = [
     "preRetirementReturn",

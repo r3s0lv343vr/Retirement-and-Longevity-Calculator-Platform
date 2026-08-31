@@ -64,6 +64,19 @@ describe("compileOutlookPdf", () => {
     const text = pdfLatin1(compileOutlookPdf(result));
     expect(text).toContain("Two persons and the survivor");
     expect(text).toContain("Partner Social Security / year");
+    expect(text).toContain("Household comfortable living");
+  });
+
+  it("includes the life-insurance lump on a two-person report when set", () => {
+    const result = project({
+      ...DEFAULT_INPUT,
+      twoPerson: true,
+      partnerPlanToAge: 80,
+      lifeInsuranceLump: 250000,
+    });
+    const text = pdfLatin1(compileOutlookPdf(result));
+    expect(text).toContain("Life insurance lump");
+    expect(text).toContain(formatMoney(result.outlook.lifeInsuranceTotal));
   });
 
   it("includes remaining-expense wording when capital runs out", () => {
