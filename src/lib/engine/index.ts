@@ -47,6 +47,7 @@ export {
   estimateComfort,
   extraAnnualSavings,
   nestEggNeededNow,
+  planIsFunded,
   comfortInputFrom,
   adoptComfortBudget,
   sameSpendAmounts,

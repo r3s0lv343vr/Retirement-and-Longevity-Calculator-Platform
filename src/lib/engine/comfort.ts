@@ -38,6 +38,11 @@ function isFunded(input: CalculatorInput, savings: number): boolean {
   return result.outlook.endingBalance >= livingCushion;
 }
 
+/** Same cushion rule as the nest-egg solver, using the savings already on the form. */
+export function planIsFunded(input: CalculatorInput): boolean {
+  return isFunded(input, input.currentSavings);
+}
+
 export function nestEggNeededNow(input: CalculatorInput): number {
   if (isFunded(input, 0)) return 0;
   let lo = 0;

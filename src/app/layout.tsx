@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     template: "%s",
   },
   description:
-    "Retirement and longevity calculators. How long savings last, and how much you need so a plan lasts through a given age.",
+    "Retirement and longevity calculators. How long savings last, how much nest egg you need, and when full-time work can end.",
   openGraph: {
     title: "Retirement and Longevity Calculators",
     description:
