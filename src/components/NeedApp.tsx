@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { AdSlot } from "@/components/AdSlot";
 import { NeedForm } from "@/components/NeedForm";
 import { NEED_DEFAULT } from "@/lib/need/defaults";
 import type { NeedEstimate } from "@/lib/need/estimateNeed";
@@ -60,15 +61,32 @@ export function NeedApp() {
   }, []);
 
   return (
-    <div className="space-y-6">
-      <NeedForm
-        values={values}
-        onChange={changeValues}
-        onSubmit={() => void calculate()}
-        loading={loading}
-        error={error}
-      />
-      {result ? <NeedResult result={result} /> : null}
+    <div className="grid items-start gap-8 xl:grid-cols-[minmax(0,1fr)_160px]">
+      <div className="min-w-0 space-y-6">
+        <AdSlot placement="after-intro" />
+        <NeedForm
+          values={values}
+          onChange={changeValues}
+          onSubmit={() => void calculate()}
+          loading={loading}
+          error={error}
+        />
+        <AdSlot placement="mid-form" />
+        {result ? (
+          <>
+            <AdSlot placement="pre-outlook" />
+            <NeedResult result={result} />
+            <AdSlot placement="after-stats" />
+          </>
+        ) : null}
+      </div>
+      <div className="hidden min-w-0 xl:block">
+        <div className="sticky top-6 space-y-4">
+          <AdSlot placement="sidebar" />
+          <AdSlot placement="sidebar-2" />
+          <AdSlot placement="sidebar-3" />
+        </div>
+      </div>
     </div>
   );
 }

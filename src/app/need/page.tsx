@@ -1,3 +1,4 @@
+import { AdSlot } from "@/components/AdSlot";
 import { ClusterNav } from "@/components/ClusterNav";
 import { NeedApp } from "@/components/NeedApp";
 import type { Metadata } from "next";
@@ -21,8 +22,12 @@ export default function NeedPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-5 pb-16 pt-6 sm:px-6">
-        <section className="max-w-3xl pb-8">
+      <div className="mx-auto max-w-5xl px-5 py-4 sm:px-6">
+        <AdSlot placement="header-leaderboard" />
+      </div>
+
+      <main className="mx-auto max-w-5xl px-5 pb-16 sm:px-6">
+        <section className="max-w-3xl pb-8 pt-2">
           <p className="font-serif text-xl leading-snug text-ink sm:text-2xl">
             The inverse of How long before I go broke.
           </p>
@@ -37,6 +42,8 @@ export default function NeedPage() {
 
       <footer className="border-t border-pine/10 bg-pine text-paper">
         <div className="mx-auto max-w-5xl px-5 py-8 sm:px-6">
+          <AdSlot placement="footer" className="mb-4 border-paper/20 bg-paper/10 text-paper/80" />
+          <AdSlot placement="footer-2" className="mb-6 border-paper/20 bg-paper/10 text-paper/80" />
           <p className="font-serif text-xl leading-snug">How Much Do I Need to Last</p>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-paper/75">
             Educational projection only. It is not tax, investment, or medical advice. Markets, inflation, health, and
