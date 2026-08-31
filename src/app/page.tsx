@@ -6,7 +6,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Retirement and Longevity Calculators",
   description:
-    "A small cluster of retirement calculators. How long savings last, how much nest egg you need, when work can end, and claiming Social Security at 67 vs 70.",
+    "A small cluster of retirement calculators. How long savings last, how much you need, when work can end, Social Security at 67 vs 70, and later-life housing.",
 };
 
 const TOOLS = [
@@ -34,6 +34,12 @@ const TOOLS = [
     question: "Does delaying the check from 67 to 70 make the plan last longer?",
     note: "One short run. Same delayed-credit math as the How long compare card, which stays on that outlook.",
   },
+  {
+    href: "/housing",
+    title: "Stay home vs CCRC vs nursing",
+    question: "Which later-life housing path lasts farther?",
+    note: "Three exclusive runs. Not six more cells on the longevity form.",
+  },
 ] as const;
 
 export default function HubPage() {
@@ -56,8 +62,8 @@ export default function HubPage() {
       <main className="mx-auto max-w-5xl px-5 pb-16 pt-4 sm:px-6">
         <p className="max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
           The longevity calculator is unchanged. This hub is only a front door. Sibling tools ask how much nest egg
-          you need today, how soon full-time work can end, and whether claiming Social Security at 67 or 70 lasts
-          farther.
+          you need today, how soon full-time work can end, whether claiming Social Security at 67 or 70 lasts farther,
+          and which later-life housing path lasts.
         </p>
         <ul className="mt-8 grid gap-5 sm:grid-cols-2">
           {TOOLS.map((tool) => (
