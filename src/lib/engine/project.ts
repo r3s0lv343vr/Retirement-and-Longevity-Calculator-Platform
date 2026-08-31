@@ -773,7 +773,8 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
   const totalLifestyleSpend = fundedYears.reduce((s, y) => s + y.lifestyleSpend, 0);
   const totalLongTermCareSpend = fundedYears.reduce((s, y) => s + y.longTermCareSpend, 0);
   const totalHousingSpend = fundedYears.reduce((s, y) => s + y.housingSpend, 0);
-  const funeralTotal = fundedYears.reduce((s, y) => s + y.funeralSpend, 0);
+  const retirementYears = years.filter((y) => y.phase !== "working");
+  const funeralTotal = retirementYears.reduce((s, y) => s + y.funeralSpend, 0);
   const totalSpend = totalHealthcareSpend + totalLifestyleSpend + totalLongTermCareSpend + totalHousingSpend + funeralTotal;
   const healthcareShare = totalSpend > 0 ? (totalHealthcareSpend + totalLongTermCareSpend + totalHousingSpend) / totalSpend : 0;
   const nestEgg = nestEggBreakdown(input);
@@ -796,7 +797,7 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
     (s, y) => s + pensionAtAge(y.age, input, y.age - input.currentAge),
     0,
   );
-  const lifeInsuranceTotal = fundedYears.reduce((s, y) => s + y.lifeInsurance, 0);
+  const lifeInsuranceTotal = retirementYears.reduce((s, y) => s + y.lifeInsurance, 0);
   const retirementIncomeTotal = socialSecurityTotal + pensionTotal + partTimeTotal + workIncomeTotal + lifeInsuranceTotal;
   const fundingTotal = nestEgg.total + retirementIncomeTotal;
   const totalMedicalSpend = totalHealthcareSpend + totalLongTermCareSpend + totalHousingSpend;

@@ -107,6 +107,9 @@ describe("validateInput", () => {
     expect(mergeInput({ twoPerson: true }).twoPerson).toBe(true);
     expect(mergeInput({ twoPerson: "on" as unknown as boolean }).twoPerson).toBe(true);
     expect(mergeInput({ partnerPensionCola: "off" as unknown as boolean }).partnerPensionCola).toBe(false);
+    expect(mergeInput({ twoPerson: true }).annualWorkIncome).toBe(0);
+    expect(mergeInput({ twoPerson: true }).lifeInsuranceLump).toBe(0);
+    expect(mergeInput({ twoPerson: true }).funeralCost).toBe(0);
   });
 });
 
@@ -931,6 +934,39 @@ describe("project", () => {
     const row = result.years.find((y) => y.age === 74);
     expect(row?.housingSpend).toBeCloseTo(100000);
     expect(row?.lifestyleSpend).toBeCloseTo(50000);
+  });
+
+  it("still counts a life-insurance payout that lands after savings run out", () => {
+    const result = run({
+      twoPerson: true,
+      currentAge: 70,
+      retirementAge: 65,
+      planToAge: 95,
+      partnerCurrentAge: 70,
+      partnerPlanToAge: 90,
+      currentSavings: 40000,
+      annualContribution: 0,
+      inflationRate: 0,
+      healthcareInflationRate: 0,
+      socialSecurityAnnual: 0,
+      partnerSocialSecurityAnnual: 0,
+      pensionAnnual: 0,
+      partnerPensionAnnual: 0,
+      partTimeAnnualIncome: 0,
+      partnerPartTimeAnnualIncome: 0,
+      lifestyleSpendToday: 30000,
+      healthcareSpendToday: 0,
+      partnerHealthcareSpendToday: 0,
+      longTermCareAnnual: 0,
+      goGoLifestyleMultiplier: 1,
+      slowGoLifestyleMultiplier: 1,
+      noGoLifestyleMultiplier: 1,
+      lifeInsuranceLump: 250_000,
+    });
+    expect(result.outlook.depleted).toBe(true);
+    expect(result.outlook.fundedThroughAge).toBeLessThan(90);
+    expect(result.years.find((y) => y.lifeInsurance > 0)?.lifeInsurance).toBe(250_000);
+    expect(result.outlook.lifeInsuranceTotal).toBe(250_000);
   });
 
   it("adds a life-insurance lump in the first survivor year only", () => {

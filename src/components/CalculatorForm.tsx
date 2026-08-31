@@ -1,7 +1,7 @@
 "use client";
 
 import { AdSlot } from "@/components/AdSlot";
-import { FIELD_META } from "@/lib/engine";
+import { DEFAULT_INPUT, FIELD_META, mergeInput } from "@/lib/engine";
 import type { AdPlacement } from "@/lib/ads";
 import type { CalculatorInput } from "@/lib/engine";
 import type { FormEvent } from "react";
@@ -140,22 +140,23 @@ const ADS_AFTER: Partial<Record<string, AdPlacement>> = {
 };
 
 function displayValue(value: number, kind: string): string {
-  if (kind === "percent") return String(Number((value * 100).toFixed(4)));
-  if (kind === "multiplier") return String(Number(value.toFixed(4)));
-  if (Number.isInteger(value)) return String(value);
-  return String(Number(value.toFixed(2)));
+  const n = Number.isFinite(value) ? value : 0;
+  if (kind === "percent") return String(Number((n * 100).toFixed(4)));
+  if (kind === "multiplier") return String(Number(n.toFixed(4)));
+  if (Number.isInteger(n)) return String(n);
+  return String(Number(n.toFixed(2)));
 }
 
 export function CalculatorForm({ values, onChange, onSubmit, loading, error }: Props) {
   const setField = (key: keyof CalculatorInput, raw: string, kind: string) => {
     if (kind === "toggle") {
-      onChange({ ...values, [key]: raw === "true" });
+      onChange(mergeInput({ ...values, [key]: raw === "true" }));
       return;
     }
     const n = Number(raw);
     if (!Number.isFinite(n)) return;
     const stored = kind === "percent" ? n / 100 : n;
-    onChange({ ...values, [key]: stored });
+    onChange(mergeInput({ ...values, [key]: stored }));
   };
 
   const handleSubmit = (event: FormEvent) => {
@@ -315,7 +316,7 @@ function Field({
     );
   }
 
-  const numeric = values[fieldKey] as number;
+  const numeric = (values[fieldKey] ?? DEFAULT_INPUT[fieldKey]) as number;
   const step = meta.kind === "percent" || meta.kind === "multiplier" ? "0.1" : meta.kind === "age" ? "1" : "100";
 
   return (

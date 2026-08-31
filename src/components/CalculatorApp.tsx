@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AdSlot } from "@/components/AdSlot";
 import { CalculatorForm } from "@/components/CalculatorForm";
 import { OutlookResults } from "@/components/OutlookResults";
-import { DEFAULT_INPUT, adoptComfortBudget, planHorizonPrimaryAge, sameSpendAmounts } from "@/lib/engine";
+import { DEFAULT_INPUT, adoptComfortBudget, mergeInput, planHorizonPrimaryAge, sameSpendAmounts } from "@/lib/engine";
 import type { CalculatorInput, ProjectionResult } from "@/lib/engine";
 import { readScenarioFromLocation, writeScenarioUrl } from "@/lib/scenarioUrl";
 
@@ -24,19 +24,20 @@ export function CalculatorApp() {
   const urlReady = useRef(false);
 
   function changeValues(next: CalculatorInput) {
-    setValues(next);
-    if (urlReady.current) writeScenarioUrl(next);
+    const merged = mergeInput(next);
+    setValues(merged);
+    if (urlReady.current) writeScenarioUrl(merged);
     if (
       adoptedBudget &&
-      !sameSpendAmounts(next, adoptedBudget.lifestyle, adoptedBudget.healthcare, adoptedBudget.partnerHealthcare)
+      !sameSpendAmounts(merged, adoptedBudget.lifestyle, adoptedBudget.healthcare, adoptedBudget.partnerHealthcare)
     ) {
       setAdoptedBudget(null);
     }
   }
 
   async function calculate(nextValues?: CalculatorInput) {
-    const payload = nextValues ?? values;
-    if (nextValues) setValues(nextValues);
+    const payload = mergeInput(nextValues ?? values);
+    setValues(payload);
     writeScenarioUrl(payload);
     setLoading(true);
     setError(null);
