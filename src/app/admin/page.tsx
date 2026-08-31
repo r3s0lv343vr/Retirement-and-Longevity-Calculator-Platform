@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
 import { AdminActions } from "@/components/AdminActions";
+import { AdminPasswordForm } from "@/components/AdminPasswordForm";
 import { PATH_LABELS, TOOL_LABELS } from "@/lib/admin/constants";
 import { adminSessionFromCookies } from "@/lib/admin/request";
 import { readAnalyticsSnapshot } from "@/lib/admin/store";
-import { adminPassword } from "@/lib/admin/session";
+import { authStatus, needsSetup } from "@/lib/admin/credentials";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,9 @@ function formatCount(n: number): string {
 }
 
 export default async function AdminPage() {
+  if (await needsSetup()) {
+    redirect("/admin/setup");
+  }
   if (!(await adminSessionFromCookies())) {
     redirect("/admin/login");
   }
@@ -19,8 +23,7 @@ export default async function AdminPage() {
   const stats = await readAnalyticsSnapshot();
   const maxBar = Math.max(1, ...stats.series.map((row) => row.pageviews));
   const adsLive = Boolean(process.env.NEXT_PUBLIC_ADSENSE_CLIENT);
-  const usingEnvPassword = Boolean(process.env.ADMIN_PASSWORD);
-  const adminReady = Boolean(adminPassword());
+  const auth = await authStatus();
 
   return (
     <main className="mx-auto max-w-5xl space-y-6 px-5 py-8 sm:px-6">
@@ -141,11 +144,13 @@ export default async function AdminPage() {
           <div>
             <dt className="text-xs uppercase tracking-wide text-muted">Admin password</dt>
             <dd className="mt-1 text-ink">
-              {!adminReady
-                ? "Not configured"
-                : usingEnvPassword
-                  ? "ADMIN_PASSWORD is set"
-                  : "Using local default (dev-admin)"}
+              {auth.mode === "env"
+                ? "Optional ADMIN_PASSWORD environment variable is set"
+                : auth.persistence === "file"
+                  ? "Stored hashed on this server (.data/admin.json)"
+                  : auth.persistence === "redis"
+                    ? "Stored hashed in Redis"
+                    : "Stored in memory until this server process restarts"}
             </dd>
           </div>
           <div>
@@ -153,6 +158,15 @@ export default async function AdminPage() {
             <dd className="mt-1 text-ink">{new Date(stats.generatedAt).toISOString()}</dd>
           </div>
         </dl>
+      </section>
+
+      <section className="card">
+        <h2 className="font-serif text-xl text-pine">Change password</h2>
+        <p className="mt-1 text-sm text-muted">
+          This stays on the server. Copy <code className="text-ink">.data/admin.json</code> when you move to a new host
+          if you want to keep the same password.
+        </p>
+        <AdminPasswordForm envLocked={auth.mode === "env"} />
       </section>
     </main>
   );

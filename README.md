@@ -70,9 +70,11 @@ The GitHub repo is connected. Pushes to `main` deploy production; other branches
 
 `/admin` is a password-protected dashboard. It shows unique **visitors** (browsers that loaded a public page), **site users** (visitors who ran a calculator), page views, and runs per tool. It does not store savings or other plan numbers.
 
-Set `ADMIN_PASSWORD` in Vercel (or `.env.local`). Locally, if it is unset, the password is `dev-admin`.
+On first visit, `/admin` asks you to create a password. It is stored hashed in `.data/admin.json` on the server. You can change it later on the dashboard. Copy that file when you move hosts if you want the same password. You do not need to set `ADMIN_PASSWORD` in Vercel or any other host.
 
-On Vercel, add Upstash Redis (or Vercel KV) `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` so counts survive deploys. Without Redis, counts are kept in `.data/analytics.json` on a long-running server, or in memory on serverless.
+`ADMIN_PASSWORD` remains an optional override if you ever want the password in the environment instead.
+
+Visitor counts and the password file persist on a normal server in `.data/`. Redis (`UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`) is only needed if you stay on serverless.
 
 ## License
 

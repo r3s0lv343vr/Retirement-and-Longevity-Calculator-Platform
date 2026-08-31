@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { applyEvent, emptyState, snapshotFromState } from "./analytics";
 import { authenticateAdmin, verifyAdminSession } from "./session";
+import { hashPassword, passwordMatchesHash, validateNewPassword } from "./credentials";
 import { isBot } from "./request";
 import { normalizePath } from "./constants";
 
@@ -50,16 +51,30 @@ describe("applyEvent", () => {
 });
 
 describe("admin session", () => {
-  it("signs and verifies a session for the configured password", () => {
+  it("signs and verifies a session for an environment password", async () => {
     const previous = process.env.ADMIN_PASSWORD;
     process.env.ADMIN_PASSWORD = "test-secret";
-    const token = authenticateAdmin("test-secret");
+    const token = await authenticateAdmin("test-secret");
     expect(token).toBeTruthy();
-    expect(verifyAdminSession(token)).toBe(true);
-    expect(authenticateAdmin("nope")).toBeNull();
-    expect(verifyAdminSession("tampered")).toBe(false);
+    expect(await verifyAdminSession(token)).toBe(true);
+    expect(await authenticateAdmin("nope")).toBeNull();
+    expect(await verifyAdminSession("tampered")).toBe(false);
     if (previous === undefined) delete process.env.ADMIN_PASSWORD;
     else process.env.ADMIN_PASSWORD = previous;
+  });
+});
+
+describe("stored password", () => {
+  it("hashes a password and checks it without keeping the plaintext", () => {
+    const { hash, salt } = hashPassword("correct-horse");
+    expect(passwordMatchesHash("correct-horse", salt, hash)).toBe(true);
+    expect(passwordMatchesHash("wrong-horse", salt, hash)).toBe(false);
+  });
+
+  it("rejects a short or mismatched new password", () => {
+    expect(validateNewPassword("short")).toMatch(/at least 8/);
+    expect(validateNewPassword("long-enough", "other")).toMatch(/do not match/);
+    expect(validateNewPassword("long-enough", "long-enough")).toBeNull();
   });
 });
 

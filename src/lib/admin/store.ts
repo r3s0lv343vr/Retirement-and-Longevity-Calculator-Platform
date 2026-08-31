@@ -2,19 +2,32 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { applyEvent, emptyState, snapshotFromState, type AnalyticsEvent, type AnalyticsSnapshot, type AnalyticsState } from "./analytics";
 
-const REDIS_KEY = "nestspan:analytics";
-const FILE_NAME = "analytics.json";
-
 export type PersistenceKind = AnalyticsSnapshot["persistence"];
+export type BlobKind = "analytics" | "admin";
 
+const REDIS_KEYS: Record<BlobKind, string> = {
+  analytics: "nestspan:analytics",
+  admin: "nestspan:admin",
+};
+
+const blobMemory = new Map<BlobKind, string>();
 let memoryState: AnalyticsState = emptyState();
 let memoryPersistence: PersistenceKind = "memory";
 let queue: Promise<void> = Promise.resolve();
 
-function filePath(): string {
+function filePathFor(kind: BlobKind): string {
+  if (kind === "admin") {
+    const custom = process.env.ADMIN_FILE?.trim();
+    if (custom) return custom;
+    return path.join(process.cwd(), ".data", "admin.json");
+  }
   const custom = process.env.ANALYTICS_FILE?.trim();
   if (custom) return custom;
-  return path.join(process.cwd(), ".data", FILE_NAME);
+  return path.join(process.cwd(), ".data", "analytics.json");
+}
+
+function tmpPathFor(kind: BlobKind): string {
+  return path.join("/tmp", kind === "admin" ? "nestspan-admin.json" : "nestspan-analytics.json");
 }
 
 function redisConfig(): { url: string; token: string } | null {
@@ -43,6 +56,59 @@ async function redisCommand(command: unknown[]): Promise<unknown> {
   return payload.result ?? null;
 }
 
+export async function readPersistedText(kind: BlobKind): Promise<{ text: string | null; persistence: PersistenceKind }> {
+  if (redisConfig()) {
+    try {
+      const result = await redisCommand(["GET", REDIS_KEYS[kind]]);
+      const text = typeof result === "string" ? result : null;
+      if (text) blobMemory.set(kind, text);
+      return { text, persistence: "redis" };
+    } catch {
+      return { text: blobMemory.get(kind) ?? null, persistence: "memory" };
+    }
+  }
+
+  try {
+    const text = await readFile(filePathFor(kind), "utf8");
+    blobMemory.set(kind, text);
+    return { text, persistence: "file" };
+  } catch {
+    try {
+      const text = await readFile(tmpPathFor(kind), "utf8");
+      blobMemory.set(kind, text);
+      return { text, persistence: "file" };
+    } catch {
+      const text = blobMemory.get(kind) ?? null;
+      return { text, persistence: text ? "memory" : "memory" };
+    }
+  }
+}
+
+export async function writePersistedText(kind: BlobKind, text: string): Promise<PersistenceKind> {
+  blobMemory.set(kind, text);
+  if (redisConfig()) {
+    try {
+      await redisCommand(["SET", REDIS_KEYS[kind], text]);
+      return "redis";
+    } catch {
+      /* fall through */
+    }
+  }
+  try {
+    const target = filePathFor(kind);
+    await mkdir(path.dirname(target), { recursive: true });
+    await writeFile(target, text, "utf8");
+    return "file";
+  } catch {
+    try {
+      await writeFile(tmpPathFor(kind), text, "utf8");
+      return "file";
+    } catch {
+      return "memory";
+    }
+  }
+}
+
 function parseState(raw: string | null | undefined): AnalyticsState | null {
   if (!raw) return null;
   try {
@@ -60,71 +126,18 @@ function parseState(raw: string | null | undefined): AnalyticsState | null {
 }
 
 async function loadState(): Promise<{ state: AnalyticsState; persistence: PersistenceKind }> {
-  if (redisConfig()) {
-    try {
-      const result = await redisCommand(["GET", REDIS_KEY]);
-      const state = parseState(typeof result === "string" ? result : null) ?? emptyState();
-      memoryState = state;
-      memoryPersistence = "redis";
-      return { state, persistence: "redis" };
-    } catch {
-      memoryPersistence = "memory";
-      return { state: memoryState, persistence: "memory" };
-    }
-  }
-
-  try {
-    const raw = await readFile(filePath(), "utf8");
-    const state = parseState(raw) ?? emptyState();
-    memoryState = state;
-    memoryPersistence = "file";
-    return { state, persistence: "file" };
-  } catch {
-    try {
-      const raw = await readFile(path.join("/tmp", "nestspan-analytics.json"), "utf8");
-      const state = parseState(raw) ?? emptyState();
-      memoryState = state;
-      memoryPersistence = "file";
-      return { state, persistence: "file" };
-    } catch {
-      if (memoryPersistence === "file") {
-        return { state: memoryState, persistence: "file" };
-      }
-      memoryPersistence = "memory";
-      return { state: memoryState, persistence: "memory" };
-    }
-  }
+  const { text, persistence } = await readPersistedText("analytics");
+  const state = parseState(text) ?? memoryState;
+  memoryState = state;
+  memoryPersistence = persistence;
+  return { state, persistence };
 }
 
-async function saveState(state: AnalyticsState, persistence: PersistenceKind): Promise<PersistenceKind> {
+async function saveState(state: AnalyticsState): Promise<PersistenceKind> {
   memoryState = state;
-  if (persistence === "redis" || redisConfig()) {
-    try {
-      await redisCommand(["SET", REDIS_KEY, JSON.stringify(state)]);
-      memoryPersistence = "redis";
-      return "redis";
-    } catch {
-      /* fall through */
-    }
-  }
-
-  try {
-    const target = filePath();
-    await mkdir(path.dirname(target), { recursive: true });
-    await writeFile(target, JSON.stringify(state), "utf8");
-    memoryPersistence = "file";
-    return "file";
-  } catch {
-    try {
-      const fallback = path.join("/tmp", "nestspan-analytics.json");
-      await writeFile(fallback, JSON.stringify(state), "utf8");
-      memoryPersistence = "file";
-      return "file";
-    } catch {
-      memoryPersistence = "memory";
-      return "memory";
-    }
-  }
+  const persistence = await writePersistedText("analytics", JSON.stringify(state));
+  memoryPersistence = persistence;
+  return persistence;
 }
 
 function enqueue<T>(work: () => Promise<T>): Promise<T> {
@@ -138,9 +151,8 @@ function enqueue<T>(work: () => Promise<T>): Promise<T> {
 
 export async function recordAnalyticsEvent(event: AnalyticsEvent): Promise<void> {
   await enqueue(async () => {
-    const { state, persistence } = await loadState();
-    const next = applyEvent(state, event);
-    await saveState(next, persistence);
+    const { state } = await loadState();
+    await saveState(applyEvent(state, event));
   });
 }
 
@@ -154,4 +166,8 @@ export async function readAnalyticsSnapshot(): Promise<AnalyticsSnapshot> {
 export function currentPersistence(): PersistenceKind {
   if (redisConfig()) return "redis";
   return memoryPersistence;
+}
+
+export function enqueuePersist<T>(work: () => Promise<T>): Promise<T> {
+  return enqueue(work);
 }

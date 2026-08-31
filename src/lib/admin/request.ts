@@ -97,12 +97,12 @@ export async function adminSessionFromCookies(): Promise<boolean> {
   return verifyAdminSession(jar.get(ADMIN_COOKIE)?.value);
 }
 
-export function adminSessionFromRequest(request: Request | NextRequest): boolean {
+export async function adminSessionFromRequest(request: Request | NextRequest): Promise<boolean> {
   return verifyAdminSession(readCookie(request, ADMIN_COOKIE));
 }
 
-export function createLoginResponse(password: string): NextResponse {
-  const token = authenticateAdmin(password);
+export async function createLoginResponse(password: string): Promise<NextResponse> {
+  const token = await authenticateAdmin(password);
   if (!token) {
     return NextResponse.json({ error: "Wrong password." }, { status: 401 });
   }

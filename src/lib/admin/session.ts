@@ -1,35 +1,15 @@
-import { createHmac, createHash, randomBytes, timingSafeEqual } from "crypto";
+import { createHmac, randomBytes, timingSafeEqual } from "crypto";
 import { ADMIN_COOKIE } from "./constants";
+import { sessionSecret, verifyPassword } from "./credentials";
 
 const SESSION_DAYS = 7;
-
-export function adminPassword(): string | null {
-  const fromEnv = process.env.ADMIN_PASSWORD?.trim();
-  if (fromEnv) return fromEnv;
-  if (process.env.NODE_ENV === "production") return null;
-  return "dev-admin";
-}
-
-function signingKey(): string | null {
-  const password = adminPassword();
-  if (!password) return null;
-  return createHash("sha256").update(`nestspan-admin:${password}`).digest("hex");
-}
-
-function passwordMatches(given: string): boolean {
-  const expected = adminPassword();
-  if (!expected) return false;
-  const a = createHash("sha256").update(given).digest();
-  const b = createHash("sha256").update(expected).digest();
-  return timingSafeEqual(a, b);
-}
 
 export type AdminSession = {
   exp: number;
 };
 
-export function signAdminSession(now = Date.now()): string | null {
-  const key = signingKey();
+export async function signAdminSession(now = Date.now()): Promise<string | null> {
+  const key = await sessionSecret();
   if (!key) return null;
   const session: AdminSession = { exp: now + SESSION_DAYS * 24 * 60 * 60 * 1000 };
   const payload = Buffer.from(JSON.stringify(session), "utf8").toString("base64url");
@@ -37,9 +17,9 @@ export function signAdminSession(now = Date.now()): string | null {
   return `${payload}.${sig}`;
 }
 
-export function verifyAdminSession(token: string | undefined | null, now = Date.now()): boolean {
+export async function verifyAdminSession(token: string | undefined | null, now = Date.now()): Promise<boolean> {
   if (!token) return false;
-  const key = signingKey();
+  const key = await sessionSecret();
   if (!key) return false;
   const [payload, sig] = token.split(".");
   if (!payload || !sig) return false;
@@ -55,8 +35,8 @@ export function verifyAdminSession(token: string | undefined | null, now = Date.
   }
 }
 
-export function authenticateAdmin(password: string): string | null {
-  if (!passwordMatches(password)) return null;
+export async function authenticateAdmin(password: string): Promise<string | null> {
+  if (!(await verifyPassword(password))) return null;
   return signAdminSession();
 }
 

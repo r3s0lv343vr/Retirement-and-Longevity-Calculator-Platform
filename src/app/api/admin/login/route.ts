@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { adminSessionFromRequest, createLoginResponse } from "@/lib/admin/request";
-import { adminPassword } from "@/lib/admin/session";
+import { needsSetup } from "@/lib/admin/credentials";
 
 const attempts = new Map<string, { count: number; resetAt: number }>();
 
@@ -20,8 +20,8 @@ function tooMany(key: string): boolean {
 }
 
 export async function POST(request: Request) {
-  if (!adminPassword()) {
-    return NextResponse.json({ error: "Set ADMIN_PASSWORD to enable the admin." }, { status: 503 });
+  if (await needsSetup()) {
+    return NextResponse.json({ error: "Create an admin password first.", setup: true }, { status: 409 });
   }
   if (tooMany(clientKey(request))) {
     return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
@@ -42,5 +42,5 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-  return NextResponse.json({ ok: adminSessionFromRequest(request) });
+  return NextResponse.json({ ok: await adminSessionFromRequest(request) });
 }
