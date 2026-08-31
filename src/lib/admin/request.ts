@@ -7,7 +7,7 @@ import { normalizePath } from "./constants";
 import { recordAnalyticsEvent } from "./store";
 import { adminCookieOptions, authenticateAdmin, newVisitorId, verifyAdminSession } from "./session";
 
-const BOT_HINT = /bot|crawler|spider|slurp|bingpreview|facebookexternalhit|python-requests|curl|wget/i;
+const BOT_HINT = /bot|crawler|spider|slurp|bingpreview|facebookexternalhit/i;
 
 export function isBot(userAgent: string | null | undefined): boolean {
   if (!userAgent) return false;

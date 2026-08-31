@@ -67,6 +67,6 @@ describe("isBot", () => {
   it("skips crawlers and allows browsers", () => {
     expect(isBot("Mozilla/5.0 (Macintosh) Chrome/120")).toBe(false);
     expect(isBot("Googlebot/2.1")).toBe(true);
-    expect(isBot("curl/8.0")).toBe(true);
+    expect(isBot("curl/8.0")).toBe(false);
   });
 });
