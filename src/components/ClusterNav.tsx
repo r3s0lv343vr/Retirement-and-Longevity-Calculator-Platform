@@ -5,9 +5,10 @@ const LINKS = [
   { href: "/longevity", label: "How long" },
   { href: "/need", label: "How much" },
   { href: "/when", label: "When" },
+  { href: "/claim", label: "67 vs 70" },
 ] as const;
 
-export function ClusterNav({ current }: { current: "/" | "/longevity" | "/need" | "/when" }) {
+export function ClusterNav({ current }: { current: "/" | "/longevity" | "/need" | "/when" | "/claim" }) {
   return (
     <nav className="border-b border-pine/10 bg-pine text-paper" aria-label="Calculators">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-5 gap-y-2 px-5 py-2 text-sm sm:px-6">

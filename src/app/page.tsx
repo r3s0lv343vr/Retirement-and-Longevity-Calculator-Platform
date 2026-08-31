@@ -6,7 +6,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Retirement and Longevity Calculators",
   description:
-    "A small cluster of retirement calculators. How long savings last, how much nest egg you need, and when full-time work can end.",
+    "A small cluster of retirement calculators. How long savings last, how much nest egg you need, when work can end, and claiming Social Security at 67 vs 70.",
 };
 
 const TOOLS = [
@@ -27,6 +27,12 @@ const TOOLS = [
     title: "When can I stop working",
     question: "Given what I have, how soon can full-time work end?",
     note: "Solves for work-end age, not nest egg. Same entered plan as How much; earliest age that still lasts.",
+  },
+  {
+    href: "/claim",
+    title: "Claim Social Security at 67 vs 70",
+    question: "Does delaying the check from 67 to 70 make the plan last longer?",
+    note: "One short run. Same delayed-credit math as the How long compare card, which stays on that outlook.",
   },
 ] as const;
 
@@ -50,9 +56,10 @@ export default function HubPage() {
       <main className="mx-auto max-w-5xl px-5 pb-16 pt-4 sm:px-6">
         <p className="max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
           The longevity calculator is unchanged. This hub is only a front door. Sibling tools ask how much nest egg
-          you need today, and how soon full-time work can end, so the same kind of plan lasts through the age you set.
+          you need today, how soon full-time work can end, and whether claiming Social Security at 67 or 70 lasts
+          farther.
         </p>
-        <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-8 grid gap-5 sm:grid-cols-2">
           {TOOLS.map((tool) => (
             <li key={tool.href}>
               <Link href={tool.href} className="card block h-full transition hover:border-pine/30">
