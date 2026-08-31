@@ -841,6 +841,65 @@ describe("project", () => {
     expect(result.years.find((y) => y.age === 72)?.contribution).toBe(0);
   });
 
+  it("counts remaining full-time pay after the first work-end, not on the side-hustle line", () => {
+    const partnerStillWorks = run({
+      twoPerson: true,
+      currentAge: 65,
+      retirementAge: 65,
+      planToAge: 80,
+      partnerCurrentAge: 65,
+      partnerRetirementAge: 70,
+      partnerPlanToAge: 80,
+      annualWorkIncome: 0,
+      partnerAnnualWorkIncome: 40000,
+      currentSavings: 5_000_000,
+      inflationRate: 0,
+      healthcareInflationRate: 0,
+      lifestyleSpendToday: 1000,
+      healthcareSpendToday: 0,
+      partnerHealthcareSpendToday: 0,
+      longTermCareAnnual: 0,
+      socialSecurityAnnual: 0,
+      partnerSocialSecurityAnnual: 0,
+      partTimeAnnualIncome: 8000,
+      partTimeStartAge: 65,
+      partTimeEndAge: 66,
+      partnerPartTimeAnnualIncome: 0,
+      goGoLifestyleMultiplier: 1,
+    });
+    expect(partnerStillWorks.years.find((y) => y.age === 65)?.workIncome).toBeCloseTo(40000);
+    expect(partnerStillWorks.years.find((y) => y.age === 65)?.partTimeIncome).toBeCloseTo(8000);
+    expect(partnerStillWorks.years.find((y) => y.age === 69)?.workIncome).toBeCloseTo(40000);
+    expect(partnerStillWorks.years.find((y) => y.age === 70)?.workIncome).toBe(0);
+    expect(partnerStillWorks.outlook.workIncomeTotal).toBeGreaterThan(0);
+
+    const youStillWork = run({
+      twoPerson: true,
+      currentAge: 65,
+      retirementAge: 70,
+      planToAge: 80,
+      partnerCurrentAge: 65,
+      partnerRetirementAge: 65,
+      partnerPlanToAge: 80,
+      annualWorkIncome: 50000,
+      partnerAnnualWorkIncome: 0,
+      currentSavings: 5_000_000,
+      inflationRate: 0,
+      healthcareInflationRate: 0,
+      lifestyleSpendToday: 1000,
+      healthcareSpendToday: 0,
+      longTermCareAnnual: 0,
+      socialSecurityAnnual: 0,
+      partnerSocialSecurityAnnual: 0,
+      partTimeAnnualIncome: 0,
+      goGoLifestyleMultiplier: 1,
+    });
+    expect(youStillWork.years.find((y) => y.age === 65)?.phase).not.toBe("working");
+    expect(youStillWork.years.find((y) => y.age === 65)?.workIncome).toBeCloseTo(50000);
+    expect(youStillWork.years.find((y) => y.age === 69)?.workIncome).toBeCloseTo(50000);
+    expect(youStillWork.years.find((y) => y.age === 70)?.workIncome).toBe(0);
+  });
+
   it("does not cut household lifestyle when only one person is in nursing", () => {
     const result = run({
       twoPerson: true,

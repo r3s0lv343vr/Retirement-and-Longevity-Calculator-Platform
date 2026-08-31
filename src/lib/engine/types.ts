@@ -13,6 +13,10 @@ export type CalculatorInput = {
   partnerCurrentAge: number;
   /** Partner’s full-time work ends. Drawdowns start at the earlier of the two work-end dates. */
   partnerRetirementAge: number;
+  /** First person’s pay while still in full-time work. Used after household drawdowns start, until their work-end. */
+  annualWorkIncome: number;
+  /** Partner’s pay while still in full-time work. Used after household drawdowns start, until their work-end. */
+  partnerAnnualWorkIncome: number;
   partnerPlanToAge: number;
   partnerSocialSecurityAnnual: number;
   partnerSocialSecurityStartAge: number;
@@ -80,6 +84,7 @@ export type YearRow = {
   contribution: number;
   guaranteedIncome: number;
   partTimeIncome: number;
+  workIncome: number;
   lifestyleSpend: number;
   healthcareSpend: number;
   longTermCareSpend: number;
@@ -117,6 +122,7 @@ export type Outlook = {
   socialSecurityTotal: number;
   pensionTotal: number;
   partTimeWages: number;
+  workIncomeTotal: number;
   partTimeInvested: number;
   partTimeTotal: number;
   retirementIncomeTotal: number;

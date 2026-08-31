@@ -126,10 +126,11 @@ export function OutlookResults({ result, adoptedBudget = null, onAdoptComfort, a
         <BreakdownCard
           title="Income after full-time work ends"
           total={outlook.retirementIncomeTotal}
-          note="Social Security, pension, and phased-work wages through the last funded year, plus extra savings during the work window as an ordinary annuity (or amount × years if the rate is 0%)."
+          note="Social Security, pension, pay while someone is still in full-time work after drawdowns start, and phased-work wages through the last funded year, plus extra savings during the work window as an ordinary annuity (or amount × years if the rate is 0%)."
           rows={[
             { label: "Social Security", value: outlook.socialSecurityTotal },
             { label: "Pension", value: outlook.pensionTotal },
+            { label: "Pay while still working", value: outlook.workIncomeTotal },
             { label: "Part-time / side-hustle wages", value: outlook.partTimeWages },
             { label: "Extra savings during phased work", value: outlook.partTimeInvested },
           ]}
@@ -283,7 +284,9 @@ export function OutlookResults({ result, adoptedBudget = null, onAdoptComfort, a
                   <td className="py-2 pr-3">{formatMoney(row.lifestyleSpend)}</td>
                   <td className="py-2 pr-3">{formatMoney(row.healthcareSpend + row.longTermCareSpend)}</td>
                   <td className="py-2 pr-3">{formatMoney(row.housingSpend)}</td>
-                  <td className="py-2 pr-3">{formatMoney(row.guaranteedIncome + row.partTimeIncome)}</td>
+                  <td className="py-2 pr-3">
+                    {formatMoney(row.guaranteedIncome + row.partTimeIncome + row.workIncome)}
+                  </td>
                   <td className="py-2 font-medium">{formatMoney(row.endBalance)}</td>
                 </tr>
               ))}
@@ -314,8 +317,8 @@ function HouseholdSurvivorCard({ result }: { result: ProjectionResult }) {
         {savingEndPrimaryAge(input)} (the later work-end). While both are alive, both Social Security and pension
         checks count. After the first death, Social Security becomes the larger of the two checks; a pension continues
         only by the survivor share on the form. Lifestyle then uses the survivor factor (
-        {(input.survivorLifestyleFactor * 100).toFixed(0)}%). If only one person is in nursing, household lifestyle is
-        not cut.
+        {(input.survivorLifestyleFactor * 100).toFixed(0)}%). Pay while still working is on the timeline, not the
+        side-hustle line. If only one person is in nursing, household lifestyle is not cut.
       </p>
       <dl className="mt-5 grid gap-4 sm:grid-cols-3">
         <div>

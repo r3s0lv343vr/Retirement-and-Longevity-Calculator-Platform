@@ -177,6 +177,7 @@ class ReportWriter {
     this.lineKV("Total later income", formatMoney(outlook.retirementIncomeTotal));
     this.lineKV("Social Security", formatMoney(outlook.socialSecurityTotal));
     this.lineKV("Pension", formatMoney(outlook.pensionTotal));
+    this.lineKV("Pay while still working", formatMoney(outlook.workIncomeTotal));
     this.lineKV("Part-time / side-hustle wages", formatMoney(outlook.partTimeWages));
     this.lineKV("Extra savings during phased work", formatMoney(outlook.partTimeInvested));
 
@@ -346,7 +347,7 @@ class ReportWriter {
             formatMoney(row.lifestyleSpend),
             formatMoney(row.healthcareSpend + row.longTermCareSpend),
             formatMoney(row.housingSpend),
-            formatMoney(row.guaranteedIncome + row.partTimeIncome),
+            formatMoney(row.guaranteedIncome + row.partTimeIncome + row.workIncome),
             formatMoney(row.endBalance),
           ]
         : [
@@ -355,7 +356,7 @@ class ReportWriter {
             formatMoney(row.lifestyleSpend),
             formatMoney(row.healthcareSpend + row.longTermCareSpend),
             formatMoney(row.housingSpend),
-            formatMoney(row.guaranteedIncome + row.partTimeIncome),
+            formatMoney(row.guaranteedIncome + row.partTimeIncome + row.workIncome),
             formatMoney(row.endBalance),
           ];
       this.tableRow(cols, values);
@@ -373,7 +374,9 @@ class ReportWriter {
           (FIELD_META[key].group === "partner" ||
             key === "partnerCurrentAge" ||
             key === "partnerRetirementAge" ||
-            key === "partnerPlanToAge")
+            key === "partnerPlanToAge" ||
+            key === "annualWorkIncome" ||
+            key === "partnerAnnualWorkIncome")
         ) {
           return false;
         }
