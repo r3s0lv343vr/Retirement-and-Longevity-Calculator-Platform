@@ -39,6 +39,7 @@ describe("compileOutlookPdf", () => {
     expect(text).toContain("weak first decade");
     expect(text).toContain("Raise yearly saving with inflation");
     expect(text).toContain("Two persons");
+    expect(text).toContain("Pay while still working");
   });
 
   it("includes surplus wording when leftover savings last past the plan", () => {

@@ -91,6 +91,28 @@ export function savingEndPrimaryAge(input: CalculatorInput): number {
   return Math.max(input.retirementAge, partnerRetirementPrimaryAge(input));
 }
 
+/** Full-time pay that still comes in after household drawdowns have started. */
+export function remainingWorkIncomeAtAge(
+  age: number,
+  input: CalculatorInput,
+  yearsFromNow: number,
+): number {
+  if (!input.twoPerson) return 0;
+  if (age < drawdownStartPrimaryAge(input)) return 0;
+  const partnerAge = partnerAgeAt(age, input);
+  const primaryPay =
+    primaryAliveAt(age, input) && age < input.retirementAge && input.annualWorkIncome > 0
+      ? inflate(input.annualWorkIncome, input.inflationRate, yearsFromNow)
+      : 0;
+  const partnerPay =
+    partnerAliveAt(age, input) &&
+    partnerAge < input.partnerRetirementAge &&
+    input.partnerAnnualWorkIncome > 0
+      ? inflate(input.partnerAnnualWorkIncome, input.inflationRate, yearsFromNow)
+      : 0;
+  return primaryPay + partnerPay;
+}
+
 /** Accumulation years until household drawdowns begin. Already in drawdown → 0. */
 export function nestEggYears(input: CalculatorInput): number {
   return Math.max(0, drawdownStartPrimaryAge(input) - input.currentAge);
@@ -513,6 +535,7 @@ function runYears(input: CalculatorInput, option: boolean | RunYearOptions): Yea
         contribution,
         guaranteedIncome: 0,
         partTimeIncome: 0,
+        workIncome: 0,
         lifeInsurance,
         lifestyleSpend: 0,
         healthcareSpend: 0,
@@ -569,6 +592,7 @@ function runYears(input: CalculatorInput, option: boolean | RunYearOptions): Yea
         ? inflate(input.partnerPartTimeAnnualIncome, input.inflationRate, yearsFromNow)
         : 0;
     const partTimeIncome = primaryPartTime + partnerPartTime;
+    const workIncome = remainingWorkIncomeAtAge(age, input, yearsFromNow);
     const lifeInsurance = lifeInsuranceAtAge(age, input);
 
     const healthInflation = straightLine ? input.inflationRate : input.healthcareInflationRate;
@@ -620,7 +644,7 @@ function runYears(input: CalculatorInput, option: boolean | RunYearOptions): Yea
         : 0);
 
     const totalSpend = lifestyleSpend + healthcareSpend + longTermCareSpend + housingSpend;
-    const inflow = guaranteedIncome + partTimeIncome + lifeInsurance;
+    const inflow = guaranteedIncome + partTimeIncome + workIncome + lifeInsurance;
     const netCashFlow = inflow - totalSpend + householdSave;
 
     const afterCash = startBalance + netCashFlow;
@@ -674,6 +698,7 @@ function runYears(input: CalculatorInput, option: boolean | RunYearOptions): Yea
       contribution,
       guaranteedIncome: working ? 0 : guaranteedIncome,
       partTimeIncome,
+      workIncome,
       lifeInsurance,
       lifestyleSpend,
       healthcareSpend,
@@ -738,6 +763,7 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
   const healthcareShare = totalSpend > 0 ? (totalHealthcareSpend + totalLongTermCareSpend + totalHousingSpend) / totalSpend : 0;
   const nestEgg = nestEggBreakdown(input);
   const partTimeWages = fundedYears.reduce((s, y) => s + y.partTimeIncome, 0);
+  const workIncomeTotal = fundedYears.reduce((s, y) => s + y.workIncome, 0);
   const window = phasedWorkWindow(input);
   const investedYears = fundedYears.filter((y) => y.age >= window.start && y.age <= window.end).length;
   const partTimeInvested = nestEggAtRetirement(
@@ -756,7 +782,7 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
     0,
   );
   const lifeInsuranceTotal = fundedYears.reduce((s, y) => s + y.lifeInsurance, 0);
-  const retirementIncomeTotal = socialSecurityTotal + pensionTotal + partTimeTotal + lifeInsuranceTotal;
+  const retirementIncomeTotal = socialSecurityTotal + pensionTotal + partTimeTotal + workIncomeTotal + lifeInsuranceTotal;
   const fundingTotal = nestEgg.total + retirementIncomeTotal;
   const totalMedicalSpend = totalHealthcareSpend + totalLongTermCareSpend + totalHousingSpend;
   const totalRetirementSpend = totalLifestyleSpend + totalMedicalSpend;
@@ -787,7 +813,7 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
   const remainingSavings = depleted ? 0 : endingBalance;
   const remainingExpenseNeed = years
     .filter((y) => y.phase !== "working" && y.age > fundedThroughAge)
-    .reduce((s, y) => s + Math.max(0, y.totalSpend - y.guaranteedIncome - y.partTimeIncome - y.lifeInsurance), 0);
+    .reduce((s, y) => s + Math.max(0, y.totalSpend - y.guaranteedIncome - y.partTimeIncome - y.workIncome - y.lifeInsurance), 0);
   const surplusMonths =
     !depleted && remainingSavings > 0 && lastYearSpend > 0
       ? remainingSavings / (lastYearSpend / 12)
@@ -863,6 +889,7 @@ function buildOutlook(input: CalculatorInput, years: YearRow[], straight: YearRo
     socialSecurityTotal,
     pensionTotal,
     partTimeWages,
+    workIncomeTotal,
     partTimeInvested,
     partTimeTotal,
     retirementIncomeTotal,

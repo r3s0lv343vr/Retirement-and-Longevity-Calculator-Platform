@@ -171,7 +171,7 @@ export function CalculatorForm({ values, onChange, onSubmit, loading, error }: P
             <p className="mt-1 text-sm leading-relaxed text-muted">
               {group.blurb}
               {values.twoPerson && group.id === "work"
-                ? " This is the first person’s side hustle; the partner’s is on the Second person card. If one of you is still in full-time work after household drawdowns start, put those remaining wages on the matching side-hustle line."
+                ? " This is extra work after retirement. Pay while still in full-time work is on Your timeline, next to each work-end."
                 : ""}
               {values.twoPerson && group.id === "income"
                 ? " These are the first person’s checks; the partner’s are on the Second person card."
@@ -254,7 +254,14 @@ function visibleKeys(
   twoPerson: boolean,
 ): (keyof CalculatorInput)[] {
   if (group.id === "timeline" && twoPerson) {
-    return [...group.keys, "partnerCurrentAge", "partnerRetirementAge", "partnerPlanToAge"];
+    return [
+      ...group.keys,
+      "partnerCurrentAge",
+      "partnerRetirementAge",
+      "partnerPlanToAge",
+      "annualWorkIncome",
+      "partnerAnnualWorkIncome",
+    ];
   }
   return group.keys;
 }

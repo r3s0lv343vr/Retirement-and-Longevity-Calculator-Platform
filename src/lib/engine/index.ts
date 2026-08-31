@@ -26,6 +26,7 @@ export {
   partnerRetirementPrimaryAge,
   drawdownStartPrimaryAge,
   savingEndPrimaryAge,
+  remainingWorkIncomeAtAge,
   planHorizonPrimaryAge,
   primaryAliveAt,
   partnerAliveAt,
