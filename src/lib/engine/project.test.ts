@@ -841,6 +841,65 @@ describe("project", () => {
     expect(result.years.find((y) => y.age === 72)?.contribution).toBe(0);
   });
 
+  it("counts remaining full-time pay after the first work-end, not on the side-hustle line", () => {
+    const partnerStillWorks = run({
+      twoPerson: true,
+      currentAge: 65,
+      retirementAge: 65,
+      planToAge: 80,
+      partnerCurrentAge: 65,
+      partnerRetirementAge: 70,
+      partnerPlanToAge: 80,
+      annualWorkIncome: 0,
+      partnerAnnualWorkIncome: 40000,
+      currentSavings: 5_000_000,
+      inflationRate: 0,
+      healthcareInflationRate: 0,
+      lifestyleSpendToday: 1000,
+      healthcareSpendToday: 0,
+      partnerHealthcareSpendToday: 0,
+      longTermCareAnnual: 0,
+      socialSecurityAnnual: 0,
+      partnerSocialSecurityAnnual: 0,
+      partTimeAnnualIncome: 8000,
+      partTimeStartAge: 65,
+      partTimeEndAge: 66,
+      partnerPartTimeAnnualIncome: 0,
+      goGoLifestyleMultiplier: 1,
+    });
+    expect(partnerStillWorks.years.find((y) => y.age === 65)?.workIncome).toBeCloseTo(40000);
+    expect(partnerStillWorks.years.find((y) => y.age === 65)?.partTimeIncome).toBeCloseTo(8000);
+    expect(partnerStillWorks.years.find((y) => y.age === 69)?.workIncome).toBeCloseTo(40000);
+    expect(partnerStillWorks.years.find((y) => y.age === 70)?.workIncome).toBe(0);
+    expect(partnerStillWorks.outlook.workIncomeTotal).toBeGreaterThan(0);
+
+    const youStillWork = run({
+      twoPerson: true,
+      currentAge: 65,
+      retirementAge: 70,
+      planToAge: 80,
+      partnerCurrentAge: 65,
+      partnerRetirementAge: 65,
+      partnerPlanToAge: 80,
+      annualWorkIncome: 50000,
+      partnerAnnualWorkIncome: 0,
+      currentSavings: 5_000_000,
+      inflationRate: 0,
+      healthcareInflationRate: 0,
+      lifestyleSpendToday: 1000,
+      healthcareSpendToday: 0,
+      longTermCareAnnual: 0,
+      socialSecurityAnnual: 0,
+      partnerSocialSecurityAnnual: 0,
+      partTimeAnnualIncome: 0,
+      goGoLifestyleMultiplier: 1,
+    });
+    expect(youStillWork.years.find((y) => y.age === 65)?.phase).not.toBe("working");
+    expect(youStillWork.years.find((y) => y.age === 65)?.workIncome).toBeCloseTo(50000);
+    expect(youStillWork.years.find((y) => y.age === 69)?.workIncome).toBeCloseTo(50000);
+    expect(youStillWork.years.find((y) => y.age === 70)?.workIncome).toBe(0);
+  });
+
   it("does not cut household lifestyle when only one person is in nursing", () => {
     const result = run({
       twoPerson: true,
@@ -872,5 +931,153 @@ describe("project", () => {
     const row = result.years.find((y) => y.age === 74);
     expect(row?.housingSpend).toBeCloseTo(100000);
     expect(row?.lifestyleSpend).toBeCloseTo(50000);
+  });
+
+  it("adds a life-insurance lump in the first survivor year only", () => {
+    const none = run({
+      twoPerson: true,
+      currentAge: 65,
+      retirementAge: 65,
+      planToAge: 80,
+      partnerCurrentAge: 65,
+      partnerPlanToAge: 70,
+      currentSavings: 5_000_000,
+      inflationRate: 0,
+      healthcareInflationRate: 0,
+      socialSecurityAnnual: 0,
+      partnerSocialSecurityAnnual: 0,
+      pensionAnnual: 0,
+      partnerPensionAnnual: 0,
+      partTimeAnnualIncome: 0,
+      partnerPartTimeAnnualIncome: 0,
+      lifestyleSpendToday: 1000,
+      healthcareSpendToday: 0,
+      partnerHealthcareSpendToday: 0,
+      longTermCareAnnual: 0,
+      goGoLifestyleMultiplier: 1,
+      lifeInsuranceLump: 0,
+    });
+    const insured = run({
+      ...none.input,
+      lifeInsuranceLump: 100_000,
+    });
+    expect(none.years.find((y) => y.age === 70)?.lifeInsurance).toBe(0);
+    expect(none.years.find((y) => y.age === 71)?.lifeInsurance).toBe(0);
+    expect(insured.years.find((y) => y.age === 70)?.lifeInsurance).toBe(0);
+    expect(insured.years.find((y) => y.age === 71)?.lifeInsurance).toBe(100_000);
+    expect(insured.years.find((y) => y.age === 72)?.lifeInsurance).toBe(0);
+    expect(insured.outlook.lifeInsuranceTotal).toBe(100_000);
+    expect(insured.years.find((y) => y.age === 71)?.endBalance).toBeGreaterThan(
+      none.years.find((y) => y.age === 71)?.endBalance ?? 0,
+    );
+  });
+
+  it("leaves balances unchanged when the life-insurance lump is $0", () => {
+    const one = run({
+      twoPerson: true,
+      partnerCurrentAge: DEFAULT_INPUT.currentAge,
+      partnerPlanToAge: DEFAULT_INPUT.planToAge,
+      partnerSocialSecurityAnnual: 0,
+      partnerPensionAnnual: 0,
+      partnerPartTimeAnnualIncome: 0,
+      partnerHealthcareSpendToday: 0,
+      partnerLongTermCareAnnual: 0,
+      partnerNursingHomeRentAnnual: 0,
+      lifeInsuranceLump: 0,
+    });
+    const omitted = run({
+      twoPerson: true,
+      partnerCurrentAge: DEFAULT_INPUT.currentAge,
+      partnerPlanToAge: DEFAULT_INPUT.planToAge,
+      partnerSocialSecurityAnnual: 0,
+      partnerPensionAnnual: 0,
+      partnerPartTimeAnnualIncome: 0,
+      partnerHealthcareSpendToday: 0,
+      partnerLongTermCareAnnual: 0,
+      partnerNursingHomeRentAnnual: 0,
+    });
+    expect(omitted.years.map((y) => y.endBalance)).toEqual(one.years.map((y) => y.endBalance));
+    expect(omitted.outlook.lifeInsuranceTotal).toBe(0);
+  });
+
+  it("charges funeral cost the year each person leaves the plan", () => {
+    const result = run({
+      twoPerson: true,
+      currentAge: 65,
+      retirementAge: 65,
+      planToAge: 80,
+      partnerCurrentAge: 65,
+      partnerPlanToAge: 70,
+      currentSavings: 5_000_000,
+      inflationRate: 0,
+      healthcareInflationRate: 0,
+      socialSecurityAnnual: 0,
+      partnerSocialSecurityAnnual: 0,
+      pensionAnnual: 0,
+      partnerPensionAnnual: 0,
+      partTimeAnnualIncome: 0,
+      partnerPartTimeAnnualIncome: 0,
+      lifestyleSpendToday: 1000,
+      healthcareSpendToday: 0,
+      partnerHealthcareSpendToday: 0,
+      longTermCareAnnual: 0,
+      goGoLifestyleMultiplier: 1,
+      funeralCost: 12000,
+    });
+    expect(result.years.find((y) => y.age === 69)?.funeralSpend).toBe(0);
+    expect(result.years.find((y) => y.age === 70)?.funeralSpend).toBeCloseTo(12000);
+    expect(result.years.find((y) => y.age === 71)?.funeralSpend).toBe(0);
+    expect(result.years.find((y) => y.age === 80)?.funeralSpend).toBeCloseTo(12000);
+    expect(result.outlook.funeralTotal).toBeCloseTo(24000);
+  });
+
+  it("charges two funerals if both leave the plan the same year", () => {
+    const result = run({
+      twoPerson: true,
+      currentAge: 65,
+      retirementAge: 65,
+      planToAge: 70,
+      partnerCurrentAge: 65,
+      partnerPlanToAge: 70,
+      currentSavings: 5_000_000,
+      inflationRate: 0,
+      healthcareInflationRate: 0,
+      socialSecurityAnnual: 0,
+      partnerSocialSecurityAnnual: 0,
+      lifestyleSpendToday: 1000,
+      healthcareSpendToday: 0,
+      partnerHealthcareSpendToday: 0,
+      longTermCareAnnual: 0,
+      goGoLifestyleMultiplier: 1,
+      funeralCost: 10000,
+    });
+    expect(result.years.find((y) => y.age === 70)?.funeralSpend).toBeCloseTo(20000);
+    expect(result.outlook.funeralTotal).toBeCloseTo(20000);
+  });
+
+  it("leaves balances unchanged when funeral cost is $0", () => {
+    const none = run({
+      twoPerson: true,
+      partnerCurrentAge: DEFAULT_INPUT.currentAge,
+      partnerPlanToAge: DEFAULT_INPUT.planToAge,
+      partnerSocialSecurityAnnual: 0,
+      partnerHealthcareSpendToday: 0,
+      partnerLongTermCareAnnual: 0,
+      partnerNursingHomeRentAnnual: 0,
+      partnerPartTimeAnnualIncome: 0,
+      funeralCost: 0,
+    });
+    const omitted = run({
+      twoPerson: true,
+      partnerCurrentAge: DEFAULT_INPUT.currentAge,
+      partnerPlanToAge: DEFAULT_INPUT.planToAge,
+      partnerSocialSecurityAnnual: 0,
+      partnerHealthcareSpendToday: 0,
+      partnerLongTermCareAnnual: 0,
+      partnerNursingHomeRentAnnual: 0,
+      partnerPartTimeAnnualIncome: 0,
+    });
+    expect(omitted.years.map((y) => y.endBalance)).toEqual(none.years.map((y) => y.endBalance));
+    expect(omitted.outlook.funeralTotal).toBe(0);
   });
 });

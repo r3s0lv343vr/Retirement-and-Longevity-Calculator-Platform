@@ -12,6 +12,7 @@ import { formatMoney, formatMonths, formatPercent } from "@/lib/format";
 type AdoptedComfortBudget = {
   lifestyle: number;
   healthcare: number;
+  partnerHealthcare: number;
 };
 
 type Props = {
@@ -74,6 +75,7 @@ export function OutlookResults({ result, adoptedBudget = null, onAdoptComfort, a
           comfort={comfort}
           currentSavings={result.input.currentSavings}
           thisRun={snapshotFromOutlook(outlook)}
+          twoPerson={result.input.twoPerson}
           adoptedBudget={adoptedBudget}
           onAdopt={onAdoptComfort}
           adopting={adoptingComfort}
@@ -126,12 +128,16 @@ export function OutlookResults({ result, adoptedBudget = null, onAdoptComfort, a
         <BreakdownCard
           title="Income after full-time work ends"
           total={outlook.retirementIncomeTotal}
-          note="Social Security, pension, and phased-work wages through the last funded year, plus extra savings during the work window as an ordinary annuity (or amount × years if the rate is 0%)."
+          note="Social Security, pension, pay while someone is still in full-time work after drawdowns start, and phased-work wages through the last funded year, plus extra savings during the work window as an ordinary annuity (or amount × years if the rate is 0%)."
           rows={[
             { label: "Social Security", value: outlook.socialSecurityTotal },
             { label: "Pension", value: outlook.pensionTotal },
+            { label: "Pay while still working", value: outlook.workIncomeTotal },
             { label: "Part-time / side-hustle wages", value: outlook.partTimeWages },
             { label: "Extra savings during phased work", value: outlook.partTimeInvested },
+            ...(result.input.twoPerson && (result.input.lifeInsuranceLump > 0 || outlook.lifeInsuranceTotal > 0)
+              ? [{ label: "Life insurance lump", value: outlook.lifeInsuranceTotal }]
+              : []),
           ]}
         />
         <BreakdownCard
@@ -143,6 +149,9 @@ export function OutlookResults({ result, adoptedBudget = null, onAdoptComfort, a
             { label: "Routine healthcare", value: outlook.totalHealthcareSpend },
             { label: "Long-term care", value: outlook.totalLongTermCareSpend },
             { label: "Later-life facility rent", value: outlook.totalHousingSpend },
+            ...(result.input.twoPerson && (result.input.funeralCost > 0 || outlook.funeralTotal > 0)
+              ? [{ label: "Funeral cost", value: outlook.funeralTotal }]
+              : []),
           ]}
         />
         <BreakdownCard
@@ -283,7 +292,9 @@ export function OutlookResults({ result, adoptedBudget = null, onAdoptComfort, a
                   <td className="py-2 pr-3">{formatMoney(row.lifestyleSpend)}</td>
                   <td className="py-2 pr-3">{formatMoney(row.healthcareSpend + row.longTermCareSpend)}</td>
                   <td className="py-2 pr-3">{formatMoney(row.housingSpend)}</td>
-                  <td className="py-2 pr-3">{formatMoney(row.guaranteedIncome + row.partTimeIncome)}</td>
+                  <td className="py-2 pr-3">
+                    {formatMoney(row.guaranteedIncome + row.partTimeIncome + row.workIncome + row.lifeInsurance)}
+                  </td>
                   <td className="py-2 font-medium">{formatMoney(row.endBalance)}</td>
                 </tr>
               ))}
@@ -314,8 +325,15 @@ function HouseholdSurvivorCard({ result }: { result: ProjectionResult }) {
         {savingEndPrimaryAge(input)} (the later work-end). While both are alive, both Social Security and pension
         checks count. After the first death, Social Security becomes the larger of the two checks; a pension continues
         only by the survivor share on the form. Lifestyle then uses the survivor factor (
-        {(input.survivorLifestyleFactor * 100).toFixed(0)}%). If only one person is in nursing, household lifestyle is
-        not cut.
+        {(input.survivorLifestyleFactor * 100).toFixed(0)}%). Pay while still working is on the timeline, not the
+        side-hustle line.
+        {input.lifeInsuranceLump > 0
+          ? ` A life-insurance lump of ${formatMoney(input.lifeInsuranceLump)} enters the pot the first survivor year.`
+          : ""}
+        {input.funeralCost > 0
+          ? ` Funeral cost of ${formatMoney(input.funeralCost)} (today) is charged the year each person leaves the plan.`
+          : ""}{" "}
+        If only one person is in nursing, household lifestyle is not cut.
       </p>
       <dl className="mt-5 grid gap-4 sm:grid-cols-3">
         <div>
@@ -443,6 +461,7 @@ function ComfortEstimateCard({
   comfort,
   currentSavings,
   thisRun,
+  twoPerson,
   adoptedBudget,
   onAdopt,
   adopting,
@@ -450,12 +469,14 @@ function ComfortEstimateCard({
   comfort: ComfortEstimate;
   currentSavings: number;
   thisRun: PlanSnapshot;
+  twoPerson: boolean;
   adoptedBudget: AdoptedComfortBudget | null;
   onAdopt?: () => void;
   adopting: boolean;
 }) {
   const adopted = Boolean(adoptedBudget);
   const spendDelta = comfort.spendIfAdopted.fundedThroughAge - thisRun.fundedThroughAge;
+  const healthcareShown = comfort.suggestedHealthcareToday + comfort.suggestedPartnerHealthcareToday;
   const saveLine =
     comfort.additionalNestEgg <= 0
       ? "On this suggested budget, your current nest egg is already enough in this model. The breakdown below still uses the amounts you entered."
@@ -468,31 +489,35 @@ function ComfortEstimateCard({
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">
         {adopted ? "Now your entered plan" : "Suggested alternative — not your entered plan"}
       </p>
-      <h3 className="mt-2 font-serif text-2xl text-pine">Comfortable living</h3>
+      <h3 className="mt-2 font-serif text-2xl text-pine">
+        {twoPerson ? "Household comfortable living" : "Comfortable living"}
+      </h3>
       {adopted && adoptedBudget ? (
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink/80">
           You chose this budget. Lifestyle {formatMoney(adoptedBudget.lifestyle)} and healthcare{" "}
-          {formatMoney(adoptedBudget.healthcare)} are now on the form. The entered-plan cards, chart, capital months,
-          what-if, and PDF below use it. Comfort will not raise that budget again unless you change those two cells.
+          {formatMoney(adoptedBudget.healthcare)}
+          {twoPerson ? ` plus partner healthcare ${formatMoney(adoptedBudget.partnerHealthcare)}` : ""} are now on the
+          form. The entered-plan cards, chart, capital months, what-if, and PDF below use it. Comfort will not raise
+          that budget again unless you change those {twoPerson ? "three" : "two"} cells.
         </p>
       ) : (
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink/80">
-          Optional. This is a higher national-style budget you can aim for — not the outlook from the form. Compare it
-          to this run first. If you adopt it, only lifestyle and healthcare on the form change, then the outlook
-          re-runs. It uses the higher of your lifestyle spending and a $65,000 floor, adds a 10% buffer, and keeps
-          healthcare no lower than a typical premium-plus-care amount. Later-life housing is included only if you
-          entered it.
+          {twoPerson
+            ? "Optional. This is a higher household budget you can aim for — not the outlook from the form. Compare it to this run first. If you adopt it, lifestyle and both healthcare cells on the form change, then the outlook re-runs. It uses the higher of your household lifestyle spending and a $104,000 floor ($65,000 × 1.6), adds a 10% buffer, and keeps each person’s healthcare no lower than a typical premium-plus-care amount. Later-life housing is included only if you entered it."
+            : "Optional. This is a higher national-style budget you can aim for — not the outlook from the form. Compare it to this run first. If you adopt it, only lifestyle and healthcare on the form change, then the outlook re-runs. It uses the higher of your lifestyle spending and a $65,000 floor, adds a 10% buffer, and keeps healthcare no lower than a typical premium-plus-care amount. Later-life housing is included only if you entered it."}
         </p>
       )}
       {!adopted ? (
         <>
           <dl className="mt-5 grid gap-4 sm:grid-cols-3">
             <div>
-              <dt className="text-xs uppercase tracking-wide text-muted">Comfortable budget / year</dt>
+              <dt className="text-xs uppercase tracking-wide text-muted">
+                {twoPerson ? "Household budget / year" : "Comfortable budget / year"}
+              </dt>
               <dd className="mt-1 font-serif text-2xl text-ink">{formatMoney(comfort.suggestedAnnualBudgetToday)}</dd>
               <p className="mt-1 text-xs text-muted">
-                {formatMoney(comfort.suggestedLifestyleToday)} lifestyle + {formatMoney(comfort.suggestedHealthcareToday)}{" "}
-                healthcare, in today’s dollars.
+                {formatMoney(comfort.suggestedLifestyleToday)} lifestyle + {formatMoney(healthcareShown)} healthcare
+                {twoPerson ? " for both" : ""}, in today’s dollars.
               </p>
             </div>
             <div>
@@ -522,7 +547,8 @@ function ComfortEstimateCard({
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Compare, then adopt</p>
             <p className="mt-2 text-sm leading-relaxed text-muted">
               Same nest egg and later income as this run. Only lifestyle and healthcare move to{" "}
-              {formatMoney(comfort.suggestedLifestyleToday)} and {formatMoney(comfort.suggestedHealthcareToday)}.
+              {formatMoney(comfort.suggestedLifestyleToday)} and {formatMoney(healthcareShown)}
+              {twoPerson ? " (both people)" : ""}.
             </p>
             <dl className="mt-4 grid gap-4 sm:grid-cols-2">
               <PlanSnapshotCard
@@ -549,7 +575,7 @@ function ComfortEstimateCard({
               </button>
             ) : null}
             <p className="mt-2 text-xs text-muted">
-              Copies those two spending amounts onto the form and re-runs. You can edit the cells again anytime.
+              Copies those spending amounts onto the form and re-runs. You can edit the cells again anytime.
             </p>
           </div>
         </>

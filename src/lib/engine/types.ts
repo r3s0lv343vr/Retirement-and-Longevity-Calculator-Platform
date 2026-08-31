@@ -13,6 +13,10 @@ export type CalculatorInput = {
   partnerCurrentAge: number;
   /** Partner’s full-time work ends. Drawdowns start at the earlier of the two work-end dates. */
   partnerRetirementAge: number;
+  /** First person’s pay while still in full-time work. Used after household drawdowns start, until their work-end. */
+  annualWorkIncome: number;
+  /** Partner’s pay while still in full-time work. Used after household drawdowns start, until their work-end. */
+  partnerAnnualWorkIncome: number;
   partnerPlanToAge: number;
   partnerSocialSecurityAnnual: number;
   partnerSocialSecurityStartAge: number;
@@ -33,6 +37,10 @@ export type CalculatorInput = {
   partnerNursingHomeStartAge: number;
   /** Scales household lifestyle after the first death. */
   survivorLifestyleFactor: number;
+  /** Face amount paid into the nest egg the first survivor year. $0 skips. Nominal, no CPI. */
+  lifeInsuranceLump: number;
+  /** Funeral / final-expense cost, today’s dollars. Charged the year each person leaves the plan. $0 skips. */
+  funeralCost: number;
   currentSavings: number;
   annualContribution: number;
   /** When true, the yearly savings deposit rises with general inflation. Off keeps a level ordinary annuity. */
@@ -80,10 +88,13 @@ export type YearRow = {
   contribution: number;
   guaranteedIncome: number;
   partTimeIncome: number;
+  workIncome: number;
+  lifeInsurance: number;
   lifestyleSpend: number;
   healthcareSpend: number;
   longTermCareSpend: number;
   housingSpend: number;
+  funeralSpend: number;
   housingKind: HousingKind;
   totalSpend: number;
   netCashFlow: number;
@@ -105,6 +116,7 @@ export type Outlook = {
   totalLifestyleSpend: number;
   totalLongTermCareSpend: number;
   totalHousingSpend: number;
+  funeralTotal: number;
   totalMedicalSpend: number;
   totalRetirementSpend: number;
   healthcareShare: number;
@@ -117,9 +129,11 @@ export type Outlook = {
   socialSecurityTotal: number;
   pensionTotal: number;
   partTimeWages: number;
+  workIncomeTotal: number;
   partTimeInvested: number;
   partTimeTotal: number;
   retirementIncomeTotal: number;
+  lifeInsuranceTotal: number;
   fundingTotal: number;
   straightLineFundedThroughAge: number;
   straightLineEndingBalance: number;
@@ -160,6 +174,7 @@ export type PlanSnapshot = {
 export type ComfortEstimate = {
   suggestedLifestyleToday: number;
   suggestedHealthcareToday: number;
+  suggestedPartnerHealthcareToday: number;
   suggestedAnnualBudgetToday: number;
   usedHousingPlaceholder: boolean;
   placeholderHousingAnnual: number;

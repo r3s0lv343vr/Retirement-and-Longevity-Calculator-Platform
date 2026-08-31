@@ -25,7 +25,7 @@ const GROUPS: {
   {
     id: "timeline",
     title: "Your timeline",
-    blurb: "When work tapers off, and how long you want the money to last. Two persons adds the partner’s age, work-end, and plan-through age. Drawdowns start when the first of you leaves full-time work; yearly saving continues until the later work-end.",
+    blurb: "When work tapers off, and how long you want the money to last. Two persons adds the partner’s age, work-end, plan-through age, and pay while still working. Drawdowns start when the first of you leaves full-time work; yearly saving continues until the later work-end.",
     keys: ["currentAge", "retirementAge", "planToAge", "twoPerson"],
     columns: 3,
   },
@@ -63,7 +63,7 @@ const GROUPS: {
     id: "partner",
     title: "Second person",
     blurb:
-      "Partner Social Security and pension, a second side hustle, and their care. Their age and plan-through age are on Your timeline. After the first death, household Social Security becomes the larger check; a pension continues only by the survivor share you set. Lifestyle then uses the survivor factor. One nest egg and one set of market returns.",
+      "Partner Social Security and pension, a second side hustle, and their care. Their age and plan-through age are on Your timeline. After the first death, household Social Security becomes the larger check; a pension continues only by the survivor share you set. Lifestyle then uses the survivor factor. Optional life-insurance face amount enters the pot the first survivor year; funeral cost is charged the year each person leaves the plan. $0 skips either. One nest egg and one set of market returns.",
     keys: [
       "partnerSocialSecurityAnnual",
       "partnerSocialSecurityStartAge",
@@ -81,6 +81,8 @@ const GROUPS: {
       "partnerNursingHomeRentAnnual",
       "partnerNursingHomeStartAge",
       "survivorLifestyleFactor",
+      "lifeInsuranceLump",
+      "funeralCost",
     ],
     columns: 2,
   },
@@ -170,7 +172,7 @@ export function CalculatorForm({ values, onChange, onSubmit, loading, error }: P
             <p className="mt-1 text-sm leading-relaxed text-muted">
               {group.blurb}
               {values.twoPerson && group.id === "work"
-                ? " This is the first person’s side hustle; the partner’s is on the Second person card. If one of you is still in full-time work after household drawdowns start, put those remaining wages on the matching side-hustle line."
+                ? " This is extra work after retirement. Pay while still in full-time work is on Your timeline, next to each work-end."
                 : ""}
               {values.twoPerson && group.id === "income"
                 ? " These are the first person’s checks; the partner’s are on the Second person card."
@@ -253,7 +255,14 @@ function visibleKeys(
   twoPerson: boolean,
 ): (keyof CalculatorInput)[] {
   if (group.id === "timeline" && twoPerson) {
-    return [...group.keys, "partnerCurrentAge", "partnerRetirementAge", "partnerPlanToAge"];
+    return [
+      ...group.keys,
+      "partnerCurrentAge",
+      "partnerRetirementAge",
+      "partnerPlanToAge",
+      "annualWorkIncome",
+      "partnerAnnualWorkIncome",
+    ];
   }
   return group.keys;
 }

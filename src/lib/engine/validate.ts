@@ -59,10 +59,14 @@ export function validateInput(input: CalculatorInput): string[] {
     "ccrcRentAnnual",
     "partnerSocialSecurityAnnual",
     "partnerPensionAnnual",
+    "annualWorkIncome",
+    "partnerAnnualWorkIncome",
     "partnerPartTimeAnnualIncome",
     "partnerHealthcareSpendToday",
     "partnerLongTermCareAnnual",
     "partnerNursingHomeRentAnnual",
+    "lifeInsuranceLump",
+    "funeralCost",
   ];
   const rateKeys: (keyof CalculatorInput)[] = [
     "preRetirementReturn",

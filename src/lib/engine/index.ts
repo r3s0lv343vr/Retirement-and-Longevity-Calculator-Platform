@@ -26,9 +26,12 @@ export {
   partnerRetirementPrimaryAge,
   drawdownStartPrimaryAge,
   savingEndPrimaryAge,
+  remainingWorkIncomeAtAge,
   planHorizonPrimaryAge,
   primaryAliveAt,
   partnerAliveAt,
+  lifeInsuranceAtAge,
+  funeralCostAtAge,
   socialSecurityClaimFactor,
   socialSecurityAnnualAtClaimAge,
   badDecadeReturn,
@@ -40,7 +43,19 @@ export {
   facilityHousing,
   projectBase,
 } from "./project";
-export { estimateComfort, extraAnnualSavings, nestEggNeededNow, comfortInputFrom, adoptComfortBudget, sameSpendAmounts } from "./comfort";
+export {
+  estimateComfort,
+  extraAnnualSavings,
+  nestEggNeededNow,
+  comfortInputFrom,
+  adoptComfortBudget,
+  sameSpendAmounts,
+  comfortLifestyleFloor,
+  COMFORT_LIFESTYLE_FLOOR,
+  COMFORT_HEALTHCARE_FLOOR,
+  COMFORT_LIFESTYLE_BUFFER,
+  HOUSEHOLD_LIFESTYLE_SCALE,
+} from "./comfort";
 export {
   WHAT_IF_LEVERS,
   WHAT_IF_LEVER_COPY,

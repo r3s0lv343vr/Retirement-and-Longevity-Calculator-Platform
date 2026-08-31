@@ -39,6 +39,7 @@ describe("compileOutlookPdf", () => {
     expect(text).toContain("weak first decade");
     expect(text).toContain("Raise yearly saving with inflation");
     expect(text).toContain("Two persons");
+    expect(text).toContain("Pay while still working");
   });
 
   it("includes surplus wording when leftover savings last past the plan", () => {
@@ -64,6 +65,31 @@ describe("compileOutlookPdf", () => {
     const text = pdfLatin1(compileOutlookPdf(result));
     expect(text).toContain("Two persons and the survivor");
     expect(text).toContain("Partner Social Security / year");
+    expect(text).toContain("Household comfortable living");
+  });
+
+  it("includes the life-insurance lump on a two-person report when set", () => {
+    const result = project({
+      ...DEFAULT_INPUT,
+      twoPerson: true,
+      partnerPlanToAge: 80,
+      lifeInsuranceLump: 250000,
+    });
+    const text = pdfLatin1(compileOutlookPdf(result));
+    expect(text).toContain("Life insurance lump");
+    expect(text).toContain(formatMoney(result.outlook.lifeInsuranceTotal));
+  });
+
+  it("includes funeral cost on a two-person report when set", () => {
+    const result = project({
+      ...DEFAULT_INPUT,
+      twoPerson: true,
+      partnerPlanToAge: 80,
+      funeralCost: 12000,
+    });
+    const text = pdfLatin1(compileOutlookPdf(result));
+    expect(text).toContain("Funeral cost");
+    expect(text).toContain(formatMoney(result.outlook.funeralTotal));
   });
 
   it("includes remaining-expense wording when capital runs out", () => {
