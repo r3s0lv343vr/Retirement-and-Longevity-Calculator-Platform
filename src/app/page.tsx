@@ -43,8 +43,8 @@ const TOOLS = [
   {
     href: "/child",
     title: "Nest eggs for a child",
-    question: "What nest egg raises them through 18, and what nest egg gets them into university?",
-    note: "Two pots. School and co-curricular through 18, then university. Not the longevity form.",
+    question: "When am I ready for a baby, and what nest eggs raise them through 18 and university?",
+    note: "Time to save to the present value of growing living costs through 18, then school and a separate university pot. Warns if school would sit on salary.",
   },
   {
     href: "/goal",
@@ -75,7 +75,7 @@ export default function HubPage() {
         <p className="max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
           The longevity calculator is unchanged. This hub is only a front door. Sibling tools ask how much nest egg
           you need today, how soon full-time work can end, whether claiming Social Security at 67 or 70 lasts farther,
-          which later-life housing path lasts, what nest eggs a child takes through 18 and university, and whether
+          which later-life housing path lasts, when you are ready for a child through 18 and university, and whether
           competing expenses dissolve a goal pot.
         </p>
         <ul className="mt-8 grid gap-5 sm:grid-cols-2">

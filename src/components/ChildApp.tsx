@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { AdSlot } from "@/components/AdSlot";
 import { ChildForm } from "@/components/ChildForm";
 import { CHILD_DEFAULT } from "@/lib/child/defaults";
-import type { ChildEstimate, ChildPot } from "@/lib/child/estimateChild";
+import type { ChildEstimate, ChildPot, ChildReadiness } from "@/lib/child/estimateChild";
 import type { ChildInput } from "@/lib/child/defaults";
 import { formatMoney } from "@/lib/format";
 import { readChildFromLocation, writeChildUrl } from "@/lib/child/url";
@@ -98,16 +98,82 @@ function potNote(pot: ChildPot, saveLabel: string): string {
   return `${window} Extra yearly saving ${saveLabel} would close the gap.`;
 }
 
+function readinessHeadline(readiness: ChildReadiness): string {
+  if (readiness.childAlreadyHere && readiness.coversSchool) {
+    return "The raising pot funds living and school through 18";
+  }
+  if (readiness.yearsUntilReady === 0) {
+    return "At this saving rate you are ready for a baby now";
+  }
+  if (readiness.yearsUntilReady !== null) {
+    return `At this saving rate you are ready for a baby in ${readiness.yearsUntilReady} year${readiness.yearsUntilReady === 1 ? "" : "s"}`;
+  }
+  if (readiness.salaryDependentSchool) {
+    return "The baby may be possible; school years would depend mainly on salary";
+  }
+  if (readiness.childAlreadyHere) {
+    return "The remaining raising path is not funded at this saving rate";
+  }
+  return "This yearly saving does not reach the raising present value in 40 years";
+}
+
 function ChildResult({ result }: { result: ChildEstimate }) {
+  const { readiness } = result;
   return (
     <section id="child-result" className="space-y-5">
       <div className="card border-gold/40 bg-gold/10">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Two nest eggs — raising and university</p>
-        <h2 className="mt-2 font-serif text-2xl text-pine">What it takes for this child</h2>
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">
+          Present value through 18 — then university
+        </p>
+        <h2 className="mt-2 font-serif text-2xl text-pine">{readinessHeadline(readiness)}</h2>
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink/80">
-          School and co-curricular through university start, then university as a second pot. Combined need today is{" "}
-          <strong>{formatMoney(result.combinedNeeded)}</strong>. You have {formatMoney(result.combinedHave)} already
-          split across the two pots.
+          Year-one living is monthly cost × 12. That stream grows with inflation and age-related demand through 18, and
+          the raising pot is the present value that, invested at your return, pays each year’s expenses. School and
+          co-curricular sit on the same pot. University stays separate.
+        </p>
+        <dl className="mt-5 grid gap-4 sm:grid-cols-3">
+          <div>
+            <dt className="text-xs uppercase tracking-wide text-muted">Present value through 18</dt>
+            <dd className="mt-1 font-serif text-2xl text-ink">{formatMoney(readiness.presentValueThrough18)}</dd>
+            <p className="mt-1 text-xs text-muted">
+              Living {formatMoney(readiness.livingPresentValue)} · school {formatMoney(readiness.schoolPresentValue)}.
+            </p>
+          </div>
+          <div>
+            <dt className="text-xs uppercase tracking-wide text-muted">Years until ready</dt>
+            <dd className="mt-1 font-serif text-2xl text-ink">
+              {readiness.childAlreadyHere
+                ? "—"
+                : readiness.yearsUntilReady === null
+                  ? "Not at this rate"
+                  : String(readiness.yearsUntilReady)}
+            </dd>
+            <p className="mt-1 text-xs text-muted">
+              {readiness.childAlreadyHere
+                ? "The child is already here. Use extra yearly saving on the raising pot."
+                : readiness.yearsUntilReady === null
+                  ? "Saving $0, or too little, never reaches this present value in 40 years."
+                  : `You planned ${readiness.plannedYearsUntilBaby} year${readiness.plannedYearsUntilBaby === 1 ? "" : "s"} until the baby.`}
+            </p>
+          </div>
+          <div>
+            <dt className="text-xs uppercase tracking-wide text-muted">School funded by the pot?</dt>
+            <dd className="mt-1 font-serif text-2xl text-ink">{readiness.coversSchool ? "Yes" : "No"}</dd>
+            <p className="mt-1 text-xs text-muted">
+              {readiness.salaryDependentSchool
+                ? "Preschool and school would depend mainly on salary."
+                : readiness.coversLivingToSchool
+                  ? "Living costs reach school start in this model."
+                  : "The pot runs out before school starts."}
+            </p>
+          </div>
+        </dl>
+      </div>
+      <div className="card">
+        <h3 className="font-serif text-xl text-pine">The two nest eggs</h3>
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink/80">
+          Combined need today is <strong>{formatMoney(result.combinedNeeded)}</strong>. You have{" "}
+          {formatMoney(result.combinedHave)} already split across the two pots.
         </p>
         <dl className="mt-5 grid gap-4 lg:grid-cols-2">
           <PotCard
