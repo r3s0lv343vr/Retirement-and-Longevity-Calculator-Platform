@@ -6,7 +6,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Retirement and Longevity Calculators",
   description:
-    "A small cluster of retirement calculators. How long savings last, how much you need, when work can end, Social Security at 67 vs 70, and later-life housing.",
+    "A small cluster of retirement and planning calculators. How long savings last, how much you need, when work can end, Social Security at 67 vs 70, later-life housing, child nest eggs, and whether a goal pot survives.",
 };
 
 const TOOLS = [
@@ -40,6 +40,18 @@ const TOOLS = [
     question: "Which later-life housing path lasts farther?",
     note: "Three exclusive runs. Not six more cells on the longevity form.",
   },
+  {
+    href: "/child",
+    title: "Nest eggs for a child",
+    question: "What nest egg raises them through 18, and what nest egg gets them into university?",
+    note: "Two pots. School and co-curricular through 18, then university. Not the longevity form.",
+  },
+  {
+    href: "/goal",
+    title: "Will the goal survive",
+    question: "Do competing expenses force a dip that dissolves the savings for this goal?",
+    note: "Goal-agnostic. Emergency and other savings are raided first. The earmarked pot is last.",
+  },
 ] as const;
 
 export default function HubPage() {
@@ -63,7 +75,8 @@ export default function HubPage() {
         <p className="max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
           The longevity calculator is unchanged. This hub is only a front door. Sibling tools ask how much nest egg
           you need today, how soon full-time work can end, whether claiming Social Security at 67 or 70 lasts farther,
-          and which later-life housing path lasts.
+          which later-life housing path lasts, what nest eggs a child takes through 18 and university, and whether
+          competing expenses dissolve a goal pot.
         </p>
         <ul className="mt-8 grid gap-5 sm:grid-cols-2">
           {TOOLS.map((tool) => (
