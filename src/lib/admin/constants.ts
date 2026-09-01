@@ -2,10 +2,10 @@ export const VISITOR_COOKIE = "ns_vid";
 export const ADMIN_COOKIE = "ns_admin";
 export const MIN_PASSWORD_LENGTH = 8;
 
-export const KNOWN_PATHS = ["/", "/longevity", "/need", "/when", "/claim", "/housing"] as const;
+export const KNOWN_PATHS = ["/", "/longevity", "/need", "/when", "/claim", "/housing", "/child", "/goal"] as const;
 export type KnownPath = (typeof KNOWN_PATHS)[number];
 
-export const CALCULATOR_TOOLS = ["longevity", "need", "when", "claim", "housing"] as const;
+export const CALCULATOR_TOOLS = ["longevity", "need", "when", "claim", "housing", "child", "goal"] as const;
 export type CalculatorTool = (typeof CALCULATOR_TOOLS)[number];
 
 export const TOOL_LABELS: Record<CalculatorTool, string> = {
@@ -14,6 +14,8 @@ export const TOOL_LABELS: Record<CalculatorTool, string> = {
   when: "When",
   claim: "67 vs 70",
   housing: "Housing",
+  child: "Child",
+  goal: "Goal",
 };
 
 export const PATH_LABELS: Record<string, string> = {
@@ -23,6 +25,8 @@ export const PATH_LABELS: Record<string, string> = {
   "/when": "When",
   "/claim": "67 vs 70",
   "/housing": "Housing",
+  "/child": "Child",
+  "/goal": "Goal",
   other: "Other",
 };
 

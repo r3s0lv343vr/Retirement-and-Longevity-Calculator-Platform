@@ -9,6 +9,8 @@ describe("normalizePath", () => {
   it("keeps known calculator paths and drops query strings", () => {
     expect(normalizePath("/longevity?foo=1")).toBe("/longevity");
     expect(normalizePath("/need/")).toBe("/need");
+    expect(normalizePath("/child")).toBe("/child");
+    expect(normalizePath("/goal?x=1")).toBe("/goal");
     expect(normalizePath("/secret")).toBe("other");
   });
 });

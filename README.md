@@ -25,7 +25,7 @@ This is an educational model, not tax, investment, or medical advice.
 ## Stack
 
 - **Frontend:** Next.js App Router, React, Tailwind CSS — a single page
-- **Backend:** Next.js Route Handlers (`/api/calculate`, `/api/need`, `/api/when`, `/api/claim`, `/api/housing`, `/api/assumptions`, `/api/health`, `/api/collect`, `/api/admin/*`)
+- **Backend:** Next.js Route Handlers (`/api/calculate`, `/api/need`, `/api/when`, `/api/claim`, `/api/housing`, `/api/child`, `/api/goal`, `/api/assumptions`, `/api/health`, `/api/collect`, `/api/admin/*`)
 - **Admin:** `/admin` — visitors, site users, and calculator runs
 - **Engine:** Deterministic TypeScript projection in `src/lib/engine`
 

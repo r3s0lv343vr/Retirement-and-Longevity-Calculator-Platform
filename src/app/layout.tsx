@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     template: "%s",
   },
   description:
-    "Retirement and longevity calculators. How long savings last, how much you need, when work can end, Social Security at 67 vs 70, and later-life housing.",
+    "Retirement and longevity calculators. How long savings last, how much you need, when work can end, Social Security at 67 vs 70, later-life housing, child nest eggs, and goal survival.",
   openGraph: {
     title: "Retirement and Longevity Calculators",
     description:
