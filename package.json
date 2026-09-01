@@ -2,7 +2,7 @@
   "name": "nestspan",
   "version": "1.0.0",
   "private": true,
-  "description": "NestSpan calculators: retirement runway, child nest eggs, and whether a named goal survives.",
+  "description": "Runaway Finances: retirement runway, child nest eggs, and whether a named goal survives.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
