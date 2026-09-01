@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans, Source_Serif_4 } from "next/font/google";
+import { AdSenseScript } from "@/components/AdSenseScript";
 import { VisitBeacon } from "@/components/VisitBeacon";
 import { HUB_TITLE } from "@/lib/brand";
 import { HUB_SEO_DESCRIPTION, HUB_SEO_TITLE, SITE_URL } from "@/lib/seo";
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={`${sans.variable} ${serif.variable} font-sans antialiased`}>
         {children}
+        <AdSenseScript />
         <VisitBeacon />
       </body>
     </html>

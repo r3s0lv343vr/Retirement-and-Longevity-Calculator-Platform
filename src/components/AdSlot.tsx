@@ -1,4 +1,7 @@
-import { AD_SLOTS, type AdPlacement } from "@/lib/ads";
+"use client";
+
+import { useEffect, useRef } from "react";
+import { AD_SLOTS, adsensePublisherId, adsenseSlotId, type AdPlacement } from "@/lib/ads";
 
 type Props = {
   placement: AdPlacement;
@@ -7,7 +10,21 @@ type Props = {
 
 export function AdSlot({ placement, className = "" }: Props) {
   const slot = AD_SLOTS[placement];
-  const client = process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
+  const client = adsensePublisherId();
+  const unit = adsenseSlotId();
+  const pushed = useRef(false);
+
+  useEffect(() => {
+    if (!client || pushed.current) return;
+    try {
+      const win = window as unknown as { adsbygoogle?: unknown[] };
+      win.adsbygoogle = win.adsbygoogle || [];
+      win.adsbygoogle.push({});
+      pushed.current = true;
+    } catch {
+      /* AdSense script may not be ready yet */
+    }
+  }, [client]);
 
   return (
     <aside
@@ -22,7 +39,7 @@ export function AdSlot({ placement, className = "" }: Props) {
           className="adsbygoogle block w-full"
           style={{ display: "block", minWidth: slot.width, minHeight: slot.height }}
           data-ad-client={client}
-          data-ad-slot={placement}
+          data-ad-slot={unit ?? undefined}
           data-ad-format="auto"
           data-full-width-responsive="true"
         />
