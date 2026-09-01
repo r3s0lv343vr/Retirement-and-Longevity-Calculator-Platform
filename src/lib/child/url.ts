@@ -17,6 +17,7 @@ const KEYS: { query: string; field: keyof ChildInput }[] = [
   { query: "uv", field: "universitySavings" },
   { query: "ua", field: "universityAnnualSave" },
   { query: "inf", field: "inflationRate" },
+  { query: "ei", field: "educationInflationRate" },
   { query: "ret", field: "returnRate" },
 ];
 

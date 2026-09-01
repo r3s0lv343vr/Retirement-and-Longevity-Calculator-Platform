@@ -14,6 +14,7 @@ export type ChildInput = {
   universitySavings: number;
   universityAnnualSave: number;
   inflationRate: number;
+  educationInflationRate: number;
   returnRate: number;
 };
 
@@ -36,5 +37,6 @@ export const CHILD_DEFAULT: ChildInput = {
   universitySavings: 0,
   universityAnnualSave: 0,
   inflationRate: 0.04,
+  educationInflationRate: 0.05,
   returnRate: 0.05,
 };

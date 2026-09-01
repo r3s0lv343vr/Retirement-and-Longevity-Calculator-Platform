@@ -53,7 +53,13 @@ const UNIVERSITY_FIELDS: { key: keyof ChildInput; label: string; hint: string; k
 ];
 
 const RATE_FIELDS: { key: keyof ChildInput; label: string; hint: string; kind: FieldKind }[] = [
-  { key: "inflationRate", label: "Inflation", hint: "Applied to living, school, extras, and university costs.", kind: "percent" },
+  { key: "inflationRate", label: "Inflation", hint: "Applied to living costs only.", kind: "percent" },
+  {
+    key: "educationInflationRate",
+    label: "Education inflation",
+    hint: "School, co-curricular extras, and university. Often higher than ordinary inflation.",
+    kind: "percent",
+  },
   {
     key: "ageDemandRate",
     label: "Age-related increase",
@@ -134,7 +140,8 @@ export function ChildForm({ values, onChange, onSubmit, loading, error }: Props)
           </span>
         </summary>
         <p className="mt-3 text-sm leading-relaxed text-muted">
-          Inflation on prices, an extra age-related increase on living costs, and the return that funds the annuity.
+          Inflation on living, a separate education inflation on school and university, an extra age-related increase on
+          living costs, and the return that funds the annuity.
         </p>
         <div className="mt-4 grid gap-x-5 gap-y-5 sm:grid-cols-2">
           {RATE_FIELDS.map((field) => (

@@ -44,7 +44,7 @@ const TOOLS = [
     href: "/child",
     title: "Nest eggs for a child",
     question: "When am I ready for a baby, and what nest eggs raise them through 18 and university?",
-    note: "Time to save to the present value of growing living costs through 18, then school and a separate university pot. Warns if school would sit on salary.",
+    note: "Time to save to the present value of growing living costs through 18, then school and a separate university pot. Solves the yearly add. School and university use education inflation.",
   },
   {
     href: "/goal",

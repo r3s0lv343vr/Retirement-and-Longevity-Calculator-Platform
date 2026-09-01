@@ -6,7 +6,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Nest Eggs for a Child",
   description:
-    "Two nest eggs plus time-to-ready: living costs through 18 that grow with age and inflation, school, and university.",
+    "Two nest eggs plus time-to-ready: living costs through 18, school and university on education inflation, and the yearly add to stay off salary.",
 };
 
 export default function ChildPage() {
@@ -33,8 +33,9 @@ export default function ChildPage() {
           </p>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
             Monthly living × 12 grows with inflation and an age-related increase through 18. That present value, invested
-            at your return, is the raising annuity. School and co-curricular sit on the same pot. University stays a
-            second nest egg. The outlook says if you can have the baby while school would still depend on salary.
+            at your return, is the raising annuity. School and co-curricular sit on the same pot and rise with education
+            inflation. University stays a second nest egg. The outlook says if you can have the baby while school would
+            still depend on salary, and what yearly add keeps each pot off salary.
           </p>
         </section>
         <ChildApp />
