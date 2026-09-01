@@ -2,10 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AdSlot } from "@/components/AdSlot";
+import { ChildCompileDownloadButton } from "@/components/ChildCompileDownloadButton";
 import { ChildForm } from "@/components/ChildForm";
 import { CHILD_DEFAULT } from "@/lib/child/defaults";
-import type { ChildEstimate, ChildPot, ChildReadiness } from "@/lib/child/estimateChild";
+import {
+  CHILD_PHASE_LABEL,
+  type ChildEstimate,
+  type ChildPot,
+  type ChildYearRow,
+} from "@/lib/child/estimateChild";
 import type { ChildInput } from "@/lib/child/defaults";
+import { buildChildNarrative, childMilestones, potNote, readinessHeadline } from "@/lib/child/narrative";
 import { formatMoney } from "@/lib/format";
 import { readChildFromLocation, writeChildUrl } from "@/lib/child/url";
 
@@ -90,35 +97,10 @@ export function ChildApp() {
   );
 }
 
-function potNote(pot: ChildPot, saveLabel: string): string {
-  if (pot.costYears <= 0) return "No remaining cost years on this pot.";
-  const window = `Ages ${pot.firstCostAge}–${pot.lastCostAge} (${pot.costYears} year${pot.costYears === 1 ? "" : "s"}).`;
-  if (pot.alreadyEnough) return `${window} What you have is enough in this model.`;
-  if (pot.yearsToSave <= 0) return `${window} Full-time saving years are over, so this is a nest-egg gap.`;
-  return `${window} Extra yearly saving ${saveLabel} would close the gap.`;
-}
-
-function readinessHeadline(readiness: ChildReadiness): string {
-  if (readiness.childAlreadyHere && readiness.coversSchool) {
-    return "The raising pot funds living and school through 18";
-  }
-  if (readiness.yearsUntilReady === 0) {
-    return "At this saving rate you are ready for a baby now";
-  }
-  if (readiness.yearsUntilReady !== null) {
-    return `At this saving rate you are ready for a baby in ${readiness.yearsUntilReady} year${readiness.yearsUntilReady === 1 ? "" : "s"}`;
-  }
-  if (readiness.salaryDependentSchool) {
-    return "The baby may be possible; school years would depend mainly on salary";
-  }
-  if (readiness.childAlreadyHere) {
-    return "The remaining raising path is not funded at this saving rate";
-  }
-  return "This yearly saving does not reach the raising present value in 40 years";
-}
-
 function ChildResult({ result }: { result: ChildEstimate }) {
   const { readiness } = result;
+  const steps = buildChildNarrative(result);
+  const marks = childMilestones(result);
   return (
     <section id="child-result" className="space-y-5">
       <div className="card border-gold/40 bg-gold/10">
@@ -197,7 +179,150 @@ function ChildResult({ result }: { result: ChildEstimate }) {
           ))}
         </ul>
       ) : null}
+
+      <div className="card">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Train of thought</p>
+        <h3 className="mt-2 font-serif text-2xl text-pine">How we got here</h3>
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
+          Read these steps in order. Each one uses the amounts on the form, not a national average. The tables below are
+          the same arithmetic, year by year.
+        </p>
+        <ol className="mt-5 list-decimal space-y-3 pl-5 text-sm leading-relaxed text-ink/85">
+          {steps.map((step) => (
+            <li key={step}>{step}</li>
+          ))}
+        </ol>
+      </div>
+
+      {marks.length > 0 ? (
+        <div className="card">
+          <h3 className="font-serif text-xl text-pine">Landmarks on the map</h3>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
+            The years that change the plan — baby, school, last raising year, university. Use them to find your place in
+            the tables.
+          </p>
+          <ol className="mt-5 grid gap-3 sm:grid-cols-2">
+            {marks.map((mark) => (
+              <li key={mark.id} className="rounded-xl border border-pine/10 bg-paper-2/40 p-4">
+                <p className="text-xs uppercase tracking-wide text-muted">{mark.label}</p>
+                <p className="mt-1 font-serif text-lg text-ink">
+                  {mark.yearFromNow === 0
+                    ? "This year"
+                    : `In ${mark.yearFromNow} year${mark.yearFromNow === 1 ? "" : "s"}`}
+                  {mark.childAge === null ? "" : ` · age ${mark.childAge}`}
+                </p>
+                <p className="mt-1 text-sm text-ink/80">{mark.note}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      ) : null}
+
+      <YearTables years={result.years} />
+      <ChildCompileDownloadButton result={result} />
     </section>
+  );
+}
+
+function YearTables({ years }: { years: ChildYearRow[] }) {
+  if (years.length === 0) {
+    return (
+      <div className="card">
+        <h3 className="font-serif text-xl text-pine">Year-by-year map</h3>
+        <p className="mt-2 text-sm text-muted">There are no remaining cost years on this run.</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="card">
+        <h3 className="font-serif text-xl text-pine">Costs through the years</h3>
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
+          Every year from now through the last university year. Living grows with inflation and age-related demand.
+          School and extras begin at school start. University is a separate column.
+        </p>
+        <div className="mt-4 overflow-x-auto">
+          <table className="min-w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-pine/15 text-muted">
+                <th className="py-2 pr-3 font-medium">Year</th>
+                <th className="py-2 pr-3 font-medium">Age</th>
+                <th className="py-2 pr-3 font-medium">Phase</th>
+                <th className="py-2 pr-3 font-medium">Living</th>
+                <th className="py-2 pr-3 font-medium">School</th>
+                <th className="py-2 pr-3 font-medium">Extras</th>
+                <th className="py-2 pr-3 font-medium">University</th>
+                <th className="py-2 font-medium">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {years.map((row, index) => {
+                const phaseBreak = index === 0 || years[index - 1].phase !== row.phase;
+                return (
+                  <tr
+                    key={`cost-${row.yearFromNow}`}
+                    className={`border-b border-pine/8 ${phaseBreak ? "border-t border-pine/20" : ""}`}
+                  >
+                    <td className="py-2 pr-3">{row.yearFromNow}</td>
+                    <td className="py-2 pr-3">{row.childAge === null ? "—" : row.childAge}</td>
+                    <td className="py-2 pr-3">{CHILD_PHASE_LABEL[row.phase]}</td>
+                    <td className="py-2 pr-3">{formatMoney(row.living)}</td>
+                    <td className="py-2 pr-3">{formatMoney(row.school)}</td>
+                    <td className="py-2 pr-3">{formatMoney(row.extra)}</td>
+                    <td className="py-2 pr-3">{formatMoney(row.university)}</td>
+                    <td className="py-2 font-medium">{formatMoney(row.totalCost)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="card">
+        <h3 className="font-serif text-xl text-pine">The two pots through the years</h3>
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
+          Current plan: start the year with what is left, grow it at your return, add the yearly saving, then pay that
+          year’s cost. After university starts, the raising column holds whatever was left (or the hole). A negative end
+          means this plan does not cover that year — salary or a larger nest egg would have to.
+        </p>
+        <div className="mt-4 overflow-x-auto">
+          <table className="min-w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-pine/15 text-muted">
+                <th className="py-2 pr-3 font-medium">Year</th>
+                <th className="py-2 pr-3 font-medium">Age</th>
+                <th className="py-2 pr-3 font-medium">Add raising</th>
+                <th className="py-2 pr-3 font-medium">Raising end</th>
+                <th className="py-2 pr-3 font-medium">Add university</th>
+                <th className="py-2 font-medium">University end</th>
+              </tr>
+            </thead>
+            <tbody>
+              {years.map((row) => {
+                const raisingShort = row.raisingEnd < -0.5;
+                const uniShort = row.universityEnd < -0.5;
+                return (
+                  <tr key={`pot-${row.yearFromNow}`} className="border-b border-pine/8">
+                    <td className="py-2 pr-3">{row.yearFromNow}</td>
+                    <td className="py-2 pr-3">{row.childAge === null ? "—" : row.childAge}</td>
+                    <td className="py-2 pr-3">{formatMoney(row.raisingContribution)}</td>
+                    <td className={`py-2 pr-3 font-medium ${raisingShort ? "text-short" : ""}`}>
+                      {formatMoney(row.raisingEnd)}
+                    </td>
+                    <td className="py-2 pr-3">{formatMoney(row.universityContribution)}</td>
+                    <td className={`py-2 font-medium ${uniShort ? "text-short" : ""}`}>
+                      {formatMoney(row.universityEnd)}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
   );
 }
 

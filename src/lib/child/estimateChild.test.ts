@@ -124,4 +124,43 @@ describe("estimateChild", () => {
     const input = mergeChildInput({ schoolStartAge: 18, universityStartAge: 18 });
     expect(validateChildInput(input).some((e) => e.includes("School start"))).toBe(true);
   });
+
+  it("exports a year-by-year map with living at age 0, school from 5, university from 18", () => {
+    const result = estimateChild(CHILD_DEFAULT);
+    const age0 = result.years.find((row) => row.childAge === 0);
+    const age4 = result.years.find((row) => row.childAge === 4);
+    const age5 = result.years.find((row) => row.childAge === 5);
+    const age17 = result.years.find((row) => row.childAge === 17);
+    const age18 = result.years.find((row) => row.childAge === 18);
+    expect(age0?.living).toBe(14_400);
+    expect(age0?.school).toBe(0);
+    expect(age0?.extra).toBe(0);
+    expect(age0?.phase).toBe("early-years");
+    expect(age4?.school).toBe(0);
+    expect(age5?.school).toBeGreaterThan(0);
+    expect(age5?.extra).toBeGreaterThan(0);
+    expect(age5?.phase).toBe("school");
+    expect(age17?.university).toBe(0);
+    expect(age17?.living).toBeGreaterThan(0);
+    expect(age18?.living).toBe(0);
+    expect(age18?.school).toBe(0);
+    expect(age18?.university).toBeGreaterThan(0);
+    expect(age18?.phase).toBe("university");
+    expect(result.years[result.years.length - 1]?.childAge).toBe(21);
+    expect(result.raising.depletedAtAge).toBe(0);
+    expect(result.years[0]?.raisingEnd).toBeLessThan(0);
+    const lastRaising = result.years.find((row) => row.childAge === 17);
+    expect(lastRaising?.raisingEnd).toBeCloseTo(result.raising.endingWithWhatYouHave, 5);
+    const firstUni = result.years.find((row) => row.childAge === 18);
+    expect(firstUni?.raisingEnd).toBeCloseTo(lastRaising?.raisingEnd ?? 0, 5);
+  });
+
+  it("keeps delay years before birth on the map", () => {
+    const result = estimateChild({ ...CHILD_DEFAULT, yearsUntilBaby: 3 });
+    expect(result.years[0]?.phase).toBe("before-baby");
+    expect(result.years[0]?.childAge).toBeNull();
+    expect(result.years[0]?.living).toBe(0);
+    expect(result.years[3]?.childAge).toBe(0);
+    expect(result.years[3]?.living).toBeGreaterThan(14_400);
+  });
 });

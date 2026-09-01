@@ -10,6 +10,33 @@ const MAX_WAIT = 40;
 
 type YearSpec = { age: number; cost: number; contribution: number };
 
+export type ChildYearPhase = "before-baby" | "early-years" | "school" | "university";
+
+export const CHILD_PHASE_LABEL: Record<ChildYearPhase, string> = {
+  "before-baby": "Before baby",
+  "early-years": "Early years",
+  school: "School",
+  university: "University",
+};
+
+/** One calendar year of the current plan — costs and both pots, not the fully funded path. */
+export type ChildYearRow = {
+  yearFromNow: number;
+  childAge: number | null;
+  phase: ChildYearPhase;
+  living: number;
+  school: number;
+  extra: number;
+  university: number;
+  totalCost: number;
+  raisingContribution: number;
+  universityContribution: number;
+  raisingStart: number;
+  raisingEnd: number;
+  universityStart: number;
+  universityEnd: number;
+};
+
 export type ChildPot = {
   nestEggNeededNow: number;
   additionalNestEgg: number;
@@ -44,6 +71,7 @@ export type ChildEstimate = {
   combinedNeeded: number;
   combinedHave: number;
   warnings: string[];
+  years: ChildYearRow[];
 };
 
 function asNumber(value: unknown, fallback: number): number {
@@ -151,9 +179,88 @@ function livingCostAt(input: ChildInput, yearsFromNow: number, childAge: number)
   return base * (1 + input.inflationRate) ** yearsFromNow * (1 + input.ageDemandRate) ** childAge;
 }
 
-function schoolCostAt(input: ChildInput, yearsFromNow: number, childAge: number): number {
+function schoolTuitionAt(input: ChildInput, yearsFromNow: number, childAge: number): number {
   if (childAge < input.schoolStartAge) return 0;
-  return inflate(input.schoolAnnualToday + input.extraAnnualToday, input.inflationRate, yearsFromNow);
+  return inflate(input.schoolAnnualToday, input.inflationRate, yearsFromNow);
+}
+
+function extraCostAt(input: ChildInput, yearsFromNow: number, childAge: number): number {
+  if (childAge < input.schoolStartAge) return 0;
+  return inflate(input.extraAnnualToday, input.inflationRate, yearsFromNow);
+}
+
+function schoolCostAt(input: ChildInput, yearsFromNow: number, childAge: number): number {
+  return schoolTuitionAt(input, yearsFromNow, childAge) + extraCostAt(input, yearsFromNow, childAge);
+}
+
+function phaseFor(input: ChildInput, childAge: number | null): ChildYearPhase {
+  if (childAge === null) return "before-baby";
+  if (childAge >= input.universityStartAge) return "university";
+  if (childAge >= input.schoolStartAge) return "school";
+  return "early-years";
+}
+
+function buildYearRows(input: ChildInput): ChildYearRow[] {
+  const delay = birthDelay(input);
+  const uniEnd = input.universityStartAge + input.universityYears;
+  const yearsAfterBirth = Math.max(0, uniEnd - input.childAge);
+  const endYear = delay + yearsAfterBirth;
+  const rate = input.returnRate;
+  let raising = input.raisingSavings;
+  let university = input.universitySavings;
+  const rows: ChildYearRow[] = [];
+
+  for (let yearFromNow = 0; yearFromNow < endYear; yearFromNow += 1) {
+    const born = yearFromNow >= delay;
+    const childAge = born ? input.childAge + (yearFromNow - delay) : null;
+    const inRaising = childAge === null || childAge < input.universityStartAge;
+    const inUniversity =
+      childAge !== null && childAge >= input.universityStartAge && childAge < uniEnd;
+    const living =
+      childAge !== null && childAge < input.universityStartAge
+        ? livingCostAt(input, yearFromNow, childAge)
+        : 0;
+    const school =
+      childAge !== null && childAge < input.universityStartAge
+        ? schoolTuitionAt(input, yearFromNow, childAge)
+        : 0;
+    const extra =
+      childAge !== null && childAge < input.universityStartAge
+        ? extraCostAt(input, yearFromNow, childAge)
+        : 0;
+    const universityCost = inUniversity
+      ? inflate(input.universityAnnualToday, input.inflationRate, yearFromNow)
+      : 0;
+    const raisingContribution = inRaising ? input.raisingAnnualSave : 0;
+    const universityContribution = inRaising ? input.universityAnnualSave : 0;
+    const raisingCost = living + school + extra;
+    const raisingStart = raising;
+    const universityStart = university;
+    const raisingEnd = inRaising
+      ? raisingStart * (1 + rate) + raisingContribution - raisingCost
+      : raisingStart;
+    const universityEnd = universityStart * (1 + rate) + universityContribution - universityCost;
+    raising = raisingEnd;
+    university = universityEnd;
+    rows.push({
+      yearFromNow,
+      childAge,
+      phase: phaseFor(input, childAge),
+      living,
+      school,
+      extra,
+      university: universityCost,
+      totalCost: living + school + extra + universityCost,
+      raisingContribution,
+      universityContribution,
+      raisingStart,
+      raisingEnd,
+      universityStart,
+      universityEnd,
+    });
+  }
+
+  return rows;
 }
 
 function raisingYears(input: ChildInput, delay = birthDelay(input), includeLiving = true, includeSchool = true): YearSpec[] {
@@ -298,6 +405,7 @@ export function estimateChild(input: ChildInput): ChildEstimate {
     input.returnRate,
   );
   const readiness = estimateReadiness(input, raising);
+  const years = buildYearRows(input);
   return {
     input,
     raising,
@@ -306,5 +414,6 @@ export function estimateChild(input: ChildInput): ChildEstimate {
     combinedNeeded: raising.nestEggNeededNow + university.nestEggNeededNow,
     combinedHave: input.raisingSavings + input.universitySavings,
     warnings: warningsForChild(input, readiness),
+    years,
   };
 }
