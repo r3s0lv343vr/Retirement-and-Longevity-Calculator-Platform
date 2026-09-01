@@ -1,23 +1,23 @@
 import { AdSlot } from "@/components/AdSlot";
 import { CalculatorApp } from "@/components/CalculatorApp";
+import { CalculatorSeoBlock, RelatedCalculators } from "@/components/CalculatorSeo";
 import { ClusterNav } from "@/components/ClusterNav";
+import { JsonLd } from "@/components/JsonLd";
+import { breadcrumbJsonLd, calculatorMetadata, CALCULATOR_SEO, webPageJsonLd } from "@/lib/seo";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "How Long Before I Go Broke Calculator",
-  description:
-    "Find out if your savings will last while accounting for healthcare inflation, lifestyle phases, and part-time work. A Runaway Finances calculator.",
-};
+export const metadata: Metadata = calculatorMetadata("/longevity");
+
+const seo = CALCULATOR_SEO["/longevity"];
 
 export default function LongevityPage() {
   return (
     <div className="paper-rule min-h-screen">
+      <JsonLd data={[webPageJsonLd("/longevity"), breadcrumbJsonLd("/longevity")]} />
       <ClusterNav current="/longevity" />
       <header className="border-b border-pine/10 bg-white/80 backdrop-blur">
         <div className="mx-auto max-w-5xl px-5 py-6 sm:px-6">
-          <h1 className="max-w-3xl font-serif text-3xl leading-tight text-pine sm:text-4xl">
-            How Long Before I Go Broke Calculator
-          </h1>
+          <h1 className="max-w-3xl font-serif text-3xl leading-tight text-pine sm:text-4xl">{seo.name}</h1>
           <p className="mt-2 text-base text-muted sm:text-lg">A Runaway Finances calculator</p>
         </div>
       </header>
@@ -27,29 +27,18 @@ export default function LongevityPage() {
       </div>
 
       <main className="mx-auto max-w-5xl px-5 pb-16 sm:px-6">
-        <section className="max-w-3xl pb-8 pt-2">
-          <p className="font-serif text-xl leading-snug text-ink sm:text-2xl">
-            A longevity outlook — not a flat withdrawal rate.
-          </p>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
-            Healthcare inflates faster than groceries. Travel peaks, then slows. Many people keep a side hustle for a
-            few years after they “retire.” This calculator folds those curves into one Retirement Longevity Outlook.
-          </p>
-        </section>
-
+        <CalculatorSeoBlock seo={seo} />
         <CalculatorApp />
+        <RelatedCalculators seo={seo} />
       </main>
 
       <footer className="border-t border-pine/10 bg-pine text-paper">
         <div className="mx-auto max-w-5xl px-5 py-8 sm:px-6">
           <AdSlot placement="footer" className="mb-4 border-paper/20 bg-paper/10 text-paper/80" />
           <AdSlot placement="footer-2" className="mb-6 border-paper/20 bg-paper/10 text-paper/80" />
-          <p className="font-serif text-xl leading-snug">How Long Before I Go Broke Calculator</p>
+          <p className="font-serif text-xl leading-snug">{seo.name}</p>
           <p className="mt-1 text-sm text-paper/80">A Runaway Finances calculator</p>
-          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-paper/75">
-            Educational projection only. It is not tax, investment, or medical advice. Markets, inflation, health, and
-            policy can all move against any model. Compare this outlook with a licensed advisor before making decisions.
-          </p>
+          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-paper/75">{seo.limitations}</p>
         </div>
       </footer>
     </div>
