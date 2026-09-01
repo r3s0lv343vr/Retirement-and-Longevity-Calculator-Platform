@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans, Source_Serif_4 } from "next/font/google";
 import { VisitBeacon } from "@/components/VisitBeacon";
+import { HUB_BLURB, HUB_TITLE } from "@/lib/brand";
 import "./globals.css";
 
 const sans = DM_Sans({
@@ -17,15 +18,13 @@ const serif = Source_Serif_4({
 
 export const metadata: Metadata = {
   title: {
-    default: "Retirement and Longevity Calculators",
+    default: HUB_TITLE,
     template: "%s",
   },
-  description:
-    "Retirement and longevity calculators. How long savings last, how much you need, when work can end, Social Security at 67 vs 70, later-life housing, child nest eggs, and goal survival.",
+  description: HUB_BLURB,
   openGraph: {
-    title: "Retirement and Longevity Calculators",
-    description:
-      "A small cluster of retirement calculators. The original longevity outlook is unchanged.",
+    title: HUB_TITLE,
+    description: HUB_BLURB,
     type: "website",
   },
 };

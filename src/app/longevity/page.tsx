@@ -6,7 +6,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "How Long Before I Go Broke Calculator",
   description:
-    "Retirement and Longevity Calculator. Find out if your savings will last while accounting for healthcare inflation, lifestyle phases, and part-time work.",
+    "Find out if your savings will last while accounting for healthcare inflation, lifestyle phases, and part-time work. A NestSpan calculator.",
 };
 
 export default function LongevityPage() {
@@ -18,7 +18,7 @@ export default function LongevityPage() {
           <h1 className="max-w-3xl font-serif text-3xl leading-tight text-pine sm:text-4xl">
             How Long Before I Go Broke Calculator
           </h1>
-          <p className="mt-2 text-base text-muted sm:text-lg">Retirement and Longevity Calculator</p>
+          <p className="mt-2 text-base text-muted sm:text-lg">A NestSpan calculator</p>
         </div>
       </header>
 
@@ -45,7 +45,7 @@ export default function LongevityPage() {
           <AdSlot placement="footer" className="mb-4 border-paper/20 bg-paper/10 text-paper/80" />
           <AdSlot placement="footer-2" className="mb-6 border-paper/20 bg-paper/10 text-paper/80" />
           <p className="font-serif text-xl leading-snug">How Long Before I Go Broke Calculator</p>
-          <p className="mt-1 text-sm text-paper/80">Retirement and Longevity Calculator</p>
+          <p className="mt-1 text-sm text-paper/80">A NestSpan calculator</p>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-paper/75">
             Educational projection only. It is not tax, investment, or medical advice. Markets, inflation, health, and
             policy can all move against any model. Compare this outlook with a licensed advisor before making decisions.

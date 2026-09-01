@@ -1,12 +1,12 @@
 import { AdSlot } from "@/components/AdSlot";
 import { ClusterNav } from "@/components/ClusterNav";
+import { HUB_BLURB, HUB_TAGLINE, HUB_TITLE } from "@/lib/brand";
 import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Retirement and Longevity Calculators",
-  description:
-    "A small cluster of retirement and planning calculators. How long savings last, how much you need, when work can end, Social Security at 67 vs 70, later-life housing, child nest eggs, and whether a goal pot survives.",
+  title: HUB_TITLE,
+  description: HUB_BLURB,
 };
 
 const TOOLS = [
@@ -61,9 +61,9 @@ export default function HubPage() {
       <header className="border-b border-pine/10 bg-white/80 backdrop-blur">
         <div className="mx-auto max-w-5xl px-5 py-6 sm:px-6">
           <h1 className="max-w-3xl font-serif text-3xl leading-tight text-pine sm:text-4xl">
-            Retirement and Longevity Calculators
+            {HUB_TITLE}
           </h1>
-          <p className="mt-2 text-base text-muted sm:text-lg">Each tool answers one question.</p>
+          <p className="mt-2 text-base text-muted sm:text-lg">{HUB_TAGLINE}</p>
         </div>
       </header>
 
@@ -73,8 +73,8 @@ export default function HubPage() {
 
       <main className="mx-auto max-w-5xl px-5 pb-16 pt-4 sm:px-6">
         <p className="max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
-          The longevity calculator is unchanged. This hub is only a front door. Sibling tools ask how much nest egg
-          you need today, how soon full-time work can end, whether claiming Social Security at 67 or 70 lasts farther,
+          NestSpan is only a front door. The longevity calculator is unchanged. Sibling tools ask how much nest egg you
+          need today, how soon full-time work can end, whether claiming Social Security at 67 or 70 lasts farther,
           which later-life housing path lasts, when you are ready for a child through 18 and university, and whether
           competing expenses dissolve a goal pot.
         </p>
@@ -96,7 +96,7 @@ export default function HubPage() {
         <div className="mx-auto max-w-5xl px-5 py-8 sm:px-6">
           <AdSlot placement="footer" className="mb-4 border-paper/20 bg-paper/10 text-paper/80" />
           <AdSlot placement="footer-2" className="mb-6 border-paper/20 bg-paper/10 text-paper/80" />
-          <p className="font-serif text-xl leading-snug">Retirement and Longevity Calculators</p>
+          <p className="font-serif text-xl leading-snug">{HUB_TITLE}</p>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-paper/75">
             Educational projection only. It is not tax, investment, or medical advice. Markets, inflation, health, and
             policy can all move against any model. Compare this outlook with a licensed advisor before making decisions.

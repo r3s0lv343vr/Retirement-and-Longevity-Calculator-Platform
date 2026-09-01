@@ -1,10 +1,14 @@
-# How Long Before I Go Broke Calculator
+# NestSpan Calculators
 
-Retirement and Longevity Calculator.
+Nest eggs and runways. How long money lasts, what you need today, when work can end, Social Security at 67 vs 70, later-life housing, a child through 18 and university, and whether a named goal survives.
 
-Estimates whether a nest egg will last through a chosen longevity age while healthcare costs, inflation, lifestyle phases, and part-time work change over time.
+The original tool is **How Long Before I Go Broke**. Each sibling answers one question. This is not a household planner.
 
 **Production URL:** https://retirement-and-longevity-calculator.vercel.app
+
+## How long before I go broke
+
+Estimates whether a nest egg will last through a chosen longevity age while healthcare costs, inflation, lifestyle phases, and part-time work change over time.
 
 ## Description
 
@@ -24,7 +28,7 @@ This is an educational model, not tax, investment, or medical advice.
 
 ## Stack
 
-- **Frontend:** Next.js App Router, React, Tailwind CSS — a single page
+- **Frontend:** Next.js App Router, React, Tailwind CSS
 - **Backend:** Next.js Route Handlers (`/api/calculate`, `/api/need`, `/api/when`, `/api/claim`, `/api/housing`, `/api/child`, `/api/goal`, `/api/assumptions`, `/api/health`, `/api/collect`, `/api/admin/*`)
 - **Admin:** `/admin` — visitors, site users, and calculator runs
 - **Engine:** Deterministic TypeScript projection in `src/lib/engine`
