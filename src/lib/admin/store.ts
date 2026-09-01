@@ -76,10 +76,10 @@ export async function readPersistedText(kind: BlobKind): Promise<{ text: string 
     try {
       const text = await readFile(tmpPathFor(kind), "utf8");
       blobMemory.set(kind, text);
-      return { text, persistence: "file" };
+      return { text, persistence: "memory" };
     } catch {
       const text = blobMemory.get(kind) ?? null;
-      return { text, persistence: text ? "memory" : "memory" };
+      return { text, persistence: "memory" };
     }
   }
 }
@@ -102,7 +102,7 @@ export async function writePersistedText(kind: BlobKind, text: string): Promise<
   } catch {
     try {
       await writeFile(tmpPathFor(kind), text, "utf8");
-      return "file";
+      return "memory";
     } catch {
       return "memory";
     }

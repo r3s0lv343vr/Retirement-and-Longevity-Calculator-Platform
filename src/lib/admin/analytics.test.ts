@@ -5,6 +5,7 @@ import {
   decodeAdminStore,
   encodeAdminStore,
   hashPassword,
+  isDurableAuth,
   passwordMatchesHash,
   resolveStoredAdmin,
   validateNewPassword,
@@ -97,21 +98,30 @@ describe("admin store cookie", () => {
     updatedAt: "2026-09-01T00:00:00.000Z",
   };
 
-  it("round-trips a hashed record and rejects a tampered cookie", () => {
+  it("stores hash and salt only, not the session key", () => {
     const encoded = encodeAdminStore(record);
-    expect(decodeAdminStore(encoded)).toEqual(record);
+    const payload = JSON.parse(Buffer.from(encoded.split(".")[0], "base64url").toString("utf8")) as Record<string, string>;
+    expect(payload.hash).toBe("aa");
+    expect(payload.salt).toBe("bb");
+    expect(payload.sessionSecret).toBeUndefined();
+    const decoded = decodeAdminStore(encoded);
+    expect(decoded?.hash).toBe("aa");
+    expect(decoded?.sessionSecret).toBe("");
     expect(decodeAdminStore(`${encoded}x`)).toBeNull();
     expect(decodeAdminStore("not-a-cookie")).toBeNull();
   });
 
-  it("uses the browser cookie when the server file is missing", () => {
+  it("uses the browser cookie only when the server file is missing", () => {
     const cookie = encodeAdminStore(record);
     const fromCookie = resolveStoredAdmin(null, "memory", cookie);
     expect(fromCookie.persistence).toBe("browser");
-    expect(fromCookie.record?.sessionSecret).toBe("cc");
+    expect(fromCookie.record?.hash).toBe("aa");
+    expect(fromCookie.record?.sessionSecret).toBe("");
     const fromFile = resolveStoredAdmin(JSON.stringify({ ...record, sessionSecret: "file" }), "file", cookie);
     expect(fromFile.persistence).toBe("file");
     expect(fromFile.record?.sessionSecret).toBe("file");
+    expect(isDurableAuth("file")).toBe(true);
+    expect(isDurableAuth("browser")).toBe(false);
   });
 });
 

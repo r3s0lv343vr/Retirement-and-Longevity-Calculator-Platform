@@ -23,8 +23,16 @@ function storePepper(): string {
   return process.env.ADMIN_COOKIE_SECRET?.trim() || "nestspan-admin-cfg-v1";
 }
 
-export function encodeAdminStore(record: StoredAdmin): string {
-  const payload = Buffer.from(JSON.stringify(record), "utf8").toString("base64url");
+export function encodeAdminStore(record: Pick<StoredAdmin, "hash" | "salt" | "createdAt" | "updatedAt">): string {
+  const payload = Buffer.from(
+    JSON.stringify({
+      hash: record.hash,
+      salt: record.salt,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
+    }),
+    "utf8",
+  ).toString("base64url");
   const sig = createHmac("sha256", storePepper()).update(payload).digest("base64url");
   return `${payload}.${sig}`;
 }
@@ -38,10 +46,31 @@ export function decodeAdminStore(raw: string | undefined | null): StoredAdmin | 
   const b = Buffer.from(expected);
   if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
   try {
-    return parseStored(Buffer.from(payload, "base64url").toString("utf8"));
+    const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as {
+      hash?: string;
+      salt?: string;
+      createdAt?: string;
+      updatedAt?: string;
+    };
+    if (!parsed?.hash || !parsed?.salt) return null;
+    return {
+      hash: parsed.hash,
+      salt: parsed.salt,
+      sessionSecret: "",
+      createdAt: parsed.createdAt || "",
+      updatedAt: parsed.updatedAt || "",
+    };
   } catch {
     return null;
   }
+}
+
+export function browserSessionKey(hash: string, salt: string): string {
+  return createHmac("sha256", salt).update(`nestspan-admin-session:${hash}`).digest("hex");
+}
+
+export function isDurableAuth(persistence: AuthPersistence): boolean {
+  return persistence === "file" || persistence === "redis" || persistence === "env";
 }
 
 export function resolveStoredAdmin(
@@ -99,7 +128,10 @@ export async function loadStoredAdmin(): Promise<{ record: StoredAdmin | null; p
   return resolveStoredAdmin(text, persistence, await peekStoreCookie());
 }
 
-export async function saveStoredAdmin(password: string, previous?: StoredAdmin | null): Promise<StoredAdmin> {
+export async function saveStoredAdmin(
+  password: string,
+  previous?: StoredAdmin | null,
+): Promise<{ record: StoredAdmin; persistence: PersistenceKind }> {
   const { hash, salt } = hashPassword(password);
   const now = new Date().toISOString();
   const record: StoredAdmin = {
@@ -109,10 +141,11 @@ export async function saveStoredAdmin(password: string, previous?: StoredAdmin |
     createdAt: previous?.createdAt || now,
     updatedAt: now,
   };
+  let persistence: PersistenceKind = "memory";
   await enqueuePersist(async () => {
-    await writePersistedText("admin", JSON.stringify(record));
+    persistence = await writePersistedText("admin", JSON.stringify(record));
   });
-  return record;
+  return { record, persistence };
 }
 
 export async function authStatus(): Promise<AuthStatus> {
@@ -142,8 +175,10 @@ export async function verifyPassword(password: string): Promise<boolean> {
 export async function sessionSecret(): Promise<string | null> {
   const env = envPassword();
   if (env) return hashPassword(`nestspan-admin:${env}`, "session").hash;
-  const { record } = await loadStoredAdmin();
-  return record?.sessionSecret ?? null;
+  const { record, persistence } = await loadStoredAdmin();
+  if (!record) return null;
+  if (isDurableAuth(persistence)) return record.sessionSecret;
+  return browserSessionKey(record.hash, record.salt);
 }
 
 export function validateNewPassword(password: string, confirm?: string): string | null {
