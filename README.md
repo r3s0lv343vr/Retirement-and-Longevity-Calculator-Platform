@@ -25,7 +25,8 @@ This is an educational model, not tax, investment, or medical advice.
 ## Stack
 
 - **Frontend:** Next.js App Router, React, Tailwind CSS — a single page
-- **Backend:** Next.js Route Handlers (`/api/calculate`, `/api/assumptions`, `/api/health`)
+- **Backend:** Next.js Route Handlers (`/api/calculate`, `/api/need`, `/api/when`, `/api/claim`, `/api/housing`, `/api/assumptions`, `/api/health`, `/api/collect`, `/api/admin/*`)
+- **Admin:** `/admin` — visitors, site users, and calculator runs
 - **Engine:** Deterministic TypeScript projection in `src/lib/engine`
 
 ## Ads
@@ -64,6 +65,16 @@ Production: https://retirement-and-longevity-calculator.vercel.app
 Framework: Next.js · Root directory: repository root · No required environment variables.
 
 The GitHub repo is connected. Pushes to `main` deploy production; other branches get preview URLs.
+
+## Admin
+
+`/admin` is a password-protected dashboard. It shows unique **visitors** (browsers that loaded a public page), **site users** (visitors who ran a calculator), page views, and runs per tool. It does not store savings or other plan numbers.
+
+On first visit, `/admin` asks you to create a password. It is stored hashed in `.data/admin.json` on the server. You can change it later on the dashboard. Copy that file when you move hosts if you want the same password. You do not need to set `ADMIN_PASSWORD` in Vercel or any other host.
+
+`ADMIN_PASSWORD` remains an optional override if you ever want the password in the environment instead.
+
+Visitor counts and the password file persist on a normal server in `.data/`. Redis (`UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`) is only needed if you stay on serverless.
 
 ## License
 
