@@ -17,20 +17,30 @@ export function ClusterNav({
   current: "/" | "/longevity" | "/need" | "/when" | "/claim" | "/housing" | "/child" | "/goal";
 }) {
   return (
-    <nav className="border-b border-pine/10 bg-pine text-paper" aria-label="Calculators">
-      <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-5 gap-y-2 px-5 py-2 text-sm sm:px-6">
-        {LINKS.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            aria-current={current === link.href ? "page" : undefined}
-            className={
-              current === link.href ? "font-semibold text-paper" : "text-paper/75 transition hover:text-paper"
-            }
-          >
-            {link.label}
-          </Link>
-        ))}
+    <nav className="border-b border-pine/20 bg-pine text-paper" aria-label="Calculators">
+      <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-1 px-4 py-3 sm:gap-1.5 sm:px-6 sm:py-3.5">
+        {LINKS.map((link) => {
+          const active = current === link.href;
+          const home = link.href === "/";
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              aria-current={active ? "page" : undefined}
+              className={[
+                "inline-flex min-h-11 items-center rounded-md px-3 py-2 text-base leading-snug sm:min-h-12 sm:px-3.5 sm:text-lg",
+                home ? "font-serif" : null,
+                active
+                  ? "bg-paper/15 font-semibold text-paper"
+                  : "text-paper/85 transition hover:bg-paper/10 hover:text-paper",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+            >
+              {link.label}
+            </Link>
+          );
+        })}
       </div>
     </nav>
   );

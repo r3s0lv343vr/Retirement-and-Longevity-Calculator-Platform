@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { SEO_REVIEWED, SEO_TRUST, type CalculatorSeo } from "@/lib/seo";
 
-export function TrustBar() {
-  return <p className="text-xs leading-relaxed text-muted">{SEO_TRUST}</p>;
+export function TrustBar({ className }: { className?: string }) {
+  return <p className={className ?? "text-xs leading-relaxed text-muted"}>{SEO_TRUST}</p>;
 }
 
 export function CalculatorSeoBlock({ seo }: { seo: CalculatorSeo }) {
