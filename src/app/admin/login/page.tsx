@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { AdminLoginForm } from "@/components/AdminLoginForm";
-import { needsSetup } from "@/lib/admin/credentials";
+import { authStatus, needsSetup } from "@/lib/admin/credentials";
 
 export const dynamic = "force-dynamic";
 
@@ -9,9 +9,15 @@ export default async function AdminLoginPage() {
     redirect("/admin/setup");
   }
 
+  const status = await authStatus();
+  const hint =
+    status.persistence === "browser"
+      ? "Use the password you created in this browser. This host is not keeping .data/admin.json (typical on Vercel), so sign-in works from the hashed copy saved here."
+      : "Use the password you created on this server. You can change it after you sign in.";
+
   return (
     <main className="mx-auto max-w-5xl px-5 pb-16 sm:px-6">
-      <AdminLoginForm hint="Use the password you created on this server. You can change it after you sign in." />
+      <AdminLoginForm hint={hint} />
     </main>
   );
 }

@@ -1,5 +1,6 @@
 export const VISITOR_COOKIE = "ns_vid";
 export const ADMIN_COOKIE = "ns_admin";
+export const ADMIN_STORE_COOKIE = "ns_admin_cfg";
 export const MIN_PASSWORD_LENGTH = 8;
 
 export const KNOWN_PATHS = ["/", "/longevity", "/need", "/when", "/claim", "/housing", "/child", "/goal"] as const;

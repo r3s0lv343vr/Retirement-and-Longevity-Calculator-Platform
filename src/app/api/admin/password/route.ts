@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { adminSessionFromRequest } from "@/lib/admin/request";
+import { adminSessionFromRequest, stampAdminAuthCookies } from "@/lib/admin/request";
 import { authStatus, loadStoredAdmin, saveStoredAdmin, validateNewPassword, verifyPassword } from "@/lib/admin/credentials";
+import { signAdminSession } from "@/lib/admin/session";
 
 export async function POST(request: Request) {
   if (!(await adminSessionFromRequest(request))) {
@@ -39,6 +40,9 @@ export async function POST(request: Request) {
   }
 
   const { record } = await loadStoredAdmin();
-  await saveStoredAdmin(next, record);
-  return NextResponse.json({ ok: true });
+  const updated = await saveStoredAdmin(next, record);
+  const token = await signAdminSession();
+  const response = NextResponse.json({ ok: true });
+  if (!token) return response;
+  return stampAdminAuthCookies(response, token, updated);
 }

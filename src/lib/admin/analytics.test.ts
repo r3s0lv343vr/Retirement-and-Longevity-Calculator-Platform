@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { applyEvent, emptyState, snapshotFromState } from "./analytics";
 import { authenticateAdmin, verifyAdminSession } from "./session";
-import { hashPassword, passwordMatchesHash, validateNewPassword } from "./credentials";
+import {
+  decodeAdminStore,
+  encodeAdminStore,
+  hashPassword,
+  passwordMatchesHash,
+  resolveStoredAdmin,
+  validateNewPassword,
+  type StoredAdmin,
+} from "./credentials";
 import { isBot } from "./request";
 import { normalizePath } from "./constants";
 
@@ -77,6 +85,33 @@ describe("stored password", () => {
     expect(validateNewPassword("short")).toMatch(/at least 8/);
     expect(validateNewPassword("long-enough", "other")).toMatch(/do not match/);
     expect(validateNewPassword("long-enough", "long-enough")).toBeNull();
+  });
+});
+
+describe("admin store cookie", () => {
+  const record: StoredAdmin = {
+    hash: "aa",
+    salt: "bb",
+    sessionSecret: "cc",
+    createdAt: "2026-09-01T00:00:00.000Z",
+    updatedAt: "2026-09-01T00:00:00.000Z",
+  };
+
+  it("round-trips a hashed record and rejects a tampered cookie", () => {
+    const encoded = encodeAdminStore(record);
+    expect(decodeAdminStore(encoded)).toEqual(record);
+    expect(decodeAdminStore(`${encoded}x`)).toBeNull();
+    expect(decodeAdminStore("not-a-cookie")).toBeNull();
+  });
+
+  it("uses the browser cookie when the server file is missing", () => {
+    const cookie = encodeAdminStore(record);
+    const fromCookie = resolveStoredAdmin(null, "memory", cookie);
+    expect(fromCookie.persistence).toBe("browser");
+    expect(fromCookie.record?.sessionSecret).toBe("cc");
+    const fromFile = resolveStoredAdmin(JSON.stringify({ ...record, sessionSecret: "file" }), "file", cookie);
+    expect(fromFile.persistence).toBe("file");
+    expect(fromFile.record?.sessionSecret).toBe("file");
   });
 });
 
