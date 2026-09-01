@@ -48,5 +48,8 @@ describe("compileChildPdf", () => {
     expect(steps[0]).toContain("14,400");
     expect(marks.some((mark) => mark.id === "school")).toBe(true);
     expect(text).toContain("Landmarks on the map");
+    expect(text).toContain("Yearly add to stay off salary");
+    expect(text).toContain("Education inflation");
+    expect(text).toContain("By university start");
   });
 });

@@ -10,6 +10,7 @@ describe("CHILD_DEFAULT", () => {
     expect(CHILD_DEFAULT.schoolStartAge).toBe(5);
     expect(CHILD_DEFAULT.universityStartAge).toBe(18);
     expect(CHILD_DEFAULT.raisingSavings).toBe(0);
+    expect(CHILD_DEFAULT.educationInflationRate).toBe(0.05);
   });
 });
 
@@ -58,7 +59,7 @@ describe("estimateChild", () => {
     const slower = estimateChild({
       ...CHILD_DEFAULT,
       raisingSavings: 0,
-      raisingAnnualSave: 18_000,
+      raisingAnnualSave: 22_000,
     });
     expect(slower.readiness.yearsUntilReady).not.toBeNull();
     expect(slower.readiness.yearsUntilReady as number).toBeGreaterThan(result.readiness.yearsUntilReady ?? 0);
@@ -162,5 +163,61 @@ describe("estimateChild", () => {
     expect(result.years[0]?.living).toBe(0);
     expect(result.years[3]?.childAge).toBe(0);
     expect(result.years[3]?.living).toBeGreaterThan(14_400);
+  });
+
+  it("raises school and university when education inflation rises, not living", () => {
+    const base = estimateChild(CHILD_DEFAULT);
+    const hotter = estimateChild({ ...CHILD_DEFAULT, educationInflationRate: 0.08 });
+    expect(hotter.readiness.schoolPresentValue).toBeGreaterThan(base.readiness.schoolPresentValue);
+    expect(hotter.university.nestEggNeededNow).toBeGreaterThan(base.university.nestEggNeededNow);
+    expect(hotter.readiness.livingPresentValue).toBe(base.readiness.livingPresentValue);
+    expect(hotter.years.find((row) => row.childAge === 0)?.living).toBe(14_400);
+  });
+
+  it("matches the old school path when education inflation equals ordinary inflation", () => {
+    const split = estimateChild({ ...CHILD_DEFAULT, inflationRate: 0.04, educationInflationRate: 0.04 });
+    const age5 = split.years.find((row) => row.childAge === 5);
+    expect(age5?.school).toBeCloseTo(12_000 * 1.04 ** 5, 5);
+    expect(age5?.extra).toBeCloseTo(3_600 * 1.04 ** 5, 5);
+  });
+
+  it("solves the yearly add until university so the raising pot stays off salary", () => {
+    const solved = estimateChild(CHILD_DEFAULT);
+    expect(solved.raisingSave.byBaby.years).toBe(0);
+    expect(solved.raisingSave.byBaby.annualSave).toBeNull();
+    expect(solved.raisingSave.bySchool.years).toBe(5);
+    expect(solved.raisingSave.byUniversity.years).toBe(18);
+    const bySchool = solved.raisingSave.bySchool.annualSave;
+    const byUni = solved.raisingSave.byUniversity.annualSave;
+    expect(bySchool).not.toBeNull();
+    expect(byUni).not.toBeNull();
+    expect(bySchool as number).toBeGreaterThan(byUni as number);
+
+    const funded = estimateChild({
+      ...CHILD_DEFAULT,
+      raisingAnnualSave: byUni as number,
+    });
+    expect(funded.raising.depletedAtAge).toBeNull();
+    expect(funded.readiness.coversSchool).toBe(true);
+    expect(funded.readiness.yearsUntilReady).toBe(0);
+    expect(funded.raisingSave.byUniversity.extraAnnualSave).toBe(0);
+  });
+
+  it("needs a larger yearly add if you only save until the baby arrives", () => {
+    const planned = estimateChild({ ...CHILD_DEFAULT, yearsUntilBaby: 8, raisingAnnualSave: 0 });
+    const byBaby = planned.raisingSave.byBaby.annualSave;
+    const byUni = planned.raisingSave.byUniversity.annualSave;
+    expect(planned.raisingSave.byBaby.years).toBe(8);
+    expect(byBaby).not.toBeNull();
+    expect(byUni).not.toBeNull();
+    expect(byBaby as number).toBeGreaterThan(byUni as number);
+
+    const funded = estimateChild({
+      ...CHILD_DEFAULT,
+      yearsUntilBaby: 8,
+      raisingAnnualSave: byBaby as number,
+    });
+    expect(funded.readiness.yearsUntilReady).not.toBeNull();
+    expect(funded.readiness.yearsUntilReady as number).toBeLessThanOrEqual(8);
   });
 });

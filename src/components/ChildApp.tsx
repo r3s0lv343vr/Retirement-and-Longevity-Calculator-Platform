@@ -9,10 +9,12 @@ import {
   CHILD_PHASE_LABEL,
   type ChildEstimate,
   type ChildPot,
+  type ChildSaveSchedule,
+  type ChildSaveTarget,
   type ChildYearRow,
 } from "@/lib/child/estimateChild";
 import type { ChildInput } from "@/lib/child/defaults";
-import { buildChildNarrative, childMilestones, potNote, readinessHeadline } from "@/lib/child/narrative";
+import { buildChildNarrative, childMilestones, potNote, readinessHeadline, saveTargetCopy } from "@/lib/child/narrative";
 import { formatMoney } from "@/lib/format";
 import { readChildFromLocation, writeChildUrl } from "@/lib/child/url";
 
@@ -172,6 +174,7 @@ function ChildResult({ result }: { result: ChildEstimate }) {
           />
         </dl>
       </div>
+      <SaveScheduleCard raising={result.raisingSave} university={result.universitySave} />
       {result.warnings.length > 0 ? (
         <ul className="card list-disc space-y-1 px-8 text-sm text-muted">
           {result.warnings.map((warning) => (
@@ -323,6 +326,54 @@ function YearTables({ years }: { years: ChildYearRow[] }) {
         </div>
       </div>
     </>
+  );
+}
+
+function SaveScheduleCard({
+  raising,
+  university,
+}: {
+  raising: ChildSaveSchedule;
+  university: ChildSaveSchedule;
+}) {
+  return (
+    <div className="card">
+      <h3 className="font-serif text-xl text-pine">Yearly add to stay off salary</h3>
+      <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink/80">
+        Inverse of years until ready. Each figure is the yearly add during that window so the pot never goes negative.
+        Shorter windows need a larger add. Extra is on top of the yearly add already on the form.
+      </p>
+      <dl className="mt-5 grid gap-4 lg:grid-cols-2">
+        <SaveColumn title="Through 18" schedule={raising} />
+        <SaveColumn title="University" schedule={university} />
+      </dl>
+    </div>
+  );
+}
+
+function SaveColumn({ title, schedule }: { title: string; schedule: ChildSaveSchedule }) {
+  return (
+    <div className="rounded-xl border border-pine/10 bg-paper-2/40 p-4">
+      <dt className="text-xs uppercase tracking-wide text-muted">{title}</dt>
+      <SaveRow label="By the baby" target={schedule.byBaby} />
+      <SaveRow label="By school start" target={schedule.bySchool} />
+      <SaveRow label="By university start" target={schedule.byUniversity} />
+    </div>
+  );
+}
+
+function SaveRow({ label, target }: { label: string; target: ChildSaveTarget }) {
+  const copy = saveTargetCopy(target);
+  const window =
+    target.years <= 0 ? "no years left to save" : `${target.years} year${target.years === 1 ? "" : "s"} to save`;
+  return (
+    <div className="mt-3 border-t border-pine/10 pt-3 first:mt-1 first:border-t-0 first:pt-0">
+      <p className="text-xs uppercase tracking-wide text-muted">
+        {label} · {window}
+      </p>
+      <dd className="mt-1 font-serif text-xl text-ink">{copy.value}</dd>
+      <p className="mt-1 text-xs text-muted">{copy.note}</p>
+    </div>
   );
 }
 

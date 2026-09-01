@@ -50,6 +50,19 @@ export type ChildPot = {
   lastCostAge: number | null;
 };
 
+export type ChildSaveTarget = {
+  years: number;
+  annualSave: number | null;
+  extraAnnualSave: number | null;
+  alreadyEnough: boolean;
+};
+
+export type ChildSaveSchedule = {
+  byBaby: ChildSaveTarget;
+  bySchool: ChildSaveTarget;
+  byUniversity: ChildSaveTarget;
+};
+
 export type ChildReadiness = {
   presentValueThrough18: number;
   livingPresentValue: number;
@@ -72,6 +85,8 @@ export type ChildEstimate = {
   combinedHave: number;
   warnings: string[];
   years: ChildYearRow[];
+  raisingSave: ChildSaveSchedule;
+  universitySave: ChildSaveSchedule;
 };
 
 function asNumber(value: unknown, fallback: number): number {
@@ -101,6 +116,7 @@ export function mergeChildInput(payload: ChildPayload | null | undefined): Child
     universitySavings: asNumber(src.universitySavings, CHILD_DEFAULT.universitySavings),
     universityAnnualSave: asNumber(src.universityAnnualSave, CHILD_DEFAULT.universityAnnualSave),
     inflationRate: asNumber(src.inflationRate, CHILD_DEFAULT.inflationRate),
+    educationInflationRate: asNumber(src.educationInflationRate, CHILD_DEFAULT.educationInflationRate),
     returnRate: asNumber(src.returnRate, CHILD_DEFAULT.returnRate),
   };
 }
@@ -131,6 +147,9 @@ export function validateChildInput(input: ChildInput): string[] {
   ];
   if (money.some((n) => n < 0 || n > MAX_MONEY)) errors.push("Dollar amounts must be between $0 and $50,000,000.");
   if (input.inflationRate < 0 || input.inflationRate > MAX_RATE) errors.push("Inflation must be between 0% and 25%.");
+  if (input.educationInflationRate < 0 || input.educationInflationRate > MAX_RATE) {
+    errors.push("Education inflation must be between 0% and 25%.");
+  }
   if (input.returnRate < 0 || input.returnRate > MAX_RATE) errors.push("Return must be between 0% and 25%.");
   if (input.ageDemandRate < 0 || input.ageDemandRate > MAX_RATE) {
     errors.push("Age-related increase must be between 0% and 25%.");
@@ -181,12 +200,12 @@ function livingCostAt(input: ChildInput, yearsFromNow: number, childAge: number)
 
 function schoolTuitionAt(input: ChildInput, yearsFromNow: number, childAge: number): number {
   if (childAge < input.schoolStartAge) return 0;
-  return inflate(input.schoolAnnualToday, input.inflationRate, yearsFromNow);
+  return inflate(input.schoolAnnualToday, input.educationInflationRate, yearsFromNow);
 }
 
 function extraCostAt(input: ChildInput, yearsFromNow: number, childAge: number): number {
   if (childAge < input.schoolStartAge) return 0;
-  return inflate(input.extraAnnualToday, input.inflationRate, yearsFromNow);
+  return inflate(input.extraAnnualToday, input.educationInflationRate, yearsFromNow);
 }
 
 function schoolCostAt(input: ChildInput, yearsFromNow: number, childAge: number): number {
@@ -229,7 +248,7 @@ function buildYearRows(input: ChildInput): ChildYearRow[] {
         ? extraCostAt(input, yearFromNow, childAge)
         : 0;
     const universityCost = inUniversity
-      ? inflate(input.universityAnnualToday, input.inflationRate, yearFromNow)
+      ? inflate(input.universityAnnualToday, input.educationInflationRate, yearFromNow)
       : 0;
     const raisingContribution = inRaising ? input.raisingAnnualSave : 0;
     const universityContribution = inRaising ? input.universityAnnualSave : 0;
@@ -263,38 +282,117 @@ function buildYearRows(input: ChildInput): ChildYearRow[] {
   return rows;
 }
 
-function raisingYears(input: ChildInput, delay = birthDelay(input), includeLiving = true, includeSchool = true): YearSpec[] {
+function raisingYears(
+  input: ChildInput,
+  delay = birthDelay(input),
+  includeLiving = true,
+  includeSchool = true,
+  annualSave = input.raisingAnnualSave,
+  cutoff = Number.POSITIVE_INFINITY,
+): YearSpec[] {
   const last = input.universityStartAge;
   if (input.childAge >= last) return [];
   const specs: YearSpec[] = [];
   for (let year = 0; year < delay; year += 1) {
-    specs.push({ age: -1, cost: 0, contribution: input.raisingAnnualSave });
+    specs.push({ age: -1, cost: 0, contribution: year < cutoff ? annualSave : 0 });
   }
   for (let age = input.childAge; age < last; age += 1) {
     const t = delay + (age - input.childAge);
     const living = includeLiving ? livingCostAt(input, t, age) : 0;
     const school = includeSchool ? schoolCostAt(input, t, age) : 0;
-    specs.push({ age, cost: living + school, contribution: input.raisingAnnualSave });
+    specs.push({ age, cost: living + school, contribution: t < cutoff ? annualSave : 0 });
   }
   return specs;
 }
 
-function universityYears(input: ChildInput): YearSpec[] {
+function universityYears(
+  input: ChildInput,
+  annualSave = input.universityAnnualSave,
+  cutoff = Number.POSITIVE_INFINITY,
+): YearSpec[] {
   const delay = birthDelay(input);
   const end = input.universityStartAge + input.universityYears;
   if (input.childAge >= end) return [];
   const specs: YearSpec[] = [];
   for (let year = 0; year < delay; year += 1) {
-    specs.push({ age: -1, cost: 0, contribution: input.universityAnnualSave });
+    specs.push({ age: -1, cost: 0, contribution: year < cutoff ? annualSave : 0 });
   }
   for (let age = input.childAge; age < end; age += 1) {
     const t = delay + (age - input.childAge);
     const inUni = age >= input.universityStartAge;
-    const cost = inUni ? inflate(input.universityAnnualToday, input.inflationRate, t) : 0;
-    const contribution = age < input.universityStartAge ? input.universityAnnualSave : 0;
+    const cost = inUni ? inflate(input.universityAnnualToday, input.educationInflationRate, t) : 0;
+    const contribution = age < input.universityStartAge && t < cutoff ? annualSave : 0;
     specs.push({ age, cost, contribution });
   }
   return specs;
+}
+
+type SaveUntil = "baby" | "school" | "university";
+
+function saveWindowYears(input: ChildInput, until: SaveUntil): number {
+  const delay = birthDelay(input);
+  if (until === "baby") return delay;
+  if (until === "school") return delay + Math.max(0, input.schoolStartAge - input.childAge);
+  return delay + Math.max(0, input.universityStartAge - input.childAge);
+}
+
+const MAX_ANNUAL_SAVE = 2_000_000;
+
+function minAnnualSave(start: number, makeYears: (save: number) => YearSpec[], rate: number): number | null {
+  const empty = makeYears(0);
+  if (empty.length === 0) return 0;
+  if (potSurvives(start, empty, rate)) return 0;
+  let lo = 0;
+  let hi = MAX_ANNUAL_SAVE;
+  if (!potSurvives(start, makeYears(hi), rate)) return null;
+  for (let i = 0; i < 36; i += 1) {
+    const mid = (lo + hi) / 2;
+    if (potSurvives(start, makeYears(mid), rate)) hi = mid;
+    else lo = mid;
+  }
+  return Math.ceil(hi / 100) * 100;
+}
+
+function saveTarget(
+  start: number,
+  currentSave: number,
+  years: number,
+  makeYears: (save: number) => YearSpec[],
+  rate: number,
+): ChildSaveTarget {
+  const needed = minAnnualSave(start, makeYears, rate);
+  if (needed === null) {
+    return { years, annualSave: null, extraAnnualSave: null, alreadyEnough: false };
+  }
+  if (needed === 0) {
+    return { years, annualSave: 0, extraAnnualSave: 0, alreadyEnough: true };
+  }
+  if (years <= 0) {
+    return { years, annualSave: null, extraAnnualSave: null, alreadyEnough: false };
+  }
+  const extra = Math.max(0, needed - currentSave);
+  return {
+    years,
+    annualSave: needed,
+    extraAnnualSave: extra,
+    alreadyEnough: extra <= 0,
+  };
+}
+
+function estimateSaveSchedule(input: ChildInput, kind: "raising" | "university"): ChildSaveSchedule {
+  const delay = birthDelay(input);
+  const start = kind === "raising" ? input.raisingSavings : input.universitySavings;
+  const current = kind === "raising" ? input.raisingAnnualSave : input.universityAnnualSave;
+  const rate = input.returnRate;
+  const make = (until: SaveUntil) => (save: number) =>
+    kind === "raising"
+      ? raisingYears(input, delay, true, true, save, saveWindowYears(input, until))
+      : universityYears(input, save, saveWindowYears(input, until));
+  return {
+    byBaby: saveTarget(start, current, saveWindowYears(input, "baby"), make("baby"), rate),
+    bySchool: saveTarget(start, current, saveWindowYears(input, "school"), make("school"), rate),
+    byUniversity: saveTarget(start, current, saveWindowYears(input, "university"), make("university"), rate),
+  };
 }
 
 function projectPot(
@@ -404,6 +502,14 @@ export function estimateChild(input: ChildInput): ChildEstimate {
     universityYears(input),
     input.returnRate,
   );
+  const raisingSave = estimateSaveSchedule(input, "raising");
+  const universitySave = estimateSaveSchedule(input, "university");
+  if (raisingSave.byUniversity.extraAnnualSave !== null) {
+    raising.additionalAnnualSavings = raisingSave.byUniversity.extraAnnualSave;
+  }
+  if (universitySave.byUniversity.extraAnnualSave !== null) {
+    university.additionalAnnualSavings = universitySave.byUniversity.extraAnnualSave;
+  }
   const readiness = estimateReadiness(input, raising);
   const years = buildYearRows(input);
   return {
@@ -415,5 +521,7 @@ export function estimateChild(input: ChildInput): ChildEstimate {
     combinedHave: input.raisingSavings + input.universitySavings,
     warnings: warningsForChild(input, readiness),
     years,
+    raisingSave,
+    universitySave,
   };
 }

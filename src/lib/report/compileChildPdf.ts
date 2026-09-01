@@ -4,9 +4,10 @@ import type { ChildInput } from "@/lib/child/defaults";
 import {
   CHILD_PHASE_LABEL,
   type ChildEstimate,
+  type ChildSaveSchedule,
   type ChildYearRow,
 } from "@/lib/child/estimateChild";
-import { buildChildNarrative, childMilestones, potNote, readinessHeadline } from "@/lib/child/narrative";
+import { buildChildNarrative, childMilestones, potNote, readinessHeadline, saveTargetCopy } from "@/lib/child/narrative";
 
 const PAGE_W = 612;
 const PAGE_H = 792;
@@ -32,6 +33,7 @@ const INPUT_ROWS: { key: keyof ChildInput; label: string; kind: "age" | "money" 
   { key: "universitySavings", label: "Already saved for university", kind: "money" },
   { key: "universityAnnualSave", label: "Yearly add to that pot", kind: "money" },
   { key: "inflationRate", label: "Inflation", kind: "percent" },
+  { key: "educationInflationRate", label: "Education inflation", kind: "percent" },
   { key: "ageDemandRate", label: "Age-related increase", kind: "percent" },
   { key: "returnRate", label: "Return on these pots", kind: "percent" },
 ];
@@ -47,6 +49,7 @@ export function compileChildPdf(result: ChildEstimate, generatedAt = new Date())
   writer.cover(result);
   writer.trainOfThought(result);
   writer.pots(result);
+  writer.saveSchedule(result);
   writer.milestones(result);
   writer.costYears(result.years);
   writer.potYears(result.years);
@@ -197,6 +200,35 @@ class ReportWriter {
     }
   }
 
+  saveSchedule(result: ChildEstimate) {
+    this.ensure(90);
+    this.section("Yearly add to stay off salary", "Inverse of years until ready.");
+    this.body(
+      "Each figure is the yearly add during that window so the pot never goes negative. Shorter windows need a larger add. Extra is on top of the yearly add already on the form. Saving until university starts matches the form.",
+    );
+    this.space(8);
+    this.subhead("Through 18");
+    this.saveRows(result.raisingSave);
+    this.space(8);
+    this.subhead("University");
+    this.saveRows(result.universitySave);
+  }
+
+  private saveRows(schedule: ChildSaveSchedule) {
+    const rows: { label: string; target: ChildSaveSchedule["byBaby"] }[] = [
+      { label: "By the baby", target: schedule.byBaby },
+      { label: "By school start", target: schedule.bySchool },
+      { label: "By university start", target: schedule.byUniversity },
+    ];
+    for (const row of rows) {
+      const copy = saveTargetCopy(row.target);
+      const window =
+        row.target.years <= 0 ? "no years left to save" : `${row.target.years} year${row.target.years === 1 ? "" : "s"}`;
+      this.lineKV(`${row.label} (${window})`, copy.value);
+      this.body(copy.note);
+    }
+  }
+
   milestones(result: ChildEstimate) {
     const marks = childMilestones(result);
     if (marks.length === 0) return;
@@ -215,7 +247,7 @@ class ReportWriter {
     this.ensure(80);
     this.section("Costs through the years", "Every year from this run. Current plan.");
     this.body(
-      "Living grows with inflation and age-related demand. School and extras begin at school start and inflate only. University is a separate column from raising.",
+      "Living grows with inflation and age-related demand. School, extras, and university rise with education inflation. University is a separate column from raising.",
     );
     this.space(6);
 

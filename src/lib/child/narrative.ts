@@ -4,6 +4,7 @@ import {
   type ChildEstimate,
   type ChildPot,
   type ChildReadiness,
+  type ChildSaveTarget,
   type ChildYearRow,
 } from "./estimateChild";
 
@@ -32,6 +33,35 @@ export function potNote(pot: ChildPot, saveLabel: string): string {
   if (pot.alreadyEnough) return `${window} What you have is enough in this model.`;
   if (pot.yearsToSave <= 0) return `${window} Full-time saving years are over, so this is a nest-egg gap.`;
   return `${window} Extra yearly saving ${saveLabel} would close the gap.`;
+}
+
+export function saveTargetCopy(target: ChildSaveTarget): { value: string; note: string } {
+  if (target.alreadyEnough) {
+    return {
+      value: formatMoney(target.annualSave ?? 0),
+      note:
+        target.years <= 0
+          ? "Already funded. No more years to save in this window."
+          : "This yearly add, or less, is already on the form.",
+    };
+  }
+  if (target.annualSave === null) {
+    if (target.years <= 0) {
+      return { value: "Need nest egg now", note: "This window has no saving years left." };
+    }
+    return {
+      value: "Not at this window",
+      note: "Even a very large yearly add in this window does not fund the pot.",
+    };
+  }
+  const extra = target.extraAnnualSave ?? 0;
+  return {
+    value: formatMoney(target.annualSave),
+    note:
+      extra <= 0
+        ? "Already on the form."
+        : `${formatMoney(extra)} extra on top of the yearly add on the form.`,
+  };
 }
 
 function yearsWord(n: number): string {
@@ -76,7 +106,7 @@ export function buildChildNarrative(result: ChildEstimate): string[] {
   }
 
   steps.push(
-    `School (${formatMoney(input.schoolAnnualToday)} today) and co-curricular extras (${formatMoney(input.extraAnnualToday)} today) begin at age ${input.schoolStartAge} and rise with inflation only. They sit on the raising pot, not on a third nest egg.`,
+    `School (${formatMoney(input.schoolAnnualToday)} today) and co-curricular extras (${formatMoney(input.extraAnnualToday)} today) begin at age ${input.schoolStartAge} and rise with education inflation (${formatPercent(input.educationInflationRate)}), not ordinary inflation. They sit on the raising pot, not on a third nest egg.`,
   );
 
   const firstSchool = findAge(years, input.schoolStartAge);
@@ -128,7 +158,31 @@ export function buildChildNarrative(result: ChildEstimate): string[] {
     ? ` The first university year (${yearWhen(firstUni.yearFromNow)}) costs ${formatMoney(firstUni.university)}.`
     : "";
   steps.push(
-    `University is a second nest egg. ${formatMoney(input.universityAnnualToday)} a year today for ${yearsWord(input.universityYears)} starting at age ${input.universityStartAge}, inflated at ${formatPercent(input.inflationRate)}. Needed today: ${formatMoney(university.nestEggNeededNow)}. You have ${formatMoney(input.universitySavings)}.${uniStartNote}`,
+    `University is a second nest egg. ${formatMoney(input.universityAnnualToday)} a year today for ${yearsWord(input.universityYears)} starting at age ${input.universityStartAge}, inflated at education inflation (${formatPercent(input.educationInflationRate)}). Needed today: ${formatMoney(university.nestEggNeededNow)}. You have ${formatMoney(input.universitySavings)}.${uniStartNote}`,
+  );
+
+  const raiseByUni = result.raisingSave.byUniversity;
+  const uniByUni = result.universitySave.byUniversity;
+  const raiseLine =
+    raiseByUni.annualSave === null
+      ? raiseByUni.years <= 0
+        ? "the raising pot needs the nest egg now"
+        : "the raising pot is not funded in the university-start window"
+      : `the raising pot stays off salary at ${formatMoney(raiseByUni.annualSave)} a year until university starts` +
+        (raiseByUni.extraAnnualSave && raiseByUni.extraAnnualSave > 0
+          ? ` (${formatMoney(raiseByUni.extraAnnualSave)} extra)`
+          : "");
+  const uniLine =
+    uniByUni.annualSave === null
+      ? uniByUni.years <= 0
+        ? "the university pot needs the nest egg now"
+        : "the university pot is not funded in that window"
+      : `the university pot stays off salary at ${formatMoney(uniByUni.annualSave)} a year` +
+        (uniByUni.extraAnnualSave && uniByUni.extraAnnualSave > 0
+          ? ` (${formatMoney(uniByUni.extraAnnualSave)} extra)`
+          : "");
+  steps.push(
+    `The inverse of years until ready is that yearly add. Saving only until the baby or only until school start needs a larger add in the shorter window. On the form's schedule (until university starts), ${raiseLine}, and ${uniLine}.`,
   );
 
   steps.push(

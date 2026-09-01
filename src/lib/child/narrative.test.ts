@@ -13,6 +13,8 @@ describe("buildChildNarrative", () => {
     expect(steps.join(" ")).toContain("present value");
     expect(steps.join(" ")).toContain("University is a second nest egg");
     expect(steps.join(" ")).toContain("year-by-year map");
+    expect(steps.join(" ")).toContain("education inflation");
+    expect(steps.join(" ")).toContain("yearly add");
   });
 });
 
