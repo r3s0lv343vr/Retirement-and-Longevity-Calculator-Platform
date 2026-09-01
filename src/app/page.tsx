@@ -51,9 +51,9 @@ export default function HubPage() {
       </div>
 
       <main className="mx-auto max-w-5xl px-5 pb-16 pt-4 sm:px-6">
-        <p className="max-w-2xl text-sm leading-relaxed text-muted sm:text-base">{HUB_BLURB}</p>
-        <div className="mt-3">
-          <TrustBar />
+        <p className="max-w-3xl text-base leading-relaxed text-muted sm:text-lg">{HUB_BLURB}</p>
+        <div className="mt-4">
+          <TrustBar className="text-sm leading-relaxed text-muted sm:text-base" />
         </div>
         <div className="mt-10 space-y-10">
           {HUB_CLUSTERS.map((cluster) => (
