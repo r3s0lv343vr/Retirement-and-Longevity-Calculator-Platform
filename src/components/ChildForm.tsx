@@ -15,13 +15,33 @@ type Props = {
 
 type FieldKind = "age" | "money" | "years" | "percent";
 
+const PLANNING_FIELDS: { key: keyof ChildInput; label: string; hint: string; kind: FieldKind }[] = [
+  {
+    key: "yearsUntilBaby",
+    label: "Years until the baby",
+    hint: "0 if the baby is on the way or already here. Saving continues until then.",
+    kind: "years",
+  },
+  {
+    key: "monthlyChildCostToday",
+    label: "Child cost / month",
+    hint: "Today’s dollars. Living, care, food — not school. × 12 for the first year.",
+    kind: "money",
+  },
+];
+
 const RAISING_FIELDS: { key: keyof ChildInput; label: string; hint: string; kind: FieldKind }[] = [
   { key: "childAge", label: "Child’s age now", hint: "0 if the baby is on the way or just born.", kind: "age" },
   { key: "schoolStartAge", label: "School starts at age", hint: "School and co-curricular costs begin here.", kind: "age" },
   { key: "schoolAnnualToday", label: "School cost / year", hint: "Today’s dollars. Tuition, fees, or the extra cost of the school you mean.", kind: "money" },
   { key: "extraAnnualToday", label: "Co-curricular / year", hint: "Sports, music, clubs, and the extras around school.", kind: "money" },
   { key: "raisingSavings", label: "Already saved for raising", hint: "Only the pot earmarked through age 18.", kind: "money" },
-  { key: "raisingAnnualSave", label: "Yearly add to that pot", hint: "Until university starts.", kind: "money" },
+  {
+    key: "raisingAnnualSave",
+    label: "Yearly add to that pot",
+    hint: "Until university starts. Also used to see how long until you are ready for a baby.",
+    kind: "money",
+  },
 ];
 
 const UNIVERSITY_FIELDS: { key: keyof ChildInput; label: string; hint: string; kind: FieldKind }[] = [
@@ -33,8 +53,14 @@ const UNIVERSITY_FIELDS: { key: keyof ChildInput; label: string; hint: string; k
 ];
 
 const RATE_FIELDS: { key: keyof ChildInput; label: string; hint: string; kind: FieldKind }[] = [
-  { key: "inflationRate", label: "Inflation", hint: "Applied to school, extras, and university costs.", kind: "percent" },
-  { key: "returnRate", label: "Return on these pots", hint: "Same rate on both nest eggs.", kind: "percent" },
+  { key: "inflationRate", label: "Inflation", hint: "Applied to living, school, extras, and university costs.", kind: "percent" },
+  {
+    key: "ageDemandRate",
+    label: "Age-related increase",
+    hint: "On top of inflation. Children cost more as tastes and demands change.",
+    kind: "percent",
+  },
+  { key: "returnRate", label: "Return on these pots", hint: "The invested rate on the raising and university nest eggs.", kind: "percent" },
 ];
 
 function displayValue(value: number, kind: FieldKind): string {
@@ -60,6 +86,21 @@ export function ChildForm({ values, onChange, onSubmit, loading, error }: Props)
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <section className="card">
+        <h2 className="font-serif text-xl leading-tight text-pine">Before the baby</h2>
+        <p className="mt-1 text-sm leading-relaxed text-muted">
+          Monthly living cost × 12 is year one. That amount grows with inflation and an age-related increase through 18.
+          The present value of that path is what the raising pot has to fund.
+        </p>
+        <div className="mt-5 grid items-end gap-x-6 gap-y-6 sm:grid-cols-2">
+          {PLANNING_FIELDS.map((field) => (
+            <ChildField key={field.key} field={field} values={values} onChange={setField} />
+          ))}
+        </div>
+      </section>
+
+      <AdSlot placement="form-break-1" />
+
+      <section className="card">
         <h2 className="font-serif text-xl leading-tight text-pine">Through 18</h2>
         <p className="mt-1 text-sm leading-relaxed text-muted">
           School and co-curricular until university starts. This pot does not pay for university.
@@ -71,7 +112,7 @@ export function ChildForm({ values, onChange, onSubmit, loading, error }: Props)
         </div>
       </section>
 
-      <AdSlot placement="form-break-1" />
+      <AdSlot placement="form-break-2" />
 
       <section className="card">
         <h2 className="font-serif text-xl leading-tight text-pine">University</h2>
@@ -92,7 +133,9 @@ export function ChildForm({ values, onChange, onSubmit, loading, error }: Props)
             Rates
           </span>
         </summary>
-        <p className="mt-3 text-sm leading-relaxed text-muted">Education costs often rise faster than general prices.</p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          Inflation on prices, an extra age-related increase on living costs, and the return that funds the annuity.
+        </p>
         <div className="mt-4 grid gap-x-5 gap-y-5 sm:grid-cols-2">
           {RATE_FIELDS.map((field) => (
             <ChildField key={field.key} field={field} values={values} onChange={setField} />
@@ -111,7 +154,7 @@ export function ChildForm({ values, onChange, onSubmit, loading, error }: Props)
         disabled={loading}
         className="inline-flex h-12 w-full items-center justify-center rounded-full bg-pine px-6 text-sm font-semibold text-paper shadow-sm transition hover:bg-pine-2 disabled:opacity-60"
       >
-        {loading ? "Estimating nest eggs…" : "See the two nest eggs"}
+        {loading ? "Estimating nest eggs…" : "See when we are ready"}
       </button>
     </form>
   );

@@ -1,5 +1,8 @@
 export type ChildInput = {
   childAge: number;
+  yearsUntilBaby: number;
+  monthlyChildCostToday: number;
+  ageDemandRate: number;
   schoolStartAge: number;
   schoolAnnualToday: number;
   extraAnnualToday: number;
@@ -16,9 +19,12 @@ export type ChildInput = {
 
 export type ChildPayload = Partial<ChildInput>;
 
-/** Newborn / on the way. School and extras through university start; university as its own pot. */
+/** Newborn / on the way. Living costs grow with age and inflation; school and university stay separate. */
 export const CHILD_DEFAULT: ChildInput = {
   childAge: 0,
+  yearsUntilBaby: 0,
+  monthlyChildCostToday: 1_200,
+  ageDemandRate: 0.02,
   schoolStartAge: 5,
   schoolAnnualToday: 12_000,
   extraAnnualToday: 3_600,

@@ -6,6 +6,7 @@ export type { ChildInput, ChildPayload };
 const MAX_MONEY = 50_000_000;
 const MAX_AGE = 30;
 const MAX_RATE = 0.25;
+const MAX_WAIT = 40;
 
 type YearSpec = { age: number; cost: number; contribution: number };
 
@@ -22,10 +23,24 @@ export type ChildPot = {
   lastCostAge: number | null;
 };
 
+export type ChildReadiness = {
+  presentValueThrough18: number;
+  livingPresentValue: number;
+  schoolPresentValue: number;
+  yearsUntilReady: number | null;
+  plannedYearsUntilBaby: number;
+  readyByPlannedBaby: boolean;
+  coversLivingToSchool: boolean;
+  coversSchool: boolean;
+  salaryDependentSchool: boolean;
+  childAlreadyHere: boolean;
+};
+
 export type ChildEstimate = {
   input: ChildInput;
   raising: ChildPot;
   university: ChildPot;
+  readiness: ChildReadiness;
   combinedNeeded: number;
   combinedHave: number;
   warnings: string[];
@@ -44,6 +59,9 @@ export function mergeChildInput(payload: ChildPayload | null | undefined): Child
   const src = payload ?? {};
   return {
     childAge: asNumber(src.childAge, CHILD_DEFAULT.childAge),
+    yearsUntilBaby: asNumber(src.yearsUntilBaby, CHILD_DEFAULT.yearsUntilBaby),
+    monthlyChildCostToday: asNumber(src.monthlyChildCostToday, CHILD_DEFAULT.monthlyChildCostToday),
+    ageDemandRate: asNumber(src.ageDemandRate, CHILD_DEFAULT.ageDemandRate),
     schoolStartAge: asNumber(src.schoolStartAge, CHILD_DEFAULT.schoolStartAge),
     schoolAnnualToday: asNumber(src.schoolAnnualToday, CHILD_DEFAULT.schoolAnnualToday),
     extraAnnualToday: asNumber(src.extraAnnualToday, CHILD_DEFAULT.extraAnnualToday),
@@ -62,6 +80,9 @@ export function mergeChildInput(payload: ChildPayload | null | undefined): Child
 export function validateChildInput(input: ChildInput): string[] {
   const errors: string[] = [];
   if (input.childAge < 0 || input.childAge > MAX_AGE) errors.push("Child age must be between 0 and 30.");
+  if (input.yearsUntilBaby < 0 || input.yearsUntilBaby > 20) {
+    errors.push("Years until the baby must be between 0 and 20.");
+  }
   if (input.schoolStartAge < 3 || input.schoolStartAge > 12) errors.push("School start age must be between 3 and 12.");
   if (input.universityStartAge < 16 || input.universityStartAge > 25) {
     errors.push("University start age must be between 16 and 25.");
@@ -71,6 +92,7 @@ export function validateChildInput(input: ChildInput): string[] {
     errors.push("School start must be before university start.");
   }
   const money = [
+    input.monthlyChildCostToday,
     input.schoolAnnualToday,
     input.extraAnnualToday,
     input.raisingSavings,
@@ -82,10 +104,18 @@ export function validateChildInput(input: ChildInput): string[] {
   if (money.some((n) => n < 0 || n > MAX_MONEY)) errors.push("Dollar amounts must be between $0 and $50,000,000.");
   if (input.inflationRate < 0 || input.inflationRate > MAX_RATE) errors.push("Inflation must be between 0% and 25%.");
   if (input.returnRate < 0 || input.returnRate > MAX_RATE) errors.push("Return must be between 0% and 25%.");
+  if (input.ageDemandRate < 0 || input.ageDemandRate > MAX_RATE) {
+    errors.push("Age-related increase must be between 0% and 25%.");
+  }
   return errors;
 }
 
-export function warningsForChild(input: ChildInput): string[] {
+export function birthDelay(input: ChildInput): number {
+  if (input.childAge > 0) return 0;
+  return Math.max(0, Math.round(input.yearsUntilBaby));
+}
+
+export function warningsForChild(input: ChildInput, readiness: ChildReadiness): string[] {
   const warnings: string[] = [];
   if (input.childAge >= input.universityStartAge) {
     warnings.push("The child is already at university age, so the raising nest egg is $0.");
@@ -93,34 +123,65 @@ export function warningsForChild(input: ChildInput): string[] {
   if (input.childAge >= input.universityStartAge + input.universityYears) {
     warnings.push("The modeled university years are already over.");
   }
-  if (input.schoolAnnualToday <= 0 && input.extraAnnualToday <= 0) {
-    warnings.push("School and co-curricular are both $0, so the raising nest egg is only what you already save.");
+  if (input.monthlyChildCostToday <= 0 && input.schoolAnnualToday <= 0 && input.extraAnnualToday <= 0) {
+    warnings.push("Living, school, and co-curricular are all $0, so the raising nest egg is only what you already save.");
   }
   if (input.universityAnnualToday <= 0) {
     warnings.push("University cost is $0, so that nest egg is only what you already save.");
   }
+  if (readiness.salaryDependentSchool) {
+    warnings.push(
+      "You may be able to have the baby, but there is little in the pot to begin preschool or carry through school. Schooling would depend mainly on salary.",
+    );
+  }
+  if (!readiness.childAlreadyHere && readiness.yearsUntilReady !== null && !readiness.readyByPlannedBaby) {
+    warnings.push(
+      `At this yearly saving and return, the raising present value is funded in ${readiness.yearsUntilReady} year${readiness.yearsUntilReady === 1 ? "" : "s"}, later than the ${readiness.plannedYearsUntilBaby} year${readiness.plannedYearsUntilBaby === 1 ? "" : "s"} until the baby.`,
+    );
+  }
+  if (!readiness.childAlreadyHere && readiness.yearsUntilReady === null && readiness.presentValueThrough18 > 0) {
+    warnings.push("At this yearly saving and return, the raising present value is not reached in 40 years.");
+  }
   return warnings;
 }
 
-function raisingYears(input: ChildInput): YearSpec[] {
+function livingCostAt(input: ChildInput, yearsFromNow: number, childAge: number): number {
+  const base = input.monthlyChildCostToday * 12;
+  if (base <= 0) return 0;
+  return base * (1 + input.inflationRate) ** yearsFromNow * (1 + input.ageDemandRate) ** childAge;
+}
+
+function schoolCostAt(input: ChildInput, yearsFromNow: number, childAge: number): number {
+  if (childAge < input.schoolStartAge) return 0;
+  return inflate(input.schoolAnnualToday + input.extraAnnualToday, input.inflationRate, yearsFromNow);
+}
+
+function raisingYears(input: ChildInput, delay = birthDelay(input), includeLiving = true, includeSchool = true): YearSpec[] {
   const last = input.universityStartAge;
   if (input.childAge >= last) return [];
   const specs: YearSpec[] = [];
+  for (let year = 0; year < delay; year += 1) {
+    specs.push({ age: -1, cost: 0, contribution: input.raisingAnnualSave });
+  }
   for (let age = input.childAge; age < last; age += 1) {
-    const t = age - input.childAge;
-    const inSchool = age >= input.schoolStartAge;
-    const cost = inSchool ? inflate(input.schoolAnnualToday + input.extraAnnualToday, input.inflationRate, t) : 0;
-    specs.push({ age, cost, contribution: input.raisingAnnualSave });
+    const t = delay + (age - input.childAge);
+    const living = includeLiving ? livingCostAt(input, t, age) : 0;
+    const school = includeSchool ? schoolCostAt(input, t, age) : 0;
+    specs.push({ age, cost: living + school, contribution: input.raisingAnnualSave });
   }
   return specs;
 }
 
 function universityYears(input: ChildInput): YearSpec[] {
+  const delay = birthDelay(input);
   const end = input.universityStartAge + input.universityYears;
   if (input.childAge >= end) return [];
   const specs: YearSpec[] = [];
+  for (let year = 0; year < delay; year += 1) {
+    specs.push({ age: -1, cost: 0, contribution: input.universityAnnualSave });
+  }
   for (let age = input.childAge; age < end; age += 1) {
-    const t = age - input.childAge;
+    const t = delay + (age - input.childAge);
     const inUni = age >= input.universityStartAge;
     const cost = inUni ? inflate(input.universityAnnualToday, input.inflationRate, t) : 0;
     const contribution = age < input.universityStartAge ? input.universityAnnualSave : 0;
@@ -161,7 +222,7 @@ function nestEggNeeded(years: YearSpec[], rate: number): number {
 }
 
 function costWindow(years: YearSpec[]): { costYears: number; firstCostAge: number | null; lastCostAge: number | null } {
-  const costYears = years.filter((y) => y.cost > 0);
+  const costYears = years.filter((y) => y.cost > 0 && y.age >= 0);
   return {
     costYears: costYears.length,
     firstCostAge: costYears[0]?.age ?? null,
@@ -186,26 +247,64 @@ function estimatePot(startSavings: number, yearsToSave: number, years: YearSpec[
   };
 }
 
-/** Two independent pots: school + co-curricular through university start, then university years. */
+function yearsUntilRaisingReady(input: ChildInput): number | null {
+  if (input.childAge > 0) return null;
+  const probe = { ...input, childAge: 0 };
+  for (let delay = 0; delay <= MAX_WAIT; delay += 1) {
+    const years = raisingYears({ ...probe, yearsUntilBaby: delay }, delay, true, true);
+    if (potSurvives(input.raisingSavings, years, input.returnRate)) return delay;
+  }
+  return null;
+}
+
+function estimateReadiness(input: ChildInput, raising: ChildPot): ChildReadiness {
+  const delay = birthDelay(input);
+  const living = nestEggNeeded(raisingYears(input, delay, true, false), input.returnRate);
+  const school = nestEggNeeded(raisingYears(input, delay, false, true), input.returnRate);
+  const childAlreadyHere = input.childAge > 0;
+  const yearsUntilReady = yearsUntilRaisingReady(input);
+  const planned = delay;
+  const depleted = raising.depletedAtAge;
+  const coversLivingToSchool = depleted === null || depleted >= input.schoolStartAge;
+  const coversSchool = depleted === null;
+  const salaryDependentSchool =
+    !coversSchool &&
+    (input.schoolAnnualToday > 0 || input.extraAnnualToday > 0) &&
+    (input.monthlyChildCostToday > 0 || coversLivingToSchool || (depleted !== null && depleted <= input.schoolStartAge));
+
+  return {
+    presentValueThrough18: raising.nestEggNeededNow,
+    livingPresentValue: living,
+    schoolPresentValue: school,
+    yearsUntilReady,
+    plannedYearsUntilBaby: planned,
+    readyByPlannedBaby: childAlreadyHere ? raising.alreadyEnough : yearsUntilReady !== null && yearsUntilReady <= planned,
+    coversLivingToSchool,
+    coversSchool,
+    salaryDependentSchool,
+    childAlreadyHere,
+  };
+}
+
+/** Living costs through 18 (age + inflation), school as its own slice, then university. */
 export function estimateChild(input: ChildInput): ChildEstimate {
-  const raising = estimatePot(
-    input.raisingSavings,
-    Math.max(0, input.universityStartAge - input.childAge),
-    raisingYears(input),
-    input.returnRate,
-  );
+  const delay = birthDelay(input);
+  const yearsToSave = delay + Math.max(0, input.universityStartAge - input.childAge);
+  const raising = estimatePot(input.raisingSavings, yearsToSave, raisingYears(input), input.returnRate);
   const university = estimatePot(
     input.universitySavings,
-    Math.max(0, input.universityStartAge - input.childAge),
+    yearsToSave,
     universityYears(input),
     input.returnRate,
   );
+  const readiness = estimateReadiness(input, raising);
   return {
     input,
     raising,
     university,
+    readiness,
     combinedNeeded: raising.nestEggNeededNow + university.nestEggNeededNow,
     combinedHave: input.raisingSavings + input.universitySavings,
-    warnings: warningsForChild(input),
+    warnings: warningsForChild(input, readiness),
   };
 }

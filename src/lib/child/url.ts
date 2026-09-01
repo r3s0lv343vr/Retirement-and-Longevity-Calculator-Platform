@@ -3,6 +3,9 @@ import { mergeChildInput } from "./estimateChild";
 
 const KEYS: { query: string; field: keyof ChildInput }[] = [
   { query: "ca", field: "childAge" },
+  { query: "yb", field: "yearsUntilBaby" },
+  { query: "mc", field: "monthlyChildCostToday" },
+  { query: "ad", field: "ageDemandRate" },
   { query: "ss", field: "schoolStartAge" },
   { query: "sc", field: "schoolAnnualToday" },
   { query: "ex", field: "extraAnnualToday" },
