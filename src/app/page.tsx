@@ -72,12 +72,7 @@ export default function HubPage() {
       </div>
 
       <main className="mx-auto max-w-5xl px-5 pb-16 pt-4 sm:px-6">
-        <p className="max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
-          Runaway Finances is only a front door. The longevity calculator is unchanged. Sibling tools ask how much nest egg you
-          need today, how soon full-time work can end, whether claiming Social Security at 67 or 70 lasts farther,
-          which later-life housing path lasts, when you are ready for a child through 18 and university, and whether
-          competing expenses dissolve a goal pot.
-        </p>
+        <p className="max-w-2xl text-sm leading-relaxed text-muted sm:text-base">{HUB_BLURB}</p>
         <ul className="mt-8 grid gap-5 sm:grid-cols-2">
           {TOOLS.map((tool) => (
             <li key={tool.href}>
