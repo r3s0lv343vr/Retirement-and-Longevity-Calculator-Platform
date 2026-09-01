@@ -2,7 +2,7 @@
   "name": "nestspan",
   "version": "1.0.0",
   "private": true,
-  "description": "Retirement and longevity income calculator that accounts for healthcare inflation, lifestyle phases, and part-time work.",
+  "description": "NestSpan calculators: retirement runway, child nest eggs, and whether a named goal survives.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
