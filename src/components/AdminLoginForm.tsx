@@ -1,10 +1,8 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
 
 export function AdminLoginForm({ hint }: { hint: string | null }) {
-  const router = useRouter();
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -19,13 +17,16 @@ export function AdminLoginForm({ hint }: { hint: string | null }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password }),
       });
-      const data = (await response.json()) as { error?: string };
+      const data = (await response.json()) as { error?: string; setup?: boolean };
+      if (response.status === 409 || data.setup) {
+        window.location.assign("/admin/setup");
+        return;
+      }
       if (!response.ok) {
         setError(data.error || "Could not sign in.");
         return;
       }
-      router.replace("/admin");
-      router.refresh();
+      window.location.assign("/admin");
     } catch {
       setError("Network error. Try again.");
     } finally {

@@ -1,11 +1,9 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
 import { MIN_PASSWORD_LENGTH } from "@/lib/admin/constants";
 
 export function AdminSetupForm() {
-  const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -21,13 +19,16 @@ export function AdminSetupForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password, confirm }),
       });
-      const data = (await response.json()) as { error?: string };
+      const data = (await response.json()) as { error?: string; login?: boolean };
+      if (response.status === 409 || data.login) {
+        window.location.assign("/admin/login");
+        return;
+      }
       if (!response.ok) {
         setError(data.error || "Could not save the password.");
         return;
       }
-      router.replace("/admin");
-      router.refresh();
+      window.location.assign("/admin");
     } catch {
       setError("Network error. Try again.");
     } finally {
@@ -39,8 +40,9 @@ export function AdminSetupForm() {
     <form onSubmit={onSubmit} className="card mx-auto mt-16 max-w-md">
       <h1 className="font-serif text-2xl text-pine">Create admin password</h1>
       <p className="mt-2 text-sm leading-relaxed text-muted">
-        Set this once on this server. It is stored hashed in <code className="text-ink">.data/admin.json</code> — copy
-        that file when you move hosts. You do not need a Vercel environment variable.
+        Set this once. On a normal server it is stored hashed in{" "}
+        <code className="text-ink">.data/admin.json</code>. On Vercel that file cannot stick, so this browser also keeps
+        a hashed copy so you can sign back in here. You do not need a Vercel environment variable.
       </p>
       <p className="mt-3 text-xs text-muted">
         The first person to complete this form owns the admin. Do it right after you deploy. At least{" "}

@@ -1,6 +1,6 @@
-import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
+import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "crypto";
 import { enqueuePersist, readPersistedText, writePersistedText, type PersistenceKind } from "./store";
-import { MIN_PASSWORD_LENGTH } from "./constants";
+import { ADMIN_STORE_COOKIE, MIN_PASSWORD_LENGTH } from "./constants";
 
 export type StoredAdmin = {
   hash: string;
@@ -12,10 +12,59 @@ export type StoredAdmin = {
 
 export type AuthMode = "env" | "stored" | "setup";
 
+export type AuthPersistence = PersistenceKind | "env" | "browser";
+
 export type AuthStatus = {
   mode: AuthMode;
-  persistence: PersistenceKind | "env";
+  persistence: AuthPersistence;
 };
+
+function storePepper(): string {
+  return process.env.ADMIN_COOKIE_SECRET?.trim() || "nestspan-admin-cfg-v1";
+}
+
+export function encodeAdminStore(record: StoredAdmin): string {
+  const payload = Buffer.from(JSON.stringify(record), "utf8").toString("base64url");
+  const sig = createHmac("sha256", storePepper()).update(payload).digest("base64url");
+  return `${payload}.${sig}`;
+}
+
+export function decodeAdminStore(raw: string | undefined | null): StoredAdmin | null {
+  if (!raw) return null;
+  const [payload, sig] = raw.split(".");
+  if (!payload || !sig) return null;
+  const expected = createHmac("sha256", storePepper()).update(payload).digest("base64url");
+  const a = Buffer.from(sig);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
+  try {
+    return parseStored(Buffer.from(payload, "base64url").toString("utf8"));
+  } catch {
+    return null;
+  }
+}
+
+export function resolveStoredAdmin(
+  persistedText: string | null,
+  persistedKind: PersistenceKind,
+  cookieRaw?: string | null,
+): { record: StoredAdmin | null; persistence: AuthPersistence } {
+  const fromDisk = parseStored(persistedText);
+  if (fromDisk) return { record: fromDisk, persistence: persistedKind };
+  const fromCookie = decodeAdminStore(cookieRaw);
+  if (fromCookie) return { record: fromCookie, persistence: "browser" };
+  return { record: null, persistence: persistedKind };
+}
+
+async function peekStoreCookie(): Promise<string | undefined> {
+  try {
+    const { cookies } = await import("next/headers");
+    const jar = await cookies();
+    return jar.get(ADMIN_STORE_COOKIE)?.value;
+  } catch {
+    return undefined;
+  }
+}
 
 function envPassword(): string | null {
   const value = process.env.ADMIN_PASSWORD?.trim();
@@ -45,9 +94,9 @@ function parseStored(raw: string | null): StoredAdmin | null {
   }
 }
 
-export async function loadStoredAdmin(): Promise<{ record: StoredAdmin | null; persistence: PersistenceKind }> {
+export async function loadStoredAdmin(): Promise<{ record: StoredAdmin | null; persistence: AuthPersistence }> {
   const { text, persistence } = await readPersistedText("admin");
-  return { record: parseStored(text), persistence };
+  return resolveStoredAdmin(text, persistence, await peekStoreCookie());
 }
 
 export async function saveStoredAdmin(password: string, previous?: StoredAdmin | null): Promise<StoredAdmin> {
