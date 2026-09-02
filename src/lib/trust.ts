@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BUILDER_NAME, CONTACT_EMAIL, HUB_TITLE } from "./brand";
+import { BUILDER_NAME, CONTACT_EMAIL, HUB_TITLE, OPERATOR_NAME } from "./brand";
 import { SITE_URL } from "./seo";
 
 export const TRUST_PATHS = ["/about", "/contact", "/privacy", "/disclaimer"] as const;
@@ -60,5 +60,9 @@ export function organizationJsonLd(): Record<string, unknown> {
     email: CONTACT_EMAIL,
     url: SITE_URL,
     description: `${BUILDER_NAME} builds ${HUB_TITLE}.`,
+    founder: {
+      "@type": "Person",
+      name: OPERATOR_NAME,
+    },
   };
 }
