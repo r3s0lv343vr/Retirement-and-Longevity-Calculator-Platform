@@ -47,9 +47,7 @@ export default function HubPage() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-5xl px-5 py-4 sm:px-6">
-        <AdSlot placement="header-leaderboard" />
-      </div>
+      <AdSlot placement="header-leaderboard" className="mx-auto max-w-5xl px-5 py-4 sm:px-6" />
 
       <main className="mx-auto max-w-5xl px-5 pb-16 pt-4 sm:px-6">
         <p className="max-w-3xl font-serif text-xl leading-snug text-ink sm:text-2xl">{HUB_BLURB}</p>

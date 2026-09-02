@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AdSlot } from "@/components/AdSlot";
+import { AdSidebar, AdSlot } from "@/components/AdSlot";
+import { calculatorAdGridClass } from "@/lib/ads";
 import { ChildCompileDownloadButton } from "@/components/ChildCompileDownloadButton";
 import { ChildForm } from "@/components/ChildForm";
 import { CHILD_DEFAULT } from "@/lib/child/defaults";
@@ -69,7 +70,7 @@ export function ChildApp() {
   }, []);
 
   return (
-    <div className="grid items-start gap-8 xl:grid-cols-[minmax(0,1fr)_160px]">
+    <div className={calculatorAdGridClass()}>
       <div className="min-w-0 space-y-6">
         <AdSlot placement="after-intro" />
         <ChildForm
@@ -88,13 +89,7 @@ export function ChildApp() {
           </>
         ) : null}
       </div>
-      <div className="hidden min-w-0 xl:block">
-        <div className="sticky top-6 space-y-4">
-          <AdSlot placement="sidebar" />
-          <AdSlot placement="sidebar-2" />
-          <AdSlot placement="sidebar-3" />
-        </div>
-      </div>
+      <AdSidebar />
     </div>
   );
 }

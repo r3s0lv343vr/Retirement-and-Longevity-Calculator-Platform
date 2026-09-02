@@ -23,9 +23,7 @@ export default function NeedPage() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-5xl px-5 py-4 sm:px-6">
-        <AdSlot placement="header-leaderboard" />
-      </div>
+      <AdSlot placement="header-leaderboard" className="mx-auto max-w-5xl px-5 py-4 sm:px-6" />
 
       <main className="mx-auto max-w-5xl px-5 pb-16 sm:px-6">
         <CalculatorSeoBlock seo={seo} />
