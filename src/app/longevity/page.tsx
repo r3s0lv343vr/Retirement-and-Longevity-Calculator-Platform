@@ -2,6 +2,7 @@ import { AdSlot } from "@/components/AdSlot";
 import { CalculatorApp } from "@/components/CalculatorApp";
 import { CalculatorSeoBlock, RelatedCalculators } from "@/components/CalculatorSeo";
 import { ClusterNav } from "@/components/ClusterNav";
+import { TrustFooterLinks } from "@/components/TrustFooterLinks";
 import { JsonLd } from "@/components/JsonLd";
 import { HUB_NAME } from "@/lib/brand";
 import { breadcrumbJsonLd, calculatorMetadata, CALCULATOR_SEO, webPageJsonLd } from "@/lib/seo";
@@ -40,6 +41,7 @@ export default function LongevityPage() {
           <p className="font-serif text-xl leading-snug">{seo.name}</p>
           <p className="mt-1 text-sm text-paper/80">A {HUB_NAME} calculator</p>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-paper/75">{seo.limitations}</p>
+          <TrustFooterLinks />
         </div>
       </footer>
     </div>

@@ -1,12 +1,23 @@
 import { HUB_TITLE } from "@/lib/brand";
 import { CALCULATOR_SEO, HUB_CLUSTERS, type CalculatorPath } from "@/lib/seo";
+import { TRUST_PAGES, TRUST_PATHS } from "@/lib/trust";
 
 export const VISITOR_COOKIE = "ns_vid";
 export const ADMIN_COOKIE = "ns_admin";
 export const ADMIN_STORE_COOKIE = "ns_admin_cfg";
 export const MIN_PASSWORD_LENGTH = 8;
 
-export const KNOWN_PATHS = ["/", "/longevity", "/need", "/when", "/claim", "/housing", "/child", "/goal"] as const;
+export const KNOWN_PATHS = [
+  "/",
+  "/longevity",
+  "/need",
+  "/when",
+  "/claim",
+  "/housing",
+  "/child",
+  "/goal",
+  ...TRUST_PATHS,
+] as const;
 export type KnownPath = (typeof KNOWN_PATHS)[number];
 
 export const CALCULATOR_TOOLS = ["longevity", "need", "when", "claim", "housing", "child", "goal"] as const;
@@ -31,6 +42,10 @@ export const PATH_LABELS: Record<string, string> = {
   "/housing": CALCULATOR_SEO["/housing"].name,
   "/child": CALCULATOR_SEO["/child"].name,
   "/goal": CALCULATOR_SEO["/goal"].name,
+  "/about": TRUST_PAGES["/about"].name,
+  "/contact": TRUST_PAGES["/contact"].name,
+  "/privacy": TRUST_PAGES["/privacy"].name,
+  "/disclaimer": TRUST_PAGES["/disclaimer"].name,
   other: "Other",
 };
 
@@ -71,6 +86,12 @@ export function clusterPageGroups(byPath: { path: string; pageviews: number }[])
       note: cluster.note,
       rows: cluster.paths.map((path: CalculatorPath) => byKey.get(path)!),
     })),
+    {
+      id: "trust",
+      title: "Trust pages",
+      note: "About, contact, privacy, and disclaimer.",
+      rows: TRUST_PATHS.map((path) => byKey.get(path)!),
+    },
   ];
 }
 

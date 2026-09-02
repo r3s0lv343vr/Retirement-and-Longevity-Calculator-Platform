@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { HUB_NAME } from "@/lib/brand";
+import type { TrustPath } from "@/lib/trust";
 
 const LINKS = [
   { href: "/", label: HUB_NAME },
@@ -15,7 +16,7 @@ const LINKS = [
 export function ClusterNav({
   current,
 }: {
-  current: "/" | "/longevity" | "/need" | "/when" | "/claim" | "/housing" | "/child" | "/goal";
+  current: "/" | "/longevity" | "/need" | "/when" | "/claim" | "/housing" | "/child" | "/goal" | TrustPath;
 }) {
   return (
     <nav className="border-b border-pine/20 bg-pine text-paper" aria-label="Calculators">
