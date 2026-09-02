@@ -20,7 +20,7 @@ export function ClusterNav({
 }) {
   return (
     <nav className="border-b border-pine/20 bg-pine text-paper" aria-label="Calculators">
-      <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-1 px-4 py-3.5 sm:gap-1.5 sm:px-6 sm:py-4">
+      <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-1 px-4 py-4 sm:gap-1.5 sm:px-6 sm:py-5">
         {LINKS.map((link) => {
           const active = current === link.href;
           const home = link.href === "/";
@@ -32,7 +32,7 @@ export function ClusterNav({
               className={[
                 "inline-flex items-center rounded-md leading-snug",
                 home
-                  ? "min-h-14 gap-3 px-2.5 py-1.5 font-serif text-lg sm:min-h-16 sm:px-3 sm:text-xl"
+                  ? "min-h-[84px] gap-4 px-2.5 py-1.5 font-serif text-xl sm:min-h-24 sm:px-3 sm:text-2xl"
                   : "min-h-11 px-3 py-2 text-base sm:min-h-12 sm:px-3.5 sm:text-lg",
                 active
                   ? "bg-paper/15 font-semibold text-paper"
@@ -45,9 +45,9 @@ export function ClusterNav({
                 <img
                   src="/rf-mark.png"
                   alt=""
-                  width={64}
-                  height={64}
-                  className="h-14 w-14 shrink-0 bg-paper sm:h-16 sm:w-16"
+                  width={96}
+                  height={96}
+                  className="h-[84px] w-[84px] shrink-0 bg-paper sm:h-24 sm:w-24"
                 />
               ) : null}
               {link.label}
