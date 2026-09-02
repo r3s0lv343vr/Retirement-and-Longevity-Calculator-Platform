@@ -11,7 +11,41 @@ import {
   type StoredAdmin,
 } from "./credentials";
 import { isBot } from "./request";
-import { normalizePath } from "./constants";
+import { CALCULATOR_SEO } from "@/lib/seo";
+import { HUB_TITLE } from "@/lib/brand";
+import {
+  CALCULATOR_TOOLS,
+  KNOWN_PATHS,
+  PATH_LABELS,
+  TOOL_LABELS,
+  clusterPageGroups,
+  normalizePath,
+  pagesWithCounts,
+  toolsWithCounts,
+} from "./constants";
+
+describe("admin catalog matches the public site", () => {
+  it("uses the same product names as the calculators", () => {
+    expect(PATH_LABELS["/"]).toBe(HUB_TITLE);
+    expect(PATH_LABELS["/longevity"]).toBe("How Long Before I Go Broke Calculator");
+    expect(TOOL_LABELS.longevity).toBe(CALCULATOR_SEO["/longevity"].name);
+    expect(TOOL_LABELS.child).toBe(CALCULATOR_SEO["/child"].name);
+    expect(TOOL_LABELS.goal).toBe(CALCULATOR_SEO["/goal"].name);
+    expect(KNOWN_PATHS).toHaveLength(8);
+    expect(CALCULATOR_TOOLS).toHaveLength(7);
+  });
+
+  it("lists every public page and tool even at zero", () => {
+    const pages = pagesWithCounts([]);
+    expect(pages.map((row) => row.path)).toEqual([...KNOWN_PATHS]);
+    expect(pages.every((row) => row.pageviews === 0)).toBe(true);
+    const tools = toolsWithCounts([]);
+    expect(tools.map((row) => row.tool)).toEqual([...CALCULATOR_TOOLS]);
+    const groups = clusterPageGroups([{ path: "/child", pageviews: 4 }]);
+    expect(groups[0]?.rows[0]?.label).toBe(HUB_TITLE);
+    expect(groups.flatMap((group) => group.rows).find((row) => row.path === "/child")?.pageviews).toBe(4);
+  });
+});
 
 describe("normalizePath", () => {
   it("keeps known calculator paths and drops query strings", () => {

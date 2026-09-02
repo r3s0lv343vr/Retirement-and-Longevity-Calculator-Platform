@@ -9,10 +9,10 @@ export const metadata: Metadata = {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="paper-rule min-h-screen">
-      <header className="border-b border-pine/10 bg-pine text-paper">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-3 sm:px-6">
-          <p className="text-sm font-semibold tracking-wide">Site admin</p>
-          <p className="text-xs text-paper/70">{HUB_TITLE}</p>
+      <header className="border-b border-pine/20 bg-pine text-paper">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3.5 sm:px-6">
+          <p className="font-serif text-lg leading-snug sm:text-xl">Site admin</p>
+          <p className="text-base text-paper/80 sm:text-lg">{HUB_TITLE}</p>
         </div>
       </header>
       {children}

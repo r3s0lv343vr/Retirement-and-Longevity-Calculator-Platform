@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
 import { AdminActions } from "@/components/AdminActions";
 import { AdminPasswordForm } from "@/components/AdminPasswordForm";
-import { PATH_LABELS, TOOL_LABELS } from "@/lib/admin/constants";
+import { clusterPageGroups, toolsWithCounts } from "@/lib/admin/constants";
 import { adminSessionFromCookies } from "@/lib/admin/request";
 import { readAnalyticsSnapshot } from "@/lib/admin/store";
 import { authStatus, needsSetup } from "@/lib/admin/credentials";
+import { AD_SLOT_USAGE, AD_SLOTS, adsensePublisherId, adsenseSlotId } from "@/lib/ads";
+import { HUB_TITLE } from "@/lib/brand";
 
 export const dynamic = "force-dynamic";
 
@@ -22,17 +24,20 @@ export default async function AdminPage() {
 
   const stats = await readAnalyticsSnapshot();
   const maxBar = Math.max(1, ...stats.series.map((row) => row.pageviews));
-  const adsLive = Boolean(process.env.NEXT_PUBLIC_ADSENSE_CLIENT);
+  const adsClient = adsensePublisherId();
+  const adsSlot = adsenseSlotId();
   const auth = await authStatus();
+  const pageGroups = clusterPageGroups(stats.byPath);
+  const toolRows = toolsWithCounts(stats.byTool);
 
   return (
     <main className="mx-auto max-w-5xl space-y-6 px-5 py-8 sm:px-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-serif text-3xl text-pine">Overview</h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted">
-            Visitors are unique browsers that loaded a public page. Site users are visitors who ran a calculator.
-            Savings and personal plan numbers are never stored.
+          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
+            {HUB_TITLE}: the hub plus seven calculators. Visitors are unique browsers that loaded a public page. Site
+            users are visitors who ran a calculator. Savings and personal plan numbers are never stored.
           </p>
         </div>
         <AdminActions />
@@ -93,34 +98,83 @@ export default async function AdminPage() {
 
       <section className="grid gap-4 lg:grid-cols-2">
         <div className="card">
-          <h2 className="font-serif text-xl text-pine">Pages</h2>
-          <ul className="mt-4 space-y-2 text-sm">
-            {stats.byPath.length === 0 ? (
-              <li className="text-muted">No page views yet.</li>
-            ) : (
-              stats.byPath.map((row) => (
-                <li key={row.path} className="flex justify-between gap-4">
-                  <span>{PATH_LABELS[row.path] ?? row.path}</span>
-                  <span className="font-medium text-ink">{formatCount(row.pageviews)}</span>
-                </li>
-              ))
-            )}
-          </ul>
+          <h2 className="font-serif text-xl text-pine">Public pages</h2>
+          <p className="mt-1 text-sm text-muted">Same names and clusters as the hub. Views stay 0 until someone opens the page.</p>
+          <div className="mt-4 space-y-5">
+            {pageGroups.map((group) => (
+              <div key={group.id}>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">{group.title}</p>
+                <ul className="mt-2 space-y-2 text-sm">
+                  {group.rows.map((row) => (
+                    <li key={row.path} className="flex justify-between gap-4">
+                      <span>{row.label}</span>
+                      <span className="font-medium text-ink">{formatCount(row.pageviews)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         </div>
         <div className="card">
           <h2 className="font-serif text-xl text-pine">Calculator runs</h2>
+          <p className="mt-1 text-sm text-muted">One count each time a visitor runs that tool. All seven stay listed.</p>
           <ul className="mt-4 space-y-2 text-sm">
-            {stats.byTool.length === 0 ? (
-              <li className="text-muted">No calculator runs yet.</li>
-            ) : (
-              stats.byTool.map((row) => (
-                <li key={row.tool} className="flex justify-between gap-4">
-                  <span>{TOOL_LABELS[row.tool]}</span>
-                  <span className="font-medium text-ink">{formatCount(row.runs)}</span>
-                </li>
-              ))
-            )}
+            {toolRows.map((row) => (
+              <li key={row.tool} className="flex justify-between gap-4">
+                <span>{row.label}</span>
+                <span className="font-medium text-ink">{formatCount(row.runs)}</span>
+              </li>
+            ))}
           </ul>
+        </div>
+      </section>
+
+      <section className="card">
+        <h2 className="font-serif text-xl text-pine">Google AdSense</h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted sm:text-base">
+          You do not attach AdSense from this dashboard. The public pages already have the slots. Live ads turn on when
+          the host has a publisher id. Set <code className="text-ink">NEXT_PUBLIC_ADSENSE_CLIENT</code> (format{" "}
+          <code className="text-ink">ca-pub-…</code>) on Vercel or Hostinger and redeploy. An optional{" "}
+          <code className="text-ink">NEXT_PUBLIC_ADSENSE_SLOT</code> (digits only) is the display unit those slots use.
+        </p>
+        <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+          <div>
+            <dt className="text-xs uppercase tracking-wide text-muted">Status</dt>
+            <dd className="mt-1 text-ink">
+              {adsClient
+                ? adsSlot
+                  ? `Live — ${adsClient}, unit ${adsSlot}`
+                  : `Publisher set — ${adsClient}. Add NEXT_PUBLIC_ADSENSE_SLOT for display units, or use Auto ads.`
+                : "Placeholder slots. No publisher id on this host."}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs uppercase tracking-wide text-muted">ads.txt</dt>
+            <dd className="mt-1 text-ink">
+              {adsClient ? "Served at /ads.txt from the publisher id." : "Not published until the publisher id is set."}
+            </dd>
+          </div>
+        </dl>
+        <div className="mt-6 overflow-x-auto">
+          <table className="w-full min-w-[28rem] text-left text-sm">
+            <thead>
+              <tr className="text-xs uppercase tracking-wide text-muted">
+                <th className="pb-2 font-medium">Slot</th>
+                <th className="pb-2 font-medium">Size</th>
+                <th className="pb-2 font-medium">On the site</th>
+              </tr>
+            </thead>
+            <tbody>
+              {AD_SLOT_USAGE.map((row) => (
+                <tr key={row.placement} className="border-t border-pine/10">
+                  <td className="py-2 pr-3">{AD_SLOTS[row.placement].label}</td>
+                  <td className="py-2 pr-3">{AD_SLOTS[row.placement].size}</td>
+                  <td className="py-2">{row.where}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </section>
 
@@ -136,10 +190,6 @@ export default async function AdminPage() {
                   ? "File on this server (.data/analytics.json)"
                   : "Memory only — counts reset when the server sleeps. Set Upstash Redis for production."}
             </dd>
-          </div>
-          <div>
-            <dt className="text-xs uppercase tracking-wide text-muted">Ads</dt>
-            <dd className="mt-1 text-ink">{adsLive ? "AdSense client is set" : "Placeholder slots (no AdSense client)"}</dd>
           </div>
           <div>
             <dt className="text-xs uppercase tracking-wide text-muted">Admin password</dt>
