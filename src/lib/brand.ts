@@ -6,6 +6,8 @@ export const HUB_BLURB =
   "Your finances change as life changes. Explore free calculators designed to answer practical financial questions — from whether your retirement savings could last, to when you may be able to stop working, how much raising a child could require, and whether everyday expenses could derail an important savings goal.";
 
 export const BUILDER_NAME = "Curiosity Labz";
+/** Public operator of the studio. Initials + last name — not a full personal name. */
+export const OPERATOR_NAME = "C. Ferguson";
 export const CONTACT_EMAIL = "curiousitylabz@gmail.com";
 
 /** Retained About copy. Matches the live cluster. */
