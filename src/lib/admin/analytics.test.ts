@@ -31,7 +31,7 @@ describe("admin catalog matches the public site", () => {
     expect(TOOL_LABELS.longevity).toBe(CALCULATOR_SEO["/longevity"].name);
     expect(TOOL_LABELS.child).toBe(CALCULATOR_SEO["/child"].name);
     expect(TOOL_LABELS.goal).toBe(CALCULATOR_SEO["/goal"].name);
-    expect(KNOWN_PATHS).toHaveLength(8);
+    expect(KNOWN_PATHS).toHaveLength(12);
     expect(CALCULATOR_TOOLS).toHaveLength(7);
   });
 

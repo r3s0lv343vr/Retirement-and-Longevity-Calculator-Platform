@@ -1,6 +1,7 @@
 import { AdSlot } from "@/components/AdSlot";
 import { CalculatorSeoBlock, RelatedCalculators } from "@/components/CalculatorSeo";
 import { ClusterNav } from "@/components/ClusterNav";
+import { TrustFooterLinks } from "@/components/TrustFooterLinks";
 import { JsonLd } from "@/components/JsonLd";
 import { NeedApp } from "@/components/NeedApp";
 import { breadcrumbJsonLd, calculatorMetadata, CALCULATOR_SEO, webPageJsonLd } from "@/lib/seo";
@@ -38,6 +39,7 @@ export default function NeedPage() {
           <AdSlot placement="footer-2" className="mb-6 border-paper/20 bg-paper/10 text-paper/80" />
           <p className="font-serif text-xl leading-snug">{seo.name}</p>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-paper/75">{seo.limitations}</p>
+          <TrustFooterLinks />
         </div>
       </footer>
     </div>

@@ -2,6 +2,7 @@ import { AdSlot } from "@/components/AdSlot";
 import { ClusterNav } from "@/components/ClusterNav";
 import { JsonLd } from "@/components/JsonLd";
 import { TrustBar } from "@/components/CalculatorSeo";
+import { TrustFooterLinks } from "@/components/TrustFooterLinks";
 import { HUB_BLURB, HUB_TAGLINE, HUB_TITLE } from "@/lib/brand";
 import { CALCULATOR_SEO, HUB_CLUSTERS, SEO_POSITIONING, hubMetadata, websiteJsonLd } from "@/lib/seo";
 import Link from "next/link";
@@ -91,6 +92,7 @@ export default function HubPage() {
             Educational projection only. It is not tax, investment, or medical advice. Markets, inflation, health, and
             policy can all move against any model. Compare this outlook with a licensed advisor before making decisions.
           </p>
+          <TrustFooterLinks />
         </div>
       </footer>
     </div>
