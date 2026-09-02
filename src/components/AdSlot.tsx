@@ -26,35 +26,36 @@ export function AdSlot({ placement, className = "" }: Props) {
     }
   }, [client]);
 
+  if (!client) return null;
+
   return (
     <aside
-      className={`ad-slot flex w-full flex-col items-center justify-center rounded-xl border border-dashed border-pine/20 bg-white px-3 py-3 text-center ${className}`}
+      className={`ad-slot flex w-full flex-col items-center justify-center ${className}`}
       aria-label={`Advertisement: ${slot.label}`}
       data-ad-placement={placement}
-      style={{ minHeight: slot.height }}
     >
       <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted">Advertisement</p>
-      {client ? (
-        <ins
-          className="adsbygoogle block w-full"
-          style={{ display: "block", minWidth: slot.width, minHeight: slot.height }}
-          data-ad-client={client}
-          data-ad-slot={unit ?? undefined}
-          data-ad-format="auto"
-          data-full-width-responsive="true"
-        />
-      ) : (
-        <div
-          className="mt-1 flex w-full max-w-full items-center justify-center text-pine/45"
-          style={{ minHeight: Math.max(slot.height - 36, 48) }}
-        >
-          <span className="text-xs">
-            {slot.label}
-            <span className="mx-1 text-muted/60">·</span>
-            {slot.size}
-          </span>
-        </div>
-      )}
+      <ins
+        className="adsbygoogle block w-full"
+        style={{ display: "block", minWidth: slot.width, minHeight: slot.height }}
+        data-ad-client={client}
+        data-ad-slot={unit ?? undefined}
+        data-ad-format="auto"
+        data-full-width-responsive="true"
+      />
     </aside>
+  );
+}
+
+export function AdSidebar() {
+  if (!adsensePublisherId()) return null;
+  return (
+    <div className="hidden min-w-0 xl:block">
+      <div className="sticky top-6 space-y-4">
+        <AdSlot placement="sidebar" />
+        <AdSlot placement="sidebar-2" />
+        <AdSlot placement="sidebar-3" />
+      </div>
+    </div>
   );
 }

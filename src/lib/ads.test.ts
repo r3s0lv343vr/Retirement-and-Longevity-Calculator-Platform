@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AD_SLOT_USAGE, AD_SLOTS, adsensePublisherId, adsenseSlotId } from "./ads";
+import { AD_SLOT_USAGE, AD_SLOTS, adsLive, adsensePublisherId, adsenseSlotId, calculatorAdGridClass } from "./ads";
 
 describe("AdSense helpers", () => {
   it("accepts a publisher id and a display unit id", () => {
@@ -8,6 +8,10 @@ describe("AdSense helpers", () => {
     expect(adsensePublisherId("")).toBeNull();
     expect(adsenseSlotId("1234567890")).toBe("1234567890");
     expect(adsenseSlotId("header-leaderboard")).toBeNull();
+    expect(adsLive("")).toBe(false);
+    expect(adsLive("ca-pub-1234567890123456")).toBe(true);
+    expect(calculatorAdGridClass("")).toBe("min-w-0");
+    expect(calculatorAdGridClass("ca-pub-1234567890123456")).toContain("160px");
   });
 
   it("covers every live placement once", () => {

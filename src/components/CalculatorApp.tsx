@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AdSlot } from "@/components/AdSlot";
+import { AdSidebar, AdSlot } from "@/components/AdSlot";
+import { calculatorAdGridClass } from "@/lib/ads";
 import { CalculatorForm } from "@/components/CalculatorForm";
 import { OutlookResults } from "@/components/OutlookResults";
 import { DEFAULT_INPUT, adoptComfortBudget, planHorizonPrimaryAge, sameSpendAmounts } from "@/lib/engine";
@@ -92,7 +93,7 @@ export function CalculatorApp() {
   const yearCount = useMemo(() => planHorizonPrimaryAge(values) - values.currentAge + 1, [values]);
 
   return (
-    <div className="grid items-start gap-8 xl:grid-cols-[minmax(0,1fr)_160px]">
+    <div className={calculatorAdGridClass()}>
       <div className="min-w-0 space-y-6">
         <aside className="card text-sm leading-relaxed text-muted">
           <h2 className="font-serif text-lg text-pine">How this differs</h2>
@@ -136,13 +137,7 @@ export function CalculatorApp() {
         ) : null}
       </div>
 
-      <div className="hidden min-w-0 xl:block">
-        <div className="sticky top-6 space-y-4">
-          <AdSlot placement="sidebar" />
-          <AdSlot placement="sidebar-2" />
-          <AdSlot placement="sidebar-3" />
-        </div>
-      </div>
+      <AdSidebar />
     </div>
   );
 }

@@ -133,8 +133,8 @@ export default async function AdminPage() {
       <section className="card">
         <h2 className="font-serif text-xl text-pine">Google AdSense</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted sm:text-base">
-          You do not attach AdSense from this dashboard. The public pages already have the slots. Live ads turn on when
-          the host has a publisher id. Set <code className="text-ink">NEXT_PUBLIC_ADSENSE_CLIENT</code> (format{" "}
+          You do not attach AdSense from this dashboard. Slots stay off the public pages until the host has a publisher
+          id. Set <code className="text-ink">NEXT_PUBLIC_ADSENSE_CLIENT</code> (format{" "}
           <code className="text-ink">ca-pub-…</code>) on Vercel or Hostinger and redeploy. An optional{" "}
           <code className="text-ink">NEXT_PUBLIC_ADSENSE_SLOT</code> (digits only) is the display unit those slots use.
         </p>
@@ -146,7 +146,7 @@ export default async function AdminPage() {
                 ? adsSlot
                   ? `Live — ${adsClient}, unit ${adsSlot}`
                   : `Publisher set — ${adsClient}. Add NEXT_PUBLIC_ADSENSE_SLOT for display units, or use Auto ads.`
-                : "Placeholder slots. No publisher id on this host."}
+                : "Hidden. No publisher id on this host."}
             </dd>
           </div>
           <div>

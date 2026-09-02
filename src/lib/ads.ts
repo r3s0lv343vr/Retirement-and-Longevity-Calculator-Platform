@@ -66,6 +66,15 @@ export function adsensePublisherId(raw = process.env.NEXT_PUBLIC_ADSENSE_CLIENT)
   return /^ca-pub-\d{9,22}$/.test(value) ? value : null;
 }
 
+/** True only when a publisher id is set. Empty slots stay off the page. */
+export function adsLive(raw = process.env.NEXT_PUBLIC_ADSENSE_CLIENT): boolean {
+  return adsensePublisherId(raw) !== null;
+}
+
+export function calculatorAdGridClass(raw = process.env.NEXT_PUBLIC_ADSENSE_CLIENT): string {
+  return adsLive(raw) ? "grid items-start gap-8 xl:grid-cols-[minmax(0,1fr)_160px]" : "min-w-0";
+}
+
 export function adsenseSlotId(raw = process.env.NEXT_PUBLIC_ADSENSE_SLOT): string | null {
   const value = raw?.trim() ?? "";
   return /^\d{6,16}$/.test(value) ? value : null;
