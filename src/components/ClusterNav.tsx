@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { HUB_NAME } from "@/lib/brand";
 
 const LINKS = [
-  { href: "/", label: "Runaway Finances" },
+  { href: "/", label: HUB_NAME },
   { href: "/longevity", label: "How long" },
   { href: "/need", label: "How much" },
   { href: "/when", label: "When" },
