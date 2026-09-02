@@ -31,7 +31,7 @@ export function ClusterNav({
               aria-current={active ? "page" : undefined}
               className={[
                 "inline-flex min-h-11 items-center rounded-md px-3 py-2 text-base leading-snug sm:min-h-12 sm:px-3.5 sm:text-lg",
-                home ? "font-serif" : null,
+                home ? "gap-2 font-serif" : null,
                 active
                   ? "bg-paper/15 font-semibold text-paper"
                   : "text-paper/85 transition hover:bg-paper/10 hover:text-paper",
@@ -39,6 +39,15 @@ export function ClusterNav({
                 .filter(Boolean)
                 .join(" ")}
             >
+              {home ? (
+                <img
+                  src="/rf-mark.png"
+                  alt=""
+                  width={40}
+                  height={40}
+                  className="h-9 w-9 shrink-0 rounded-[2px] bg-paper sm:h-10 sm:w-10"
+                />
+              ) : null}
               {link.label}
             </Link>
           );
