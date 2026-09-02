@@ -201,7 +201,7 @@ export default async function AdminPage() {
                   : auth.persistence === "redis"
                     ? "Stored hashed in Redis"
                     : auth.persistence === "browser"
-                      ? "Hashed copy in this browser — this host cannot keep .data/admin.json (typical on Vercel)"
+                      ? "Hashed verifier in this browser for 7 days — not the password, and unused once the server file exists"
                       : "Stored in memory until this server process restarts"}
             </dd>
           </div>
@@ -216,7 +216,7 @@ export default async function AdminPage() {
         <h2 className="font-serif text-xl text-pine">Change password</h2>
         <p className="mt-1 text-sm text-muted">
           On a normal server this stays in <code className="text-ink">.data/admin.json</code>. Copy that file when you
-          move hosts if you want the same password. On Vercel, this browser keeps the hashed copy.
+          move hosts if you want the same password. The browser copy is not used when that file exists.
         </p>
         <AdminPasswordForm envLocked={auth.mode === "env"} />
       </section>

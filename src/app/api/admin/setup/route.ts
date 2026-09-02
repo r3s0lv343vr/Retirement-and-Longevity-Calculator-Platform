@@ -26,10 +26,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: invalid }, { status: 400 });
   }
 
-  const record = await saveStoredAdmin(password);
+  const { record, persistence } = await saveStoredAdmin(password);
   const token = await signAdminSession();
   if (!token) {
     return NextResponse.json({ error: "Could not start a session." }, { status: 500 });
   }
-  return stampAdminAuthCookies(NextResponse.json({ ok: true }), token, record);
+  return stampAdminAuthCookies(NextResponse.json({ ok: true }), token, record, persistence);
 }

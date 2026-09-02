@@ -2,7 +2,7 @@ import { createHmac, randomBytes, timingSafeEqual } from "crypto";
 import { ADMIN_COOKIE, ADMIN_STORE_COOKIE } from "./constants";
 import { sessionSecret, verifyPassword } from "./credentials";
 
-const SESSION_DAYS = 7;
+export const SESSION_DAYS = 7;
 
 export type AdminSession = {
   exp: number;
@@ -53,12 +53,12 @@ export const adminCookieOptions = {
   secure: process.env.NODE_ENV === "production",
 };
 
-/** Hashed password record for hosts that cannot keep .data/admin.json (Vercel). */
+/** Hash and salt only, for hosts that cannot keep .data/admin.json. Same life as the session. */
 export const adminStoreCookieOptions = {
   name: ADMIN_STORE_COOKIE,
   httpOnly: true,
   sameSite: "lax" as const,
   path: "/",
-  maxAge: 60 * 60 * 24 * 400,
+  maxAge: SESSION_DAYS * 24 * 60 * 60,
   secure: process.env.NODE_ENV === "production",
 };
