@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans, Source_Serif_4 } from "next/font/google";
 import { AdSenseScript } from "@/components/AdSenseScript";
+import { MockupBanner } from "@/components/MockupBanner";
 import { VisitBeacon } from "@/components/VisitBeacon";
 import { HUB_TITLE } from "@/lib/brand";
 import { HUB_SEO_DESCRIPTION, HUB_SEO_TITLE, SITE_URL } from "@/lib/seo";
@@ -25,6 +26,7 @@ export const metadata: Metadata = {
     template: "%s",
   },
   description: HUB_SEO_DESCRIPTION,
+  robots: { index: false, follow: false },
   openGraph: {
     title: HUB_SEO_TITLE,
     description: HUB_SEO_DESCRIPTION,
@@ -37,6 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`${sans.variable} ${serif.variable} font-sans antialiased`}>
+        <MockupBanner />
         {children}
         <AdSenseScript />
         <VisitBeacon />
