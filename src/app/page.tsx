@@ -18,6 +18,7 @@ const CARD_TITLE: Record<string, string> = {
   "/housing": "Stay home vs CCRC vs nursing",
   "/child": "Nest eggs for a child",
   "/goal": "Will the goal survive",
+  "/mortgage": "Can I get a mortgage",
 };
 
 const HUB_NOTES: Record<string, string> = {
@@ -29,6 +30,8 @@ const HUB_NOTES: Record<string, string> = {
   "/child":
     "Time to save to the present value of growing living costs through 18, then school and a separate university pot. Solves the yearly add. School and university use education inflation.",
   "/goal": "Goal-agnostic. Emergency and other savings are raided first. The earmarked pot is last.",
+  "/mortgage":
+    "The payment plus tax, insurance, HOA, PMI, and life costs, year by year. An investment pile can cover a short year. Compare a second loan.",
 };
 
 export default function HubPage() {

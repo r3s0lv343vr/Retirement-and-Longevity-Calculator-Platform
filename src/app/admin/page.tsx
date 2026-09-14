@@ -36,7 +36,7 @@ export default async function AdminPage() {
         <div>
           <h1 className="font-serif text-3xl text-pine">Overview</h1>
           <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
-            {HUB_TITLE}: the hub plus seven calculators. Visitors are unique browsers that loaded a public page. Site
+            {HUB_TITLE}: the hub plus eight calculators. Visitors are unique browsers that loaded a public page. Site
             users are visitors who ran a calculator. Savings and personal plan numbers are never stored.
           </p>
         </div>
@@ -118,7 +118,7 @@ export default async function AdminPage() {
         </div>
         <div className="card">
           <h2 className="font-serif text-xl text-pine">Calculator runs</h2>
-          <p className="mt-1 text-sm text-muted">One count each time a visitor runs that tool. All seven stay listed.</p>
+          <p className="mt-1 text-sm text-muted">One count each time a visitor runs that tool. All eight stay listed.</p>
           <ul className="mt-4 space-y-2 text-sm">
             {toolRows.map((row) => (
               <li key={row.tool} className="flex justify-between gap-4">
