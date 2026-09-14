@@ -31,6 +31,6 @@ describe("calculator SEO catalog", () => {
 
   it("points the sitemap at the public site", () => {
     expect(SITE_URL).toMatch(/^https:\/\//);
-    expect(HUB_SEO_TITLE).toContain("Financial Planning Calculators");
+    expect(HUB_SEO_TITLE).toContain("Family Finance Calculators");
   });
 });

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { journeyForCalculator } from "@/lib/journeys";
 import { SEO_REVIEWED, SEO_TRUST, type CalculatorSeo } from "@/lib/seo";
 
 export function TrustBar({ className }: { className?: string }) {
@@ -6,6 +7,7 @@ export function TrustBar({ className }: { className?: string }) {
 }
 
 export function CalculatorSeoBlock({ seo }: { seo: CalculatorSeo }) {
+  const journey = journeyForCalculator(seo.path);
   return (
     <section className="max-w-3xl pb-8 pt-2">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">{seo.eyebrow}</p>
@@ -23,6 +25,14 @@ export function CalculatorSeoBlock({ seo }: { seo: CalculatorSeo }) {
       <div className="mt-4">
         <TrustBar />
       </div>
+      <p className="mt-4 text-sm">
+        <Link
+          href={journey.path}
+          className="font-medium text-pine underline decoration-pine/30 underline-offset-2 hover:decoration-pine"
+        >
+          This sits in {journey.title}
+        </Link>
+      </p>
     </section>
   );
 }

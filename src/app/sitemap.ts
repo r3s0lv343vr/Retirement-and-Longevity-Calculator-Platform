@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { JOURNEY_PATHS } from "@/lib/journeys";
 import { CALCULATOR_SEO, SITE_URL } from "@/lib/seo";
 import { TRUST_PAGES } from "@/lib/trust";
 
@@ -7,6 +8,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const pages: MetadataRoute.Sitemap = [
     { url: SITE_URL, lastModified: now, changeFrequency: "weekly", priority: 1 },
   ];
+  for (const path of JOURNEY_PATHS) {
+    pages.push({
+      url: `${SITE_URL}${path}`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    });
+  }
   for (const seo of Object.values(CALCULATOR_SEO)) {
     pages.push({
       url: `${SITE_URL}${seo.path}`,

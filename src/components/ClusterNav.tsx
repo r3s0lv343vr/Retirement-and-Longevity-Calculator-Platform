@@ -1,39 +1,18 @@
 import Link from "next/link";
 import { HUB_NAME } from "@/lib/brand";
+import { NAV_LINKS, navHrefForCurrent, type JourneyPath, type MockupNavHref } from "@/lib/journeys";
+import type { CalculatorPath } from "@/lib/seo";
 import type { TrustPath } from "@/lib/trust";
-
-const LINKS = [
-  { href: "/", label: HUB_NAME },
-  { href: "/longevity", label: "How long" },
-  { href: "/need", label: "How much" },
-  { href: "/when", label: "When" },
-  { href: "/claim", label: "67 vs 70" },
-  { href: "/housing", label: "Housing" },
-  { href: "/child", label: "Child" },
-  { href: "/goal", label: "Goal" },
-  { href: "/mortgage", label: "Mortgage" },
-  { href: "/mortgage/payoff", label: "Mortgage Payoff" },
-] as const;
 
 export function ClusterNav({
   current,
 }: {
-  current:
-    | "/"
-    | "/longevity"
-    | "/need"
-    | "/when"
-    | "/claim"
-    | "/housing"
-    | "/child"
-    | "/goal"
-    | "/mortgage"
-    | "/mortgage/payoff"
-    | TrustPath;
+  current: "/" | CalculatorPath | JourneyPath | "/mockup" | TrustPath;
 }) {
+  const activeHref: MockupNavHref = navHrefForCurrent(current);
   return (
     <>
-      <nav className="relative z-20 overflow-visible border-b border-pine/20 bg-pine text-paper" aria-label="Calculators">
+      <nav className="relative z-20 overflow-visible border-b border-pine/20 bg-pine text-paper" aria-label="Family finance">
         <div className="mx-auto flex max-w-5xl items-start gap-1 px-4 pt-3 pb-2 sm:items-end sm:gap-1.5 sm:px-6 sm:pt-3.5 sm:pb-2.5">
           <Link href="/" className="relative z-30 -mb-4 mr-3 shrink-0 sm:-mb-5 sm:mr-4" aria-label={HUB_NAME}>
             <img
@@ -45,8 +24,8 @@ export function ClusterNav({
             />
           </Link>
           <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1 sm:gap-1.5">
-            {LINKS.map((link) => {
-              const active = current === link.href;
+            {NAV_LINKS.map((link) => {
+              const active = activeHref === link.href;
               const home = link.href === "/";
               return (
                 <Link

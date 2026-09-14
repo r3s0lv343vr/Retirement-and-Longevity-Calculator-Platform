@@ -10,9 +10,9 @@ export const SEO_TRUST =
   "Free to use · No account required · Assumptions shown · Educational planning tools";
 export const SEO_REVIEWED = "September 2026";
 
-export const HUB_SEO_TITLE = `${HUB_NAME} | Financial Planning Calculators for Retirement, Savings & Life`;
+export const HUB_SEO_TITLE = `${HUB_NAME} | Family Finance Calculators for Life's Big Decisions`;
 export const HUB_SEO_DESCRIPTION =
-  "Free financial planning calculators for retirement, savings, Social Security, family costs and major life goals. Test your numbers and explore how financial decisions may affect your future.";
+  "Free family-finance calculators to plan baby and child costs, home affordability, mortgage payments, savings goals and retirement decisions.";
 
 export type CalculatorPath =
   | "/longevity"
@@ -219,28 +219,28 @@ export const CALCULATOR_SEO: Record<CalculatorPath, CalculatorSeo> = {
 
 export const HUB_CLUSTERS: { id: string; title: string; note: string; paths: CalculatorPath[] }[] = [
   {
-    id: "retirement",
-    title: "Retirement planning",
-    note: "The flagship cluster. How long money lasts, how much you need, and when work can end.",
-    paths: ["/longevity", "/need", "/when"],
-  },
-  {
-    id: "later-life",
-    title: "Social Security and later life",
-    note: "Claiming age and later-life housing as their own questions.",
-    paths: ["/claim", "/housing"],
-  },
-  {
     id: "family",
-    title: "Family and life planning",
-    note: "A house payment beside life costs, then paying that loan off faster, then readiness for a child through 18 and university.",
-    paths: ["/mortgage", "/mortgage/payoff", "/child"],
+    title: "Growing a family",
+    note: "Readiness for a child through 18 and university.",
+    paths: ["/child"],
   },
   {
-    id: "goals",
-    title: "Savings and financial goals",
+    id: "home",
+    title: "Buying a home",
+    note: "What the house costs, and how extra payments retire the loan. Later-life housing is cross-linked from here and listed under retirement.",
+    paths: ["/mortgage", "/mortgage/payoff"],
+  },
+  {
+    id: "savings",
+    title: "Building savings",
     note: "Whether everyday expenses dissolve the pot you marked for one goal.",
     paths: ["/goal"],
+  },
+  {
+    id: "retirement",
+    title: "Planning retirement",
+    note: "How long money lasts, how much you need, when work can end, claiming age, and later-life housing.",
+    paths: ["/longevity", "/need", "/when", "/claim", "/housing"],
   },
 ];
 
