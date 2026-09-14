@@ -219,8 +219,12 @@ export function runPayoffStudio(input: PayoffMortgageInput, strategies: Scenario
 
   const freedom = solveExtraPaymentForTargetDate(mortgage, input.freedom);
   const selected =
-    strategyRuns.find((run) => run.scenario.id === selectedId)?.result ??
-    (input.extraMonthly > 0 ? quick : strategyRuns[0]?.result ?? quick);
+    selectedId === "quick"
+      ? quick
+      : selectedId === "baseline"
+        ? baseline
+        : (strategyRuns.find((run) => run.scenario.id === selectedId)?.result ??
+          (input.extraMonthly > 0 ? quick : baseline));
 
   return {
     errors: [],

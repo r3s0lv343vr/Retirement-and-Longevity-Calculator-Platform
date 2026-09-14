@@ -26,13 +26,14 @@ import {
 export function PayoffApp() {
   const [values, setValues] = useState<PayoffMortgageInput>(PAYOFF_DEFAULT);
   const [strategies, setStrategies] = useState<Scenario[]>(defaultStrategies);
-  const [selectedId, setSelectedId] = useState("plan-a");
+  const [selectedId, setSelectedId] = useState("quick");
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const urlReady = useRef(false);
 
   function changeValues(next: PayoffMortgageInput) {
     const merged = mergePayoffInput(next);
     setValues(merged);
+    if (next.extraMonthly !== values.extraMonthly) setSelectedId("quick");
     if (urlReady.current) writePayoffUrl(merged);
   }
 
@@ -85,6 +86,8 @@ export function PayoffApp() {
             <AdSlot placement="pre-outlook" />
             <PayoffResults
               studio={studio}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
               onUseFreedomExtra={(amount) => changeValues({ ...values, extraMonthly: amount })}
             />
             <LocalPlanControls

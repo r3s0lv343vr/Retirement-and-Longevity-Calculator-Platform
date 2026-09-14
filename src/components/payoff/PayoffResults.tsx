@@ -7,6 +7,8 @@ import { useState } from "react";
 
 type Props = {
   studio: PayoffStudio;
+  selectedId: string;
+  onSelect: (id: string) => void;
   onUseFreedomExtra: (amount: number) => void;
 };
 
@@ -19,7 +21,7 @@ function Metric({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function PayoffResults({ studio, onUseFreedomExtra }: Props) {
+export function PayoffResults({ studio, selectedId, onSelect, onUseFreedomExtra }: Props) {
   const { baseline, selected, quick, mortgage, freedom } = studio;
   const headline = selected.neverPaysOff
     ? "This path never retires the balance at the payment you entered"
@@ -51,9 +53,10 @@ export function PayoffResults({ studio, onUseFreedomExtra }: Props) {
           <Metric label="Interest avoided" value={formatMoney(Math.max(0, baseline.interestPaid - selected.interestPaid))} />
         </dl>
         <p className="mt-4 text-sm text-muted">
-          Scheduled P&I {formatMoney(mortgage.scheduledPayment)}
-          {quick.extraPaid > 0 ? ` · quick extra paid ${formatMoney(quick.extraPaid)}` : null}
-          {selected.extraPaid > 0 ? ` · this path extra ${formatMoney(selected.extraPaid)}` : null}.
+          Showing {selected.name}. Scheduled P&I {formatMoney(mortgage.scheduledPayment)}
+          {quick.extraPaid > 0 ? ` · quick extra paid ${formatMoney(quick.extraPaid)}` : ""}
+          {selected.extraPaid > 0 && selected.id !== "quick" ? ` · this path extra ${formatMoney(selected.extraPaid)}` : ""}
+          .
         </p>
       </div>
 
@@ -132,8 +135,20 @@ export function PayoffResults({ studio, onUseFreedomExtra }: Props) {
         </p>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           {studio.comparison.map((row) => (
-            <article key={row.id} className="rounded-xl border border-pine/10 bg-paper/60 px-4 py-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">{row.name}</p>
+            <article
+              key={row.id}
+              className={`rounded-xl border px-4 py-4 ${
+                selectedId === row.id ? "border-pine/40 bg-white" : "border-pine/10 bg-paper/60"
+              }`}
+            >
+              <button type="button" onClick={() => onSelect(row.id)} className="w-full text-left">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">{row.name}</p>
+                {selectedId === row.id ? (
+                  <p className="mt-1 text-xs text-muted">Shown in the headline and chart</p>
+                ) : (
+                  <p className="mt-1 text-xs text-pine">Show this path</p>
+                )}
+              </button>
               <p className="mt-2 font-serif text-2xl text-ink">
                 {row.payoffDate ? formatYearMonth(row.payoffDate) : "Does not finish"}
               </p>
