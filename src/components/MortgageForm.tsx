@@ -203,9 +203,9 @@ export function MortgageForm({ values, onChange, onSubmit, loading, error }: Pro
       </details>
 
       <details className="card group">
-        <summary className="cursor-pointer list-none font-medium text-pine marker:content-none [&::-webkit-details-marker]:hidden">
+        <summary className="cursor-pointer list-none font-serif text-xl leading-tight text-pine marker:content-none [&::-webkit-details-marker]:hidden">
           <span className="inline-flex items-center gap-2">
-            <span className="inline-block text-xs transition group-open:rotate-90">▶</span>
+            <span className="inline-block text-xs font-sans transition group-open:rotate-90">▶</span>
             Income and the investment pile
           </span>
         </summary>
@@ -217,9 +217,9 @@ export function MortgageForm({ values, onChange, onSubmit, loading, error }: Pro
       </details>
 
       <details className="card group">
-        <summary className="cursor-pointer list-none font-medium text-pine marker:content-none [&::-webkit-details-marker]:hidden">
+        <summary className="cursor-pointer list-none font-serif text-xl leading-tight text-pine marker:content-none [&::-webkit-details-marker]:hidden">
           <span className="inline-flex items-center gap-2">
-            <span className="inline-block text-xs transition group-open:rotate-90">▶</span>
+            <span className="inline-block text-xs font-sans transition group-open:rotate-90">▶</span>
             Extra payments
           </span>
         </summary>
@@ -234,9 +234,9 @@ export function MortgageForm({ values, onChange, onSubmit, loading, error }: Pro
       </details>
 
       <details className="card group">
-        <summary className="cursor-pointer list-none font-medium text-pine marker:content-none [&::-webkit-details-marker]:hidden">
+        <summary className="cursor-pointer list-none font-serif text-xl leading-tight text-pine marker:content-none [&::-webkit-details-marker]:hidden">
           <span className="inline-flex items-center gap-2">
-            <span className="inline-block text-xs transition group-open:rotate-90">▶</span>
+            <span className="inline-block text-xs font-sans transition group-open:rotate-90">▶</span>
             Cash needed to buy
           </span>
         </summary>
@@ -251,9 +251,9 @@ export function MortgageForm({ values, onChange, onSubmit, loading, error }: Pro
       </details>
 
       <details className="card group">
-        <summary className="cursor-pointer list-none font-medium text-pine marker:content-none [&::-webkit-details-marker]:hidden">
+        <summary className="cursor-pointer list-none font-serif text-xl leading-tight text-pine marker:content-none [&::-webkit-details-marker]:hidden">
           <span className="inline-flex items-center gap-2">
-            <span className="inline-block text-xs transition group-open:rotate-90">▶</span>
+            <span className="inline-block text-xs font-sans transition group-open:rotate-90">▶</span>
             Advanced assumptions
           </span>
         </summary>
@@ -268,9 +268,9 @@ export function MortgageForm({ values, onChange, onSubmit, loading, error }: Pro
       </details>
 
       <details className="card group">
-        <summary className="cursor-pointer list-none font-medium text-pine marker:content-none [&::-webkit-details-marker]:hidden">
+        <summary className="cursor-pointer list-none font-serif text-xl leading-tight text-pine marker:content-none [&::-webkit-details-marker]:hidden">
           <span className="inline-flex items-center gap-2">
-            <span className="inline-block text-xs transition group-open:rotate-90">▶</span>
+            <span className="inline-block text-xs font-sans transition group-open:rotate-90">▶</span>
             Compare another loan
           </span>
         </summary>

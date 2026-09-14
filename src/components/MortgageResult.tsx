@@ -35,12 +35,12 @@ export function MortgageResult({ result, onExtraMonthly }: Props) {
         <div className="mt-4 grid gap-6 sm:grid-cols-2">
           <div>
             <p className="text-xs uppercase tracking-wide text-muted">Monthly payment — principal + interest</p>
-            <p className="mt-1 font-serif text-3xl text-pine">{formatMoney(primary.monthlyPI)}</p>
+            <p className="mt-1 font-serif text-2xl text-pine">{formatMoney(primary.monthlyPI)}</p>
             <p className="mt-1 text-sm text-muted">This is the loan payment, not the cost of the house.</p>
           </div>
           <div>
             <p className="text-xs uppercase tracking-wide text-muted">Estimated housing cost</p>
-            <p className="mt-1 font-serif text-3xl text-ink">{formatMoney(primary.firstHousingMonthly)}</p>
+            <p className="mt-1 font-serif text-2xl text-ink">{formatMoney(primary.firstHousingMonthly)}</p>
             <p className="mt-1 text-sm text-muted">P&I plus tax, insurance, PMI, HOA, and upkeep in year one.</p>
           </div>
         </div>
