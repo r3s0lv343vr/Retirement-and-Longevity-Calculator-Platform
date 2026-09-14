@@ -7,6 +7,8 @@ const MAX_MONEY = 50_000_000;
 const MAX_YEARS = 40;
 const MAX_RATE = 0.25;
 const PMI_LTV = 0.8;
+const RATE_DELTAS = [-0.005, 0, 0.005];
+const DOWN_PERCENTS = [0.05, 0.1, 0.15, 0.2, 0.25];
 
 export type MortgageStatus = "comfortable" | "buffered" | "tight" | "short" | "depleted";
 
@@ -31,6 +33,16 @@ export type MortgageYearRow = {
   ltv: number;
 };
 
+export type MortgageMonthRow = {
+  month: number;
+  year: number;
+  principal: number;
+  interest: number;
+  extra: number;
+  pmi: number;
+  endingBalance: number;
+};
+
 export type MortgageSnapshot = {
   year: number;
   housing: number;
@@ -40,6 +52,30 @@ export type MortgageSnapshot = {
   pmi: number;
 };
 
+export type MortgageFirstFive = {
+  payments: number;
+  principal: number;
+  interest: number;
+  housing: number;
+  remaining: number;
+};
+
+export type RateScenario = {
+  rate: number;
+  monthlyPI: number;
+  totalInterest: number;
+};
+
+export type DownPaymentScenario = {
+  percent: number;
+  cash: number;
+  loan: number;
+  monthlyPI: number;
+  pmiMonthly: number;
+  housingMonthly: number;
+  totalInterest: number;
+};
+
 export type MortgagePath = {
   loanAmount: number;
   monthlyPI: number;
@@ -47,14 +83,23 @@ export type MortgagePath = {
   housingRatio: number;
   obligationRatio: number;
   totalInterest: number;
+  totalHousingOutflow: number;
+  totalFinancing: number;
+  totalOwnership: number;
+  firstPaymentPrincipal: number;
+  firstPaymentInterest: number;
+  crossoverYear: number | null;
+  monthsToPayoff: number;
   payoffYear: number;
   pmiDropYear: number | null;
   firstDrawYear: number | null;
   pileDepletedYear: number | null;
   endingPile: number;
   endingBalance: number;
+  firstFive: MortgageFirstFive;
   snapshots: MortgageSnapshot[];
   years: MortgageYearRow[];
+  months: MortgageMonthRow[];
 };
 
 export type MortgageEstimate = {
@@ -62,6 +107,11 @@ export type MortgageEstimate = {
   status: MortgageStatus;
   primary: MortgagePath;
   compare: MortgagePath | null;
+  cashToBuy: number;
+  monthsGained: number;
+  interestSaved: number;
+  rateSensitivity: RateScenario[];
+  downPaymentScenarios: DownPaymentScenario[];
   warnings: string[];
 };
 
@@ -101,6 +151,19 @@ export function downPaymentPercent(price: number, down: number): number {
   return Math.min(1, Math.max(0, down / price));
 }
 
+export function cashToBuyFor(input: MortgageInput): number {
+  return input.downPayment + input.closingCost + input.movingCost + input.furnishingCost;
+}
+
+export function scheduledInterest(principal: number, annualRate: number, termYears: number): number {
+  const pi = monthlyPrincipalAndInterest(principal, annualRate, termYears);
+  return Math.max(0, pi * Math.round(termYears * 12) - principal);
+}
+
+function clampRate(rate: number): number {
+  return Math.min(MAX_RATE, Math.max(0, rate));
+}
+
 export function validateMortgageInput(input: MortgageInput): string[] {
   const errors: string[] = [];
   if (input.homePrice <= 0 || input.homePrice > MAX_MONEY) errors.push("Home price must be between $1 and $50,000,000.");
@@ -112,13 +175,25 @@ export function validateMortgageInput(input: MortgageInput): string[] {
   if (input.investmentReturn < 0 || input.investmentReturn > MAX_RATE) {
     errors.push("Investment return must be between 0% and 25%.");
   }
+  for (const [label, rate] of [
+    ["Tax growth", input.taxGrowthRate],
+    ["Insurance growth", input.insuranceGrowthRate],
+    ["HOA growth", input.hoaGrowthRate],
+  ] as const) {
+    if (rate < 0 || rate > MAX_RATE) errors.push(`${label} must be between 0% and 25%.`);
+  }
   const money = [
     input.extraMonthly,
+    input.extraAnnual,
+    input.extraOneTime,
     input.propertyTaxAnnual,
     input.homeInsuranceAnnual,
     input.hoaMonthly,
     input.pmiMonthly,
     input.maintenanceAnnual,
+    input.closingCost,
+    input.movingCost,
+    input.furnishingCost,
     input.annualIncome,
     input.foodMonthly,
     input.schoolMonthly,
@@ -142,6 +217,9 @@ export function validateMortgageInput(input: MortgageInput): string[] {
   }
   if (input.compareAnnualRate < 0 || input.compareAnnualRate > MAX_RATE) {
     errors.push("Compare rate must be between 0% and 25%.");
+  }
+  if (input.extraOneTimeMonth < 1 || input.extraOneTimeMonth > MAX_YEARS * 12) {
+    errors.push("One-time extra month must be between 1 and 480.");
   }
   if (input.compareHomePrice > 0 && input.compareDownPayment > input.compareHomePrice) {
     errors.push("Compare down payment cannot exceed that home price.");
@@ -181,6 +259,17 @@ type LoanSpec = {
   termYears: number;
 };
 
+function extraForMonth(input: MortgageInput, monthNumber: number): number {
+  let extra = input.extraMonthly;
+  if (monthNumber % 12 === 0) extra += input.extraAnnual;
+  if (monthNumber === input.extraOneTimeMonth) extra += input.extraOneTime;
+  return extra;
+}
+
+function hasExtra(input: MortgageInput): boolean {
+  return input.extraMonthly > 0 || input.extraAnnual > 0 || input.extraOneTime > 0;
+}
+
 function lifeAnnual(input: MortgageInput, yearIndex: number): number {
   const t = yearIndex;
   return (
@@ -199,11 +288,22 @@ function loanDrag(input: MortgageInput, year: number): number {
   return car + other;
 }
 
-function runPath(input: MortgageInput, loan: LoanSpec): MortgagePath {
+function firstFiveFrom(years: MortgageYearRow[], remaining: number): MortgageFirstFive {
+  const slice = years.filter((row) => row.year <= 5);
+  return {
+    payments: slice.reduce((sum, row) => sum + row.principal + row.interest + row.extra, 0),
+    principal: slice.reduce((sum, row) => sum + row.principal + row.extra, 0),
+    interest: slice.reduce((sum, row) => sum + row.interest, 0),
+    housing: slice.reduce((sum, row) => sum + row.housing, 0),
+    remaining: slice.at(-1)?.endingBalance ?? remaining,
+  };
+}
+
+function runPath(input: MortgageInput, loan: LoanSpec, keepMonths: boolean): MortgagePath {
   const principal0 = loanAmountFor(loan.homePrice, loan.downPayment);
   const monthlyPI = monthlyPrincipalAndInterest(principal0, loan.annualRate, loan.termYears);
   const monthlyRate = loan.annualRate / 12;
-  const months = Math.round(loan.termYears * 12);
+  const monthsAllowed = Math.round(loan.termYears * 12);
   let balance = principal0;
   let pile = input.investmentPile;
   let totalInterest = 0;
@@ -211,7 +311,13 @@ function runPath(input: MortgageInput, loan: LoanSpec): MortgagePath {
   let pileDepletedYear: number | null = null;
   let pmiDropYear: number | null = null;
   let payoffYear = loan.termYears;
+  let monthsToPayoff = monthsAllowed;
+  let firstPaymentPrincipal = 0;
+  let firstPaymentInterest = 0;
+  let crossoverYear: number | null = null;
+  let monthNumber = 0;
   const years: MortgageYearRow[] = [];
+  const months: MortgageMonthRow[] = [];
   const snapshots: MortgageSnapshot[] = [];
 
   for (let year = 1; year <= loan.termYears; year += 1) {
@@ -220,16 +326,18 @@ function runPath(input: MortgageInput, loan: LoanSpec): MortgagePath {
     let yearExtra = 0;
     let yearPmi = 0;
     for (let m = 0; m < 12 && balance > 0.5; m += 1) {
+      monthNumber += 1;
       const interest = balance * monthlyRate;
       let principalPay = monthlyPI - interest;
       if (principalPay < 0) principalPay = 0;
-      let extra = input.extraMonthly;
+      let extra = extraForMonth(input, monthNumber);
       if (principalPay + extra > balance) {
         extra = Math.max(0, balance - principalPay);
         principalPay = Math.min(principalPay, balance);
       }
       const pmiOn = loan.homePrice > 0 && balance / loan.homePrice > PMI_LTV;
-      if (pmiOn && input.pmiMonthly > 0) yearPmi += input.pmiMonthly;
+      const pmi = pmiOn && input.pmiMonthly > 0 ? input.pmiMonthly : 0;
+      if (pmi > 0) yearPmi += pmi;
       if (!pmiOn && pmiDropYear === null && input.pmiMonthly > 0 && principal0 / loan.homePrice > PMI_LTV) {
         pmiDropYear = year;
       }
@@ -238,12 +346,32 @@ function runPath(input: MortgageInput, loan: LoanSpec): MortgagePath {
       yearInterest += interest;
       yearExtra += extra;
       totalInterest += interest;
+      if (monthNumber === 1) {
+        firstPaymentPrincipal = principalPay;
+        firstPaymentInterest = interest;
+      }
+      if (keepMonths) {
+        months.push({
+          month: monthNumber,
+          year,
+          principal: principalPay,
+          interest,
+          extra,
+          pmi,
+          endingBalance: balance,
+        });
+      }
+      if (balance <= 0.5) {
+        monthsToPayoff = monthNumber;
+        if (payoffYear === loan.termYears) payoffYear = year;
+      }
     }
     if (balance <= 0.5 && payoffYear === loan.termYears) payoffYear = year;
+    if (crossoverYear === null && yearPrincipal > yearInterest && yearPrincipal > 0) crossoverYear = year;
 
-    const tax = inflate(input.propertyTaxAnnual, input.inflationRate, year - 1);
-    const insurance = inflate(input.homeInsuranceAnnual, input.inflationRate, year - 1);
-    const hoa = inflate(input.hoaMonthly * 12, input.inflationRate, year - 1);
+    const tax = inflate(input.propertyTaxAnnual, input.taxGrowthRate, year - 1);
+    const insurance = inflate(input.homeInsuranceAnnual, input.insuranceGrowthRate, year - 1);
+    const hoa = inflate(input.hoaMonthly * 12, input.hoaGrowthRate, year - 1);
     const maintenance = inflate(input.maintenanceAnnual, input.inflationRate, year - 1);
     const housing = yearPrincipal + yearInterest + yearExtra + yearPmi + tax + insurance + hoa + maintenance;
     const life = lifeAnnual(input, year - 1);
@@ -294,7 +422,7 @@ function runPath(input: MortgageInput, loan: LoanSpec): MortgagePath {
         pmi: yearPmi,
       });
     }
-    if (year === months / 12 && balance <= 0.5) break;
+    if (balance <= 0.5) break;
   }
 
   const first = years[0];
@@ -302,6 +430,9 @@ function runPath(input: MortgageInput, loan: LoanSpec): MortgagePath {
   const housingRatio = input.annualIncome > 0 && first ? first.housing / first.income : 0;
   const obligationRatio =
     input.annualIncome > 0 && first ? (first.housing + first.loans) / first.income : 0;
+  const totalHousingOutflow = years.reduce((sum, row) => sum + row.housing, 0);
+  const totalFinancing = years.reduce((sum, row) => sum + row.principal + row.interest + row.extra, 0);
+  const totalOwnership = years.reduce((sum, row) => sum + row.tax + row.insurance + row.hoa + row.maintenance + row.pmi, 0);
 
   return {
     loanAmount: principal0,
@@ -310,14 +441,23 @@ function runPath(input: MortgageInput, loan: LoanSpec): MortgagePath {
     housingRatio,
     obligationRatio,
     totalInterest,
+    totalHousingOutflow,
+    totalFinancing,
+    totalOwnership,
+    firstPaymentPrincipal,
+    firstPaymentInterest,
+    crossoverYear,
+    monthsToPayoff,
     payoffYear,
     pmiDropYear,
     firstDrawYear,
     pileDepletedYear,
     endingPile: years[years.length - 1]?.endingPile ?? input.investmentPile,
     endingBalance: years[years.length - 1]?.endingBalance ?? principal0,
+    firstFive: firstFiveFrom(years, years[years.length - 1]?.endingBalance ?? principal0),
     snapshots,
     years,
+    months,
   };
 }
 
@@ -354,14 +494,67 @@ function loanFromCompare(input: MortgageInput): LoanSpec {
   };
 }
 
+export function rateSensitivityFor(input: MortgageInput): RateScenario[] {
+  const loan = loanAmountFor(input.homePrice, input.downPayment);
+  return RATE_DELTAS.map((delta) => {
+    const rate = clampRate(input.annualRate + delta);
+    return {
+      rate,
+      monthlyPI: monthlyPrincipalAndInterest(loan, rate, input.termYears),
+      totalInterest: scheduledInterest(loan, rate, input.termYears),
+    };
+  });
+}
+
+export function downPaymentScenariosFor(input: MortgageInput): DownPaymentScenario[] {
+  return DOWN_PERCENTS.map((percent) => {
+    const cash = input.homePrice * percent;
+    const loan = loanAmountFor(input.homePrice, cash);
+    const monthlyPI = monthlyPrincipalAndInterest(loan, input.annualRate, input.termYears);
+    const pmiMonthly = input.homePrice > 0 && loan / input.homePrice > PMI_LTV ? input.pmiMonthly : 0;
+    const housingMonthly =
+      monthlyPI +
+      input.propertyTaxAnnual / 12 +
+      input.homeInsuranceAnnual / 12 +
+      input.hoaMonthly +
+      pmiMonthly +
+      input.maintenanceAnnual / 12;
+    return {
+      percent,
+      cash,
+      loan,
+      monthlyPI,
+      pmiMonthly,
+      housingMonthly,
+      totalInterest: scheduledInterest(loan, input.annualRate, input.termYears),
+    };
+  });
+}
+
 export function estimateMortgage(input: MortgageInput): MortgageEstimate {
-  const primary = runPath(input, loanFromPrimary(input));
-  const compare = compareIsActive(input) ? runPath(input, loanFromCompare(input)) : null;
+  const primary = runPath(input, loanFromPrimary(input), true);
+  const compare = compareIsActive(input) ? runPath(input, loanFromCompare(input), false) : null;
+  let monthsGained = 0;
+  let interestSaved = 0;
+  if (hasExtra(input)) {
+    const baseline = runPath(
+      { ...input, extraMonthly: 0, extraAnnual: 0, extraOneTime: 0 },
+      loanFromPrimary(input),
+      false,
+    );
+    monthsGained = Math.max(0, baseline.monthsToPayoff - primary.monthsToPayoff);
+    interestSaved = Math.max(0, baseline.totalInterest - primary.totalInterest);
+  }
   return {
     input,
     status: statusFor(primary),
     primary,
     compare,
+    cashToBuy: cashToBuyFor(input),
+    monthsGained,
+    interestSaved,
+    rateSensitivity: rateSensitivityFor(input),
+    downPaymentScenarios: downPaymentScenariosFor(input),
     warnings: warningsForMortgage(input),
   };
 }

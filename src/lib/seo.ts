@@ -176,15 +176,15 @@ export const CALCULATOR_SEO: Record<CalculatorPath, CalculatorSeo> = {
   "/mortgage": {
     path: "/mortgage",
     name: "Can I Get a Mortgage",
-    question: "After the house payment, tax, insurance, and the rest of life, is there still a buffer?",
-    title: "Can I Get a Mortgage? Home Affordability Calculator",
+    question: "What will this house actually cost you once tax, insurance, and life sit beside the payment?",
+    title: "Can I Get a Mortgage? Monthly Payment & Total Cost",
     description:
-      "See whether the house payment still leaves a buffer after taxes, insurance, HOA, and life costs inflate. Compare two loans. Investments can cover a short year.",
-    eyebrow: "Mortgage affordability calculator",
+      "Estimate monthly payment, true housing cost, total interest, and lifetime cash to own. Extra payments, rate and down-payment compares, plus a year-by-year buffer.",
+    eyebrow: "Mortgage calculator",
     seoCall:
-      "See whether you can carry this house once tax, insurance, HOA, PMI, and everyday costs sit beside the payment. Inflation moves those costs. An investment pile can cover a short year. Compare a second rate or term on the same life.",
+      "See the mortgage payment, the wider housing cost, and what you may spend owning the house. Extra payments, nearby rates, and down-payment steps show which lever moves the outcome.",
     howItWorks:
-      "The outlook amortizes the loan month by month, then steps year by year like the other tools. Property tax, home insurance, HOA, upkeep, food, school, travel, extras, dependents, and health inflate. Car and other loans stay flat and then stop. PMI drops when loan-to-value reaches 80%. Surplus cash feeds the investment pile; a short year draws it. A second loan uses the same life costs.",
+      "The outlook amortizes month by month, then steps year by year. It separates P&I from housing cost, totals interest and ownership cash, and shows principal versus interest, the balance path, extra-payment time gained, rate sensitivity, down-payment steps, and cash to buy. Tax, insurance, and HOA can grow on their own rates. Life costs and an investment pile still sit beside the house.",
     limitations:
       "Educational projection only. It is not a pre-approval, a rate lock, or tax advice. Lenders use their own rules. Compare this outlook with a lender before you offer.",
     related: [

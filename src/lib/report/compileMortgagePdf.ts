@@ -18,7 +18,10 @@ export function mortgagePdfFilename(input: { homePrice: number; termYears: numbe
 export function compileMortgagePdf(result: MortgageEstimate, generatedAt = new Date()): ArrayBuffer {
   const writer = new ReportWriter(generatedAt);
   writer.cover(result);
+  writer.picture(result);
   writer.years(result.primary, "This loan");
+  writer.firstFive(result.primary);
+  if (result.monthsGained > 0) writer.extras(result);
   if (result.compare) writer.compare(result);
   writer.amortization(result.primary);
   writer.assumptions(result);
@@ -63,7 +66,7 @@ class ReportWriter {
     this.doc.text("CAN I GET A MORTGAGE", MARGIN, this.y - 28);
     this.doc.setFont("times", "bold");
     this.doc.setFontSize(22);
-    this.doc.text("Mortgage buffer outlook", MARGIN, this.y - 8);
+    this.doc.text("What this house actually costs", MARGIN, this.y - 8);
     this.space(16);
     this.muted(`Compiled ${this.generatedLabel}. Built in your browser from this run. Not stored on a server.`);
     this.space(10);
@@ -73,7 +76,7 @@ class ReportWriter {
     this.wrap(headline(result.status), 16, 20);
     this.space(8);
     this.body(
-      `P&I ${formatMoney(result.primary.monthlyPI)} / month. Year-one housing about ${formatMoney(result.primary.firstHousingMonthly)} / month. Interest over the loan ${formatMoney(result.primary.totalInterest)}.`,
+      `P&I ${formatMoney(result.primary.monthlyPI)} / month. Housing cost about ${formatMoney(result.primary.firstHousingMonthly)} / month. Interest ${formatMoney(result.primary.totalInterest)}. Cash to buy ${formatMoney(result.cashToBuy)}.`,
     );
     this.space(12);
     const col = CONTENT_W / 3;
@@ -89,6 +92,35 @@ class ReportWriter {
     this.body(
       "Educational projection only. It is not a pre-approval, a rate lock, or tax advice. Compare this outlook with a lender and a licensed advisor.",
     );
+  }
+
+  picture(result: MortgageEstimate) {
+    this.ensure(90);
+    this.section(
+      "The big picture",
+      `The house costs ${formatMoney(result.input.homePrice)}, but owning it on this path may take ${formatMoney(result.primary.totalHousingOutflow + result.cashToBuy)}.`,
+    );
+    this.lineKV("Borrowed", formatMoney(result.primary.loanAmount));
+    this.lineKV("Housing cash outflow", formatMoney(result.primary.totalHousingOutflow));
+    this.lineKV("Cash to buy", formatMoney(result.cashToBuy));
+  }
+
+  firstFive(path: MortgagePath) {
+    this.ensure(80);
+    this.section("First five years", "Payments, principal, interest, housing, remaining balance.");
+    this.lineKV("Payments", formatMoney(path.firstFive.payments));
+    this.lineKV("Principal repaid", formatMoney(path.firstFive.principal));
+    this.lineKV("Interest", formatMoney(path.firstFive.interest));
+    this.lineKV("Housing costs", formatMoney(path.firstFive.housing));
+    this.lineKV("Remaining balance", formatMoney(path.firstFive.remaining));
+  }
+
+  extras(result: MortgageEstimate) {
+    this.ensure(60);
+    this.section("Extra payments", "Time gained and interest saved versus paying only the required amount.");
+    this.lineKV("Extra / month", formatMoney(result.input.extraMonthly));
+    this.lineKV("Months sooner", String(result.monthsGained));
+    this.lineKV("Interest saved", formatMoney(result.interestSaved));
   }
 
   years(path: MortgagePath, title: string) {
@@ -142,6 +174,7 @@ class ReportWriter {
     this.lineKV("HOA / PMI / upkeep", `${formatMoney(input.hoaMonthly)} / mo · ${formatMoney(input.pmiMonthly)} / mo · ${formatMoney(input.maintenanceAnnual)}`);
     this.lineKV("Take-home / pile", `${formatMoney(input.annualIncome)} / ${formatMoney(input.investmentPile)}`);
     this.lineKV("Inflation / return", `${formatPercent(input.inflationRate, 1)} / ${formatPercent(input.investmentReturn, 1)}`);
+    this.lineKV("Cash to buy pieces", `Close ${formatMoney(input.closingCost)} · move ${formatMoney(input.movingCost)} · furnish ${formatMoney(input.furnishingCost)}`);
   }
 
   closing() {

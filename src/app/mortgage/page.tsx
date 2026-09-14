@@ -19,9 +19,7 @@ export default function MortgagePage() {
       <header className="border-b border-pine/10 bg-white/80 backdrop-blur">
         <div className="mx-auto max-w-5xl px-5 py-6 sm:px-6">
           <h1 className="max-w-3xl font-serif text-3xl leading-tight text-pine sm:text-4xl">{seo.name}</h1>
-          <p className="mt-2 text-base text-muted sm:text-lg">
-            The payment plus tax, insurance, and the rest of life — year by year
-          </p>
+          <p className="mt-2 text-base text-muted sm:text-lg">What will this house actually cost you?</p>
         </div>
       </header>
 

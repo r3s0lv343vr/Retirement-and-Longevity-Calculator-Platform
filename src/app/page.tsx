@@ -31,7 +31,7 @@ const HUB_NOTES: Record<string, string> = {
     "Time to save to the present value of growing living costs through 18, then school and a separate university pot. Solves the yearly add. School and university use education inflation.",
   "/goal": "Goal-agnostic. Emergency and other savings are raided first. The earmarked pot is last.",
   "/mortgage":
-    "The payment plus tax, insurance, HOA, PMI, and life costs, year by year. An investment pile can cover a short year. Compare a second loan.",
+    "Payment versus housing cost, lifetime cash to own, extra-payment time gained, nearby rates, and down-payment steps. Life costs and a pile still sit beside the house.",
 };
 
 export default function HubPage() {

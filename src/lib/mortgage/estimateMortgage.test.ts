@@ -82,4 +82,29 @@ describe("mortgage math", () => {
     expect(compareIsActive(input)).toBe(false);
     expect(estimateMortgage(input).compare).toBeNull();
   });
+
+  it("shortens the loan and saves interest when extra is paid", () => {
+    const result = estimateMortgage(mergeMortgageInput({ extraMonthly: 250 }));
+    expect(result.monthsGained).toBeGreaterThan(12);
+    expect(result.interestSaved).toBeGreaterThan(10_000);
+    expect(result.primary.monthsToPayoff).toBeLessThan(360);
+  });
+
+  it("shows adjacent rates and down-payment steps", () => {
+    const result = estimateMortgage(MORTGAGE_DEFAULT);
+    expect(result.rateSensitivity).toHaveLength(3);
+    expect(result.rateSensitivity[0].monthlyPI).toBeLessThan(result.rateSensitivity[2].monthlyPI);
+    expect(result.downPaymentScenarios).toHaveLength(5);
+    expect(result.downPaymentScenarios[3].percent).toBeCloseTo(0.2);
+    expect(result.downPaymentScenarios[3].pmiMonthly).toBe(0);
+    expect(result.cashToBuy).toBe(85_000 + 8_500 + 2_000 + 3_000);
+  });
+
+  it("finds a principal-crossover year and a monthly schedule", () => {
+    const result = estimateMortgage(MORTGAGE_DEFAULT);
+    expect(result.primary.crossoverYear).not.toBeNull();
+    expect(result.primary.months.length).toBe(360);
+    expect(result.primary.firstPaymentInterest).toBeGreaterThan(result.primary.firstPaymentPrincipal);
+    expect(result.primary.firstFive.remaining).toBeGreaterThan(0);
+  });
 });
