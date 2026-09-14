@@ -19,6 +19,7 @@ const CARD_TITLE: Record<string, string> = {
   "/child": "Nest eggs for a child",
   "/goal": "Will the goal survive",
   "/mortgage": "Can I get a mortgage",
+  "/mortgage/payoff": "How much faster can I pay off my mortgage",
 };
 
 const HUB_NOTES: Record<string, string> = {
@@ -32,6 +33,8 @@ const HUB_NOTES: Record<string, string> = {
   "/goal": "Goal-agnostic. Emergency and other savings are raided first. The earmarked pot is last.",
   "/mortgage":
     "Payment versus housing cost, lifetime cash to own, extra-payment time gained, nearby rates, and down-payment steps. Life costs and a pile still sit beside the house.",
+  "/mortgage/payoff":
+    "Already have the loan. Extra payments, a freedom date, and side-by-side strategies run in the browser. Nothing is stored on Runaway Finance.",
 };
 
 export default function HubPage() {

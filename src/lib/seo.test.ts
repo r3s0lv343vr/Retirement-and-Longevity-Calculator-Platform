@@ -11,6 +11,7 @@ describe("calculator SEO catalog", () => {
     expect(CALCULATOR_SEO["/child"].name).toBe("Nest Eggs for a Child");
     expect(CALCULATOR_SEO["/goal"].name).toBe("Will the Goal Survive");
     expect(CALCULATOR_SEO["/mortgage"].name).toBe("Can I Get a Mortgage");
+    expect(CALCULATOR_SEO["/mortgage/payoff"].name).toBe("How Much Faster Can I Pay Off My Mortgage");
   });
 
   it("gives each calculator a unique title and description", () => {

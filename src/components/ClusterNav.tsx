@@ -12,6 +12,7 @@ const LINKS = [
   { href: "/child", label: "Child" },
   { href: "/goal", label: "Goal" },
   { href: "/mortgage", label: "Mortgage" },
+  { href: "/mortgage/payoff", label: "Payoff" },
 ] as const;
 
 export function ClusterNav({
@@ -27,6 +28,7 @@ export function ClusterNav({
     | "/child"
     | "/goal"
     | "/mortgage"
+    | "/mortgage/payoff"
     | TrustPath;
 }) {
   return (
