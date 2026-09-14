@@ -100,13 +100,13 @@ export const NAV_LINKS = [
   { href: "/about", label: "About" },
 ] as const;
 
-export type MockupNavHref = (typeof NAV_LINKS)[number]["href"];
+export type NavHref = (typeof NAV_LINKS)[number]["href"];
 
-export function navHrefForCurrent(current: string): MockupNavHref {
+export function navHrefForCurrent(current: string): NavHref {
   if (current === "/about" || current === "/contact" || current === "/privacy" || current === "/disclaimer") {
     return "/about";
   }
-  if (current === "/guides" || current === "/mockup") return "/guides";
+  if (current === "/guides") return "/guides";
   if (current === "/family") return "/family";
   if (current === "/home") return "/home";
   if (current === "/savings") return "/savings";
@@ -127,7 +127,7 @@ export function navHrefForCurrent(current: string): MockupNavHref {
 }
 
 export const HOME_AFFORDABILITY_NOTE =
-  "A Home Affordability calculator (/home-affordability) is in the architecture for a later day. It is not published on this mockup — Day 1 does not ship a thin placeholder URL.";
+  "A calculator for how much house a family can realistically afford is next. It is not on this page yet."
 
 export const CARD_TITLE: Record<string, string> = {
   "/longevity": "How long before I go broke",
