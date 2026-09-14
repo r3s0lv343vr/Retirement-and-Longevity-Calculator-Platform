@@ -4,11 +4,20 @@ export type MortgageInput = {
   annualRate: number;
   termYears: number;
   extraMonthly: number;
+  extraAnnual: number;
+  extraOneTime: number;
+  extraOneTimeMonth: number;
   propertyTaxAnnual: number;
   homeInsuranceAnnual: number;
   hoaMonthly: number;
   pmiMonthly: number;
   maintenanceAnnual: number;
+  taxGrowthRate: number;
+  insuranceGrowthRate: number;
+  hoaGrowthRate: number;
+  closingCost: number;
+  movingCost: number;
+  furnishingCost: number;
   annualIncome: number;
   foodMonthly: number;
   schoolMonthly: number;
@@ -38,11 +47,20 @@ export const MORTGAGE_DEFAULT: MortgageInput = {
   annualRate: 0.065,
   termYears: 30,
   extraMonthly: 0,
+  extraAnnual: 0,
+  extraOneTime: 0,
+  extraOneTimeMonth: 1,
   propertyTaxAnnual: 6_375,
   homeInsuranceAnnual: 1_800,
   hoaMonthly: 0,
   pmiMonthly: 0,
   maintenanceAnnual: 4_250,
+  taxGrowthRate: 0.026,
+  insuranceGrowthRate: 0.026,
+  hoaGrowthRate: 0.026,
+  closingCost: 8_500,
+  movingCost: 2_000,
+  furnishingCost: 3_000,
   annualIncome: 96_000,
   foodMonthly: 800,
   schoolMonthly: 0,

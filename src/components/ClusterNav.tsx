@@ -5,13 +5,13 @@ import type { TrustPath } from "@/lib/trust";
 const LINKS = [
   { href: "/", label: HUB_NAME },
   { href: "/longevity", label: "How long" },
-  { href: "/mortgage", label: "Mortgage" },
   { href: "/need", label: "How much" },
   { href: "/when", label: "When" },
   { href: "/claim", label: "67 vs 70" },
   { href: "/housing", label: "Housing" },
   { href: "/child", label: "Child" },
   { href: "/goal", label: "Goal" },
+  { href: "/mortgage", label: "Mortgage" },
 ] as const;
 
 export function ClusterNav({
