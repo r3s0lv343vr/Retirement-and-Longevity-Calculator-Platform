@@ -12,7 +12,7 @@ const LINKS = [
   { href: "/child", label: "Child" },
   { href: "/goal", label: "Goal" },
   { href: "/mortgage", label: "Mortgage" },
-  { href: "/mortgage/payoff", label: "Payoff" },
+  { href: "/mortgage/payoff", label: "Mortgage Payoff" },
 ] as const;
 
 export function ClusterNav({
