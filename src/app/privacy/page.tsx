@@ -21,6 +21,11 @@ export default function PrivacyPage() {
           the visitor id.
         </p>
         <p>
+          The mortgage payoff simulator runs in the browser and does not send the plan to Runaway Finance. If you use
+          “Save this plan on this device,” the plan stays in this browser’s local storage until you delete it or clear
+          site data.
+        </p>
+        <p>
           If Google AdSense is attached, Google and its partners may use cookies to serve and measure ads. You can opt
           out of personalized ads in{" "}
           <a

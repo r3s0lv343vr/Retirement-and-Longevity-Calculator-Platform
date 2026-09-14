@@ -2,33 +2,36 @@ import { AdSlot } from "@/components/AdSlot";
 import { CalculatorSeoBlock, RelatedCalculators } from "@/components/CalculatorSeo";
 import { ClusterNav } from "@/components/ClusterNav";
 import { TrustFooterLinks } from "@/components/TrustFooterLinks";
-import { MortgageApp } from "@/components/MortgageApp";
+import { PayoffApp } from "@/components/payoff/PayoffApp";
 import { JsonLd } from "@/components/JsonLd";
-import { breadcrumbJsonLd, calculatorMetadata, CALCULATOR_SEO, webPageJsonLd } from "@/lib/seo";
+import { HUB_TITLE } from "@/lib/brand";
+import { breadcrumbJsonLd, calculatorMetadata, CALCULATOR_SEO, SITE_URL, webPageJsonLd } from "@/lib/seo";
 import type { Metadata } from "next";
-import Link from "next/link";
 
-export const metadata: Metadata = calculatorMetadata("/mortgage");
+export const metadata: Metadata = calculatorMetadata("/mortgage/payoff");
 
-const seo = CALCULATOR_SEO["/mortgage"];
+const seo = CALCULATOR_SEO["/mortgage/payoff"];
 
-export default function MortgagePage() {
+function payoffBreadcrumb() {
+  const base = breadcrumbJsonLd("/mortgage");
+  return {
+    ...base,
+    itemListElement: [
+      ...(base.itemListElement as Record<string, unknown>[]),
+      { "@type": "ListItem", position: 3, name: seo.name, item: `${SITE_URL}/mortgage/payoff` },
+    ],
+  };
+}
+
+export default function MortgagePayoffPage() {
   return (
     <div className="paper-rule min-h-screen">
-      <JsonLd data={[webPageJsonLd("/mortgage"), breadcrumbJsonLd("/mortgage")]} />
-      <ClusterNav current="/mortgage" />
+      <JsonLd data={[webPageJsonLd("/mortgage/payoff"), payoffBreadcrumb()]} />
+      <ClusterNav current="/mortgage/payoff" />
       <header className="border-b border-pine/10 bg-white/80 backdrop-blur">
         <div className="mx-auto max-w-5xl px-5 py-6 sm:px-6">
           <h1 className="max-w-3xl font-serif text-3xl leading-tight text-pine sm:text-4xl">{seo.name}</h1>
-          <p className="mt-2 text-base text-muted sm:text-lg">What will this house actually cost you?</p>
-          <p className="mt-3 text-sm">
-            <Link
-              href="/mortgage/payoff"
-              className="font-medium text-pine underline decoration-pine/30 underline-offset-2 hover:decoration-pine"
-            >
-              Already have the loan? See how much faster you can pay it off
-            </Link>
-          </p>
+          <p className="mt-2 text-base text-muted sm:text-lg">How much faster can I pay off my mortgage?</p>
         </div>
       </header>
 
@@ -36,7 +39,7 @@ export default function MortgagePage() {
 
       <main className="mx-auto max-w-5xl px-5 pb-16 sm:px-6">
         <CalculatorSeoBlock seo={seo} />
-        <MortgageApp />
+        <PayoffApp />
         <RelatedCalculators seo={seo} />
       </main>
 
@@ -46,6 +49,9 @@ export default function MortgagePage() {
           <AdSlot placement="footer-2" className="mb-6 border-paper/20 bg-paper/10 text-paper/80" />
           <p className="font-serif text-xl leading-snug">{seo.name}</p>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-paper/75">{seo.limitations}</p>
+          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-paper/75">
+            {HUB_TITLE} does not receive or store this mortgage plan. Optional save stays in this browser only.
+          </p>
           <TrustFooterLinks />
         </div>
       </footer>

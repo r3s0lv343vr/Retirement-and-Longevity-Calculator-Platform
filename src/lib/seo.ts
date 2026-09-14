@@ -22,7 +22,8 @@ export type CalculatorPath =
   | "/housing"
   | "/child"
   | "/goal"
-  | "/mortgage";
+  | "/mortgage"
+  | "/mortgage/payoff";
 
 export type CalculatorSeo = {
   path: CalculatorPath;
@@ -188,9 +189,30 @@ export const CALCULATOR_SEO: Record<CalculatorPath, CalculatorSeo> = {
     limitations:
       "Educational projection only. It is not a pre-approval, a rate lock, or tax advice. Lenders use their own rules. Compare this outlook with a lender before you offer.",
     related: [
+      { href: "/mortgage/payoff", label: "See how much faster extra payments retire the loan" },
       { href: "/housing", label: "Compare later-life housing paths" },
       { href: "/goal", label: "See if competing expenses raid a savings goal" },
       { href: "/child", label: "Plan nest eggs for raising a child" },
+    ],
+  },
+  "/mortgage/payoff": {
+    path: "/mortgage/payoff",
+    name: "How Much Faster Can I Pay Off My Mortgage",
+    question: "What extra gets this loan paid off sooner — or by a date I choose?",
+    title: "Mortgage Payoff Calculator – How Much Faster?",
+    description:
+      "See how extra monthly, annual, and lump-sum payments change your payoff date, years reclaimed, and interest avoided. Compare strategies in your browser.",
+    eyebrow: "Mortgage payoff calculator",
+    seoCall:
+      "See how much faster this mortgage could be gone. Extra monthly, annual, and lump-sum events stay in the browser. Nothing is stored on Runaway Finance.",
+    howItWorks:
+      "The page amortizes month by month in your browser. Quick extra, a freedom-date solver, and named strategies share one event engine. Timing, pauses, and paycheck extras are the same simulation — not a separate calculator.",
+    limitations:
+      "Educational estimate only. It is not a servicer payoff quote. Extra payments are applied to principal and do not recast the scheduled payment. Lender rules can forbid some extras you model.",
+    related: [
+      { href: "/mortgage", label: "See what the house actually costs to own" },
+      { href: "/goal", label: "See if competing expenses raid a savings goal" },
+      { href: "/housing", label: "Compare later-life housing paths" },
     ],
   },
 };
@@ -211,8 +233,8 @@ export const HUB_CLUSTERS: { id: string; title: string; note: string; paths: Cal
   {
     id: "family",
     title: "Family and life planning",
-    note: "A house payment beside life costs, then readiness for a child through 18 and university.",
-    paths: ["/mortgage", "/child"],
+    note: "A house payment beside life costs, then paying that loan off faster, then readiness for a child through 18 and university.",
+    paths: ["/mortgage", "/mortgage/payoff", "/child"],
   },
   {
     id: "goals",

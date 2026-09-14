@@ -23,3 +23,12 @@ export function formatMonths(months: number): string {
   if (rem === 0) return `${whole} months (${years} year${years === 1 ? "" : "s"})`;
   return `${whole} months (${years} year${years === 1 ? "" : "s"} ${rem} month${rem === 1 ? "" : "s"})`;
 }
+
+export function formatYearsMonths(months: number): string {
+  const whole = Math.max(0, Math.round(months));
+  const years = Math.floor(whole / 12);
+  const rem = whole % 12;
+  if (years <= 0) return `${whole} month${whole === 1 ? "" : "s"}`;
+  if (rem === 0) return `${years} year${years === 1 ? "" : "s"}`;
+  return `${years} year${years === 1 ? "" : "s"} ${rem} month${rem === 1 ? "" : "s"}`;
+}

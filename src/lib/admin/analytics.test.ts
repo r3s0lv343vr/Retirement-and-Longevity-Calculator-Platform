@@ -31,7 +31,7 @@ describe("admin catalog matches the public site", () => {
     expect(TOOL_LABELS.longevity).toBe(CALCULATOR_SEO["/longevity"].name);
     expect(TOOL_LABELS.child).toBe(CALCULATOR_SEO["/child"].name);
     expect(TOOL_LABELS.goal).toBe(CALCULATOR_SEO["/goal"].name);
-    expect(KNOWN_PATHS).toHaveLength(13);
+    expect(KNOWN_PATHS).toHaveLength(14);
     expect(CALCULATOR_TOOLS).toHaveLength(8);
   });
 
@@ -54,6 +54,7 @@ describe("normalizePath", () => {
     expect(normalizePath("/child")).toBe("/child");
     expect(normalizePath("/goal?x=1")).toBe("/goal");
     expect(normalizePath("/mortgage")).toBe("/mortgage");
+    expect(normalizePath("/mortgage/payoff")).toBe("/mortgage/payoff");
     expect(normalizePath("/secret")).toBe("other");
   });
 });
