@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AdSidebar, AdSlot } from "@/components/AdSlot";
 import { LocalPlanControls } from "@/components/payoff/LocalPlanControls";
+import { PayoffCompileDownloadButton } from "@/components/payoff/PayoffCompileDownloadButton";
 import { PayoffForm } from "@/components/payoff/PayoffForm";
 import { PayoffResults } from "@/components/payoff/PayoffResults";
 import { calculatorAdGridClass } from "@/lib/ads";
@@ -121,6 +122,7 @@ export function PayoffApp() {
                 URL.revokeObjectURL(url);
               }}
             />
+            <PayoffCompileDownloadButton studio={studio} input={values} />
             <AdSlot placement="after-stats" />
           </>
         ) : null}
