@@ -9,7 +9,6 @@ export const metadata: Metadata = {
   title: "Buying a Home – Mortgage & Ownership Cost | Runaway Finance",
   description:
     "See what a house really costs once tax, insurance and life sit beside the payment, and how extra payments can retire the loan sooner.",
-  robots: { index: false, follow: false },
   alternates: { canonical: `${SITE_URL}/home` },
 };
 

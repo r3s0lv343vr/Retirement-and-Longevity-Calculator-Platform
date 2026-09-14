@@ -1,15 +1,15 @@
 import Link from "next/link";
 import { HUB_NAME } from "@/lib/brand";
-import { NAV_LINKS, navHrefForCurrent, type JourneyPath, type MockupNavHref } from "@/lib/journeys";
+import { NAV_LINKS, navHrefForCurrent, type JourneyPath, type NavHref } from "@/lib/journeys";
 import type { CalculatorPath } from "@/lib/seo";
 import type { TrustPath } from "@/lib/trust";
 
 export function ClusterNav({
   current,
 }: {
-  current: "/" | CalculatorPath | JourneyPath | "/mockup" | TrustPath;
+  current: "/" | CalculatorPath | JourneyPath | TrustPath;
 }) {
-  const activeHref: MockupNavHref = navHrefForCurrent(current);
+  const activeHref: NavHref = navHrefForCurrent(current);
   return (
     <>
       <nav className="relative z-20 overflow-visible border-b border-pine/20 bg-pine text-paper" aria-label="Family finance">

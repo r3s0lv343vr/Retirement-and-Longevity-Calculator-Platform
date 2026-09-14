@@ -23,7 +23,6 @@ export const KNOWN_PATHS = [
   "/savings",
   "/retirement",
   "/guides",
-  "/mockup",
   ...TRUST_PATHS,
 ] as const;
 export type KnownPath = (typeof KNOWN_PATHS)[number];
@@ -58,7 +57,6 @@ export const PATH_LABELS: Record<string, string> = {
   "/savings": "Building Savings",
   "/retirement": "Planning Retirement",
   "/guides": "Guides",
-  "/mockup": "Day 1 mockup notes",
   "/about": TRUST_PAGES["/about"].name,
   "/contact": TRUST_PAGES["/contact"].name,
   "/privacy": TRUST_PAGES["/privacy"].name,

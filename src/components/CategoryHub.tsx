@@ -58,7 +58,7 @@ export function CategoryHub({ journey }: { journey: Journey }) {
         <div className="mx-auto max-w-5xl px-5 py-8 sm:px-6">
           <p className="font-serif text-xl leading-snug">{journey.title}</p>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-paper/75">
-            Educational projection only. Existing calculator URLs are unchanged.
+            Educational projection only. It is not tax, investment, or medical advice.
           </p>
           <TrustFooterLinks />
         </div>

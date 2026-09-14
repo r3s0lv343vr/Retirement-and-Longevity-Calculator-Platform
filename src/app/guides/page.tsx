@@ -11,7 +11,6 @@ export const metadata: Metadata = {
   title: "Guides – How to Use These Family Finance Calculators",
   description:
     "Short guides that connect family, home, savings and retirement decisions to the Runaway Finance calculators. Not a blog of thin articles.",
-  robots: { index: false, follow: false },
   alternates: { canonical: `${SITE_URL}/guides` },
 };
 
