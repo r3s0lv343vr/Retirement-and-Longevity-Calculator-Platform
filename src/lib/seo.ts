@@ -14,7 +14,15 @@ export const HUB_SEO_TITLE = `${HUB_NAME} | Financial Planning Calculators for R
 export const HUB_SEO_DESCRIPTION =
   "Free financial planning calculators for retirement, savings, Social Security, family costs and major life goals. Test your numbers and explore how financial decisions may affect your future.";
 
-export type CalculatorPath = "/longevity" | "/need" | "/when" | "/claim" | "/housing" | "/child" | "/goal";
+export type CalculatorPath =
+  | "/longevity"
+  | "/need"
+  | "/when"
+  | "/claim"
+  | "/housing"
+  | "/child"
+  | "/goal"
+  | "/mortgage";
 
 export type CalculatorSeo = {
   path: CalculatorPath;
@@ -141,7 +149,10 @@ export const CALCULATOR_SEO: Record<CalculatorPath, CalculatorSeo> = {
       "Year-one living is monthly cost × 12. That stream grows with ordinary inflation and an age-related increase. School, extras, and university use a separate education inflation rate. Two pots: through 18, then university. The outlook says when you are ready and whether school would sit on salary.",
     limitations:
       "Educational projection only. It is not a tax, 529, or college-aid estimate. Actual child costs vary widely.",
-    related: [{ href: "/goal", label: "See if competing expenses raid a savings goal" }],
+    related: [
+      { href: "/goal", label: "See if competing expenses raid a savings goal" },
+      { href: "/mortgage", label: "See if a house payment still leaves a buffer" },
+    ],
   },
   "/goal": {
     path: "/goal",
@@ -157,7 +168,30 @@ export const CALCULATOR_SEO: Record<CalculatorPath, CalculatorSeo> = {
       "Any goal. Emergency and other savings are dipped first. The earmarked pot is last. If expenses keep overflowing, that pot can be compromised or dissolved so the goal is never reached.",
     limitations:
       "Educational projection only. It does not model credit, taxes, or emergency-fund rules beyond the amounts you enter.",
-    related: [{ href: "/child", label: "Plan nest eggs for raising a child" }],
+    related: [
+      { href: "/child", label: "Plan nest eggs for raising a child" },
+      { href: "/mortgage", label: "See if a house payment still leaves a buffer" },
+    ],
+  },
+  "/mortgage": {
+    path: "/mortgage",
+    name: "Can I Get a Mortgage",
+    question: "After the house payment, tax, insurance, and the rest of life, is there still a buffer?",
+    title: "Can I Get a Mortgage? Home Affordability Calculator",
+    description:
+      "See whether the house payment still leaves a buffer after taxes, insurance, HOA, and life costs inflate. Compare two loans. Investments can cover a short year.",
+    eyebrow: "Mortgage affordability calculator",
+    seoCall:
+      "See whether you can carry this house once tax, insurance, HOA, PMI, and everyday costs sit beside the payment. Inflation moves those costs. An investment pile can cover a short year. Compare a second rate or term on the same life.",
+    howItWorks:
+      "The outlook amortizes the loan month by month, then steps year by year like the other tools. Property tax, home insurance, HOA, upkeep, food, school, travel, extras, dependents, and health inflate. Car and other loans stay flat and then stop. PMI drops when loan-to-value reaches 80%. Surplus cash feeds the investment pile; a short year draws it. A second loan uses the same life costs.",
+    limitations:
+      "Educational projection only. It is not a pre-approval, a rate lock, or tax advice. Lenders use their own rules. Compare this outlook with a lender before you offer.",
+    related: [
+      { href: "/housing", label: "Compare later-life housing paths" },
+      { href: "/goal", label: "See if competing expenses raid a savings goal" },
+      { href: "/child", label: "Plan nest eggs for raising a child" },
+    ],
   },
 };
 
@@ -177,8 +211,8 @@ export const HUB_CLUSTERS: { id: string; title: string; note: string; paths: Cal
   {
     id: "family",
     title: "Family and life planning",
-    note: "Readiness for a baby, then two nest eggs through 18 and university.",
-    paths: ["/child"],
+    note: "A house payment beside life costs, then readiness for a child through 18 and university.",
+    paths: ["/mortgage", "/child"],
   },
   {
     id: "goals",

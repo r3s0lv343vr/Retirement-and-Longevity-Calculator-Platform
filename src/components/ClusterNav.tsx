@@ -11,12 +11,23 @@ const LINKS = [
   { href: "/housing", label: "Housing" },
   { href: "/child", label: "Child" },
   { href: "/goal", label: "Goal" },
+  { href: "/mortgage", label: "Mortgage" },
 ] as const;
 
 export function ClusterNav({
   current,
 }: {
-  current: "/" | "/longevity" | "/need" | "/when" | "/claim" | "/housing" | "/child" | "/goal" | TrustPath;
+  current:
+    | "/"
+    | "/longevity"
+    | "/need"
+    | "/when"
+    | "/claim"
+    | "/housing"
+    | "/child"
+    | "/goal"
+    | "/mortgage"
+    | TrustPath;
 }) {
   return (
     <>

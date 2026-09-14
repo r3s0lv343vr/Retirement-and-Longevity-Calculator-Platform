@@ -10,6 +10,7 @@ describe("calculator SEO catalog", () => {
     expect(CALCULATOR_SEO["/housing"].name).toBe("Stay Home vs CCRC vs Nursing");
     expect(CALCULATOR_SEO["/child"].name).toBe("Nest Eggs for a Child");
     expect(CALCULATOR_SEO["/goal"].name).toBe("Will the Goal Survive");
+    expect(CALCULATOR_SEO["/mortgage"].name).toBe("Can I Get a Mortgage");
   });
 
   it("gives each calculator a unique title and description", () => {

@@ -16,11 +16,12 @@ export const KNOWN_PATHS = [
   "/housing",
   "/child",
   "/goal",
+  "/mortgage",
   ...TRUST_PATHS,
 ] as const;
 export type KnownPath = (typeof KNOWN_PATHS)[number];
 
-export const CALCULATOR_TOOLS = ["longevity", "need", "when", "claim", "housing", "child", "goal"] as const;
+export const CALCULATOR_TOOLS = ["longevity", "need", "when", "claim", "housing", "child", "goal", "mortgage"] as const;
 export type CalculatorTool = (typeof CALCULATOR_TOOLS)[number];
 
 export const TOOL_LABELS: Record<CalculatorTool, string> = {
@@ -31,6 +32,7 @@ export const TOOL_LABELS: Record<CalculatorTool, string> = {
   housing: CALCULATOR_SEO["/housing"].name,
   child: CALCULATOR_SEO["/child"].name,
   goal: CALCULATOR_SEO["/goal"].name,
+  mortgage: CALCULATOR_SEO["/mortgage"].name,
 };
 
 export const PATH_LABELS: Record<string, string> = {
@@ -42,6 +44,7 @@ export const PATH_LABELS: Record<string, string> = {
   "/housing": CALCULATOR_SEO["/housing"].name,
   "/child": CALCULATOR_SEO["/child"].name,
   "/goal": CALCULATOR_SEO["/goal"].name,
+  "/mortgage": CALCULATOR_SEO["/mortgage"].name,
   "/about": TRUST_PAGES["/about"].name,
   "/contact": TRUST_PAGES["/contact"].name,
   "/privacy": TRUST_PAGES["/privacy"].name,
