@@ -42,9 +42,9 @@ export const AD_SLOTS: Record<
 
 /** Where each live slot actually appears. Keep in step with the public pages. */
 export const AD_SLOT_USAGE: { placement: AdPlacement; where: string }[] = [
-  { placement: "header-leaderboard", where: "Hub and every calculator" },
-  { placement: "footer", where: "Hub and every calculator" },
-  { placement: "footer-2", where: "Hub and every calculator" },
+  { placement: "header-leaderboard", where: "Home, journey pages, guides, and every calculator" },
+  { placement: "footer", where: "Home, journey pages, guides, and every calculator" },
+  { placement: "footer-2", where: "Home, journey pages, guides, and every calculator" },
   { placement: "after-intro", where: "Every calculator" },
   { placement: "form-break-1", where: "Every calculator form" },
   { placement: "form-break-2", where: "How long form · Child form" },
