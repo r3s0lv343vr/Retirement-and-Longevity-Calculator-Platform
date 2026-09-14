@@ -52,7 +52,7 @@ export function ClusterNav({
                   href={link.href}
                   aria-current={active ? "page" : undefined}
                   className={[
-                    "inline-flex min-h-11 items-center rounded-md px-3 py-2 text-base leading-snug sm:min-h-12 sm:px-3.5 sm:text-lg",
+                    "inline-flex min-h-11 items-center rounded-md px-2.5 py-2 text-sm leading-snug sm:min-h-12 sm:px-3 sm:text-base",
                     home ? "font-serif" : null,
                     active
                       ? "bg-paper/15 font-semibold text-paper"
