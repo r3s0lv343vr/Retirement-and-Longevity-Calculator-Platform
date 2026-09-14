@@ -37,7 +37,7 @@ export function ClusterNav({
   return (
     <>
       <nav className="relative z-20 overflow-visible border-b border-pine/20 bg-pine text-paper" aria-label="Calculators">
-        <div className="mx-auto flex max-w-5xl items-end gap-1 px-4 pt-3 pb-2 sm:gap-1.5 sm:px-6 sm:pt-3.5 sm:pb-2.5">
+        <div className="mx-auto flex max-w-5xl items-start gap-1 px-4 pt-3 pb-2 sm:items-end sm:gap-1.5 sm:px-6 sm:pt-3.5 sm:pb-2.5">
           <Link href="/" className="relative z-30 -mb-4 mr-3 shrink-0 sm:-mb-5 sm:mr-4" aria-label={HUB_NAME}>
             <img
               src="/rf-mark.png"
