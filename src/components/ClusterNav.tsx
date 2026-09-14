@@ -2,10 +2,10 @@ import Link from "next/link";
 import { HUB_NAME } from "@/lib/brand";
 import type { TrustPath } from "@/lib/trust";
 
-const HOME = { href: "/", label: HUB_NAME } as const;
-
-const PRIMARY = [
+const LINKS = [
+  { href: "/", label: HUB_NAME },
   { href: "/longevity", label: "How long" },
+  { href: "/mortgage", label: "Mortgage" },
   { href: "/need", label: "How much" },
   { href: "/when", label: "When" },
   { href: "/claim", label: "67 vs 70" },
@@ -13,11 +13,6 @@ const PRIMARY = [
   { href: "/child", label: "Child" },
   { href: "/goal", label: "Goal" },
 ] as const;
-
-const MORTGAGE = { href: "/mortgage", label: "Mortgage" } as const;
-
-const HOME_LINK_CLASS =
-  "inline-flex min-h-11 items-center rounded-md px-3 py-2 font-serif text-base leading-snug sm:min-h-12 sm:px-3.5 sm:text-lg";
 
 export function ClusterNav({
   current,
@@ -47,54 +42,33 @@ export function ClusterNav({
               className="h-[84px] w-[84px] bg-paper shadow-[0_2px_8px_rgba(20,34,28,0.18)] sm:h-24 sm:w-24"
             />
           </Link>
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-1 sm:gap-1.5">
-              <NavLink href={HOME.href} label={HOME.label} current={current} home />
-              {PRIMARY.map((link) => (
-                <NavLink key={link.href} href={link.href} label={link.label} current={current} />
-              ))}
-            </div>
-            <div className="flex flex-wrap items-center gap-1 sm:gap-1.5">
-              <span aria-hidden className={`${HOME_LINK_CLASS} invisible select-none`}>
-                {HOME.label}
-              </span>
-              <NavLink href={MORTGAGE.href} label={MORTGAGE.label} current={current} />
-            </div>
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1 sm:gap-1.5">
+            {LINKS.map((link) => {
+              const active = current === link.href;
+              const home = link.href === "/";
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  aria-current={active ? "page" : undefined}
+                  className={[
+                    "inline-flex min-h-11 items-center rounded-md px-3 py-2 text-base leading-snug sm:min-h-12 sm:px-3.5 sm:text-lg",
+                    home ? "font-serif" : null,
+                    active
+                      ? "bg-paper/15 font-semibold text-paper"
+                      : "text-paper/85 transition hover:bg-paper/10 hover:text-paper",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </div>
         </div>
       </nav>
       <div aria-hidden className="h-4 sm:h-5" />
     </>
-  );
-}
-
-function NavLink({
-  href,
-  label,
-  current,
-  home = false,
-}: {
-  href: string;
-  label: string;
-  current: string;
-  home?: boolean;
-}) {
-  const active = current === href;
-  return (
-    <Link
-      href={href}
-      aria-current={active ? "page" : undefined}
-      className={[
-        "inline-flex min-h-11 items-center rounded-md px-3 py-2 text-base leading-snug sm:min-h-12 sm:px-3.5 sm:text-lg",
-        home ? "font-serif" : null,
-        active
-          ? "bg-paper/15 font-semibold text-paper"
-          : "text-paper/85 transition hover:bg-paper/10 hover:text-paper",
-      ]
-        .filter(Boolean)
-        .join(" ")}
-    >
-      {label}
-    </Link>
   );
 }
