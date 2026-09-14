@@ -71,6 +71,8 @@ export default function GuidesPage() {
       </main>
       <footer className="border-t border-pine/10 bg-pine text-paper">
         <div className="mx-auto max-w-5xl px-5 py-8 sm:px-6">
+          <AdSlot placement="footer" className="mb-4 border-paper/20 bg-paper/10 text-paper/80" />
+          <AdSlot placement="footer-2" className="mb-6 border-paper/20 bg-paper/10 text-paper/80" />
           <p className="font-serif text-xl leading-snug">{HUB_TITLE}</p>
           <TrustFooterLinks />
         </div>
