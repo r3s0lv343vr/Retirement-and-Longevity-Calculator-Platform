@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { HUB_BLURB, HUB_NAME, HUB_TITLE } from "./brand";
 
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
-  "https://retirement-and-longevity-calculator.vercel.app";
+  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://runaway.finance";
 
 export const SEO_POSITIONING = "Plan the decision, not just the number.";
 export const SEO_TRUST =

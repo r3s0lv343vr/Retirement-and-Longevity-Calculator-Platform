@@ -16,5 +16,8 @@ describe("family-finance journeys", () => {
     expect(navHrefForCurrent("/longevity")).toBe("/retirement");
     expect(navHrefForCurrent("/housing")).toBe("/retirement");
     expect(navHrefForCurrent("/about")).toBe("/about");
+    expect(navHrefForCurrent("/guides")).toBe("/guides");
+    expect(navHrefForCurrent("/guides/family")).toBe("/guides");
+    expect(navHrefForCurrent("/guides/family/can-i-afford-to-have-a-baby")).toBe("/guides");
   });
 });

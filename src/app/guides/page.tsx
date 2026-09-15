@@ -1,25 +1,19 @@
-import { AdSlot } from "@/components/AdSlot";
-import { ClusterNav } from "@/components/ClusterNav";
-import { TrustFooterLinks } from "@/components/TrustFooterLinks";
+import { GuideChrome } from "@/components/GuideChrome";
 import { TrustBar } from "@/components/CalculatorSeo";
-import { HUB_TITLE } from "@/lib/brand";
+import { BABY_AFFORD_GUIDE, GUIDE_THEMES } from "@/lib/guides";
 import { SITE_URL } from "@/lib/seo";
 import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Guides – How to Use These Family Finance Calculators",
+  title: "Guides – Family Finance Articles and Calculator Paths",
   description:
-    "Short guides that connect family, home, savings and retirement decisions to the Runaway Finance calculators. Not a blog of thin articles.",
+    "Family & Children guides plus short paths to the Runaway Finance calculators for home, savings and retirement decisions.",
+  robots: { index: true, follow: true },
   alternates: { canonical: `${SITE_URL}/guides` },
 };
 
-const GUIDES = [
-  {
-    href: "/child",
-    title: "What having a child could cost through 18 and university",
-    body: "Use Nest Eggs for a Child to size living, school and a separate university pot, then the yearly add that keeps those costs off salary.",
-  },
+const CALCULATOR_PATHS = [
   {
     href: "/mortgage",
     title: "What the house actually costs once tax and life sit beside the payment",
@@ -43,40 +37,61 @@ const GUIDES = [
 ];
 
 export default function GuidesPage() {
+  const familyTheme = GUIDE_THEMES[0]!;
   return (
-    <div className="paper-rule min-h-screen">
-      <ClusterNav current="/guides" />
-      <header className="border-b border-pine/10 bg-white/80 backdrop-blur">
+    <GuideChrome
+      current="/guides"
+      header={
         <div className="mx-auto max-w-5xl px-5 py-6 sm:px-6">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Family finance</p>
           <h1 className="mt-2 max-w-3xl font-serif text-3xl leading-tight text-pine sm:text-4xl">Guides</h1>
           <p className="mt-2 max-w-3xl text-base text-muted sm:text-lg">
-            Short paths from a household question to the calculator that answers it. These are not standalone articles.
+            Start with Family &amp; Children, then use the calculator paths for home, savings and retirement.
           </p>
         </div>
-      </header>
-      <AdSlot placement="header-leaderboard" className="mx-auto max-w-5xl px-5 py-4 sm:px-6" />
-      <main className="mx-auto max-w-5xl px-5 pb-16 pt-4 sm:px-6">
-        <TrustBar />
-        <ul className="mt-8 space-y-5">
-          {GUIDES.map((guide) => (
+      }
+    >
+      <TrustBar />
+      <section className="mt-8" aria-labelledby="family-children-theme">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Theme</p>
+        <h2 id="family-children-theme" className="mt-2 font-serif text-2xl text-pine">
+          {familyTheme.title}
+        </h2>
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">{familyTheme.description}</p>
+        <ul className="mt-5 space-y-5">
+          <li>
+            <Link href={BABY_AFFORD_GUIDE.path} className="card block transition hover:border-pine/30">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Guide</p>
+              <h3 className="mt-2 font-serif text-xl text-pine">{BABY_AFFORD_GUIDE.h1}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">{BABY_AFFORD_GUIDE.description}</p>
+            </Link>
+          </li>
+          <li>
+            <Link href="/guides/family" className="card block transition hover:border-pine/30">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Theme hub</p>
+              <h3 className="mt-2 font-serif text-xl text-pine">All Family &amp; Children guides</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                Baby affordability plus the Nest Eggs for a Child calculator.
+              </p>
+            </Link>
+          </li>
+        </ul>
+      </section>
+      <section className="mt-12" aria-labelledby="calculator-paths">
+        <h2 id="calculator-paths" className="font-serif text-2xl text-pine">
+          Calculator paths
+        </h2>
+        <ul className="mt-5 space-y-5">
+          {CALCULATOR_PATHS.map((guide) => (
             <li key={guide.href}>
               <Link href={guide.href} className="card block transition hover:border-pine/30">
-                <h2 className="font-serif text-xl text-pine">{guide.title}</h2>
+                <h3 className="font-serif text-xl text-pine">{guide.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted">{guide.body}</p>
               </Link>
             </li>
           ))}
         </ul>
-      </main>
-      <footer className="border-t border-pine/10 bg-pine text-paper">
-        <div className="mx-auto max-w-5xl px-5 py-8 sm:px-6">
-          <AdSlot placement="footer" className="mb-4 border-paper/20 bg-paper/10 text-paper/80" />
-          <AdSlot placement="footer-2" className="mb-6 border-paper/20 bg-paper/10 text-paper/80" />
-          <p className="font-serif text-xl leading-snug">{HUB_TITLE}</p>
-          <TrustFooterLinks />
-        </div>
-      </footer>
-    </div>
+      </section>
+    </GuideChrome>
   );
 }

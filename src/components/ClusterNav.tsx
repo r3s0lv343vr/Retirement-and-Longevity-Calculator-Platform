@@ -1,14 +1,8 @@
 import Link from "next/link";
 import { HUB_NAME } from "@/lib/brand";
-import { NAV_LINKS, navHrefForCurrent, type JourneyPath, type NavHref } from "@/lib/journeys";
-import type { CalculatorPath } from "@/lib/seo";
-import type { TrustPath } from "@/lib/trust";
+import { NAV_LINKS, navHrefForCurrent, type NavHref } from "@/lib/journeys";
 
-export function ClusterNav({
-  current,
-}: {
-  current: "/" | CalculatorPath | JourneyPath | TrustPath;
-}) {
+export function ClusterNav({ current }: { current: string }) {
   const activeHref: NavHref = navHrefForCurrent(current);
   return (
     <>
