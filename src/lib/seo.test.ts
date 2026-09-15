@@ -31,6 +31,7 @@ describe("calculator SEO catalog", () => {
 
   it("points the sitemap at the public site", () => {
     expect(SITE_URL).toMatch(/^https:\/\//);
+    expect(SITE_URL).not.toContain("vercel.app");
     expect(HUB_SEO_TITLE).toContain("Family Finance Calculators");
   });
 });
