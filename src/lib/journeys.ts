@@ -1,3 +1,4 @@
+import type { GuidePath } from "./guides";
 import type { CalculatorPath } from "./seo";
 
 export const JOURNEY_PATHS = ["/family", "/home", "/savings", "/retirement", "/guides"] as const;
@@ -13,7 +14,7 @@ export type Journey = {
   question: string;
   intro: string;
   calculators: CalculatorPath[];
-  also: { href: CalculatorPath | JourneyPath | "/about"; label: string }[];
+  also: { href: CalculatorPath | JourneyPath | GuidePath | "/about"; label: string }[];
 };
 
 /** Unique homepage / admin assignment. Housing lives in Retirement; Home still cross-links it. */
@@ -28,6 +29,7 @@ export const JOURNEYS: Journey[] = [
       "Family costs show up as living, school, and later education — often before the rest of the household plan is settled. This journey is about whether you are ready, and what nest eggs raise a child through 18 and university.",
     calculators: ["/child"],
     also: [
+      { href: "/guides/family/can-i-afford-to-have-a-baby", label: "Read: Can I Afford to Have a Baby?" },
       { href: "/home", label: "See what a house payment would do beside a growing family" },
       { href: "/savings", label: "Check whether other goals survive the extra costs" },
     ],
@@ -106,7 +108,7 @@ export function navHrefForCurrent(current: string): NavHref {
   if (current === "/about" || current === "/contact" || current === "/privacy" || current === "/disclaimer") {
     return "/about";
   }
-  if (current === "/guides") return "/guides";
+  if (current === "/guides" || current.startsWith("/guides/")) return "/guides";
   if (current === "/family") return "/family";
   if (current === "/home") return "/home";
   if (current === "/savings") return "/savings";

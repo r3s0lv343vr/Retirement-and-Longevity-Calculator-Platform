@@ -1,4 +1,5 @@
 import { HUB_TITLE } from "@/lib/brand";
+import { GUIDE_PATHS } from "@/lib/guides";
 import { CALCULATOR_SEO, HUB_CLUSTERS, type CalculatorPath } from "@/lib/seo";
 import { TRUST_PAGES, TRUST_PATHS } from "@/lib/trust";
 
@@ -23,6 +24,7 @@ export const KNOWN_PATHS = [
   "/savings",
   "/retirement",
   "/guides",
+  ...GUIDE_PATHS,
   ...TRUST_PATHS,
 ] as const;
 export type KnownPath = (typeof KNOWN_PATHS)[number];
@@ -57,6 +59,8 @@ export const PATH_LABELS: Record<string, string> = {
   "/savings": "Building Savings",
   "/retirement": "Planning Retirement",
   "/guides": "Guides",
+  "/guides/family": "Family & Children",
+  "/guides/family/can-i-afford-to-have-a-baby": "Can I Afford to Have a Baby?",
   "/about": TRUST_PAGES["/about"].name,
   "/contact": TRUST_PAGES["/contact"].name,
   "/privacy": TRUST_PAGES["/privacy"].name,
