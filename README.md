@@ -76,7 +76,7 @@ The GitHub repo is connected. Pushes to `main` deploy production; other branches
 
 On first visit, `/admin` asks you to create a password. On a normal server it is stored hashed in `.data/admin.json`. You can change it later on the dashboard. Copy that file when you move hosts if you want the same password. You do not need to set `ADMIN_PASSWORD`.
 
-Vercel cannot keep that file across requests, so this browser also stores a hashed copy after setup or sign-in. Use the same browser to get back into `/admin` there. After you move to Hostinger, the file is enough.
+Vercel cannot keep that file across requests, so this browser may keep a hashed verifier (not the password, no session key) for 7 days so you can sign back in there. Once `.data/admin.json` exists on a normal server, that file is the lock and the browser copy is ignored and cleared.
 
 `ADMIN_PASSWORD` remains an optional override if you ever want the password in the environment instead.
 

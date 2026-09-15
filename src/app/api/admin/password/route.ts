@@ -40,9 +40,9 @@ export async function POST(request: Request) {
   }
 
   const { record } = await loadStoredAdmin();
-  const updated = await saveStoredAdmin(next, record);
+  const { record: updated, persistence } = await saveStoredAdmin(next, record);
   const token = await signAdminSession();
   const response = NextResponse.json({ ok: true });
   if (!token) return response;
-  return stampAdminAuthCookies(response, token, updated);
+  return stampAdminAuthCookies(response, token, updated, persistence);
 }

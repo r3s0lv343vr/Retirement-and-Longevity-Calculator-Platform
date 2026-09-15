@@ -41,8 +41,9 @@ export function AdminSetupForm() {
       <h1 className="font-serif text-2xl text-pine">Create admin password</h1>
       <p className="mt-2 text-sm leading-relaxed text-muted">
         Set this once. On a normal server it is stored hashed in{" "}
-        <code className="text-ink">.data/admin.json</code>. On Vercel that file cannot stick, so this browser also keeps
-        a hashed copy so you can sign back in here. You do not need a Vercel environment variable.
+        <code className="text-ink">.data/admin.json</code>. On Vercel that file cannot stick, so this browser keeps a
+        hashed verifier for 7 days (not the password) so you can sign back in here. You do not need a Vercel environment
+        variable.
       </p>
       <p className="mt-3 text-xs text-muted">
         The first person to complete this form owns the admin. Do it right after you deploy. At least{" "}
