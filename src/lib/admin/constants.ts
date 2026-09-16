@@ -61,6 +61,7 @@ export const PATH_LABELS: Record<string, string> = {
   "/guides": "Guides",
   "/guides/family": "Family & Children",
   "/guides/family/can-i-afford-to-have-a-baby": "Can I Afford to Have a Baby?",
+  "/guides/family/how-much-should-you-save-before-having-a-baby": "How Much Should You Save Before Having a Baby?",
   "/about": TRUST_PAGES["/about"].name,
   "/contact": TRUST_PAGES["/contact"].name,
   "/privacy": TRUST_PAGES["/privacy"].name,

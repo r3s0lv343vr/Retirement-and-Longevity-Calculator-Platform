@@ -30,6 +30,10 @@ export const JOURNEYS: Journey[] = [
     calculators: ["/child"],
     also: [
       { href: "/guides/family/can-i-afford-to-have-a-baby", label: "Read: Can I Afford to Have a Baby?" },
+      {
+        href: "/guides/family/how-much-should-you-save-before-having-a-baby",
+        label: "Read: How Much Should You Save Before Having a Baby?",
+      },
       { href: "/home", label: "See what a house payment would do beside a growing family" },
       { href: "/savings", label: "Check whether other goals survive the extra costs" },
     ],

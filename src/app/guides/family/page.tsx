@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { GuideChrome } from "@/components/GuideChrome";
 import { TrustBar } from "@/components/CalculatorSeo";
 import { HUB_TITLE } from "@/lib/brand";
-import { BABY_AFFORD_GUIDE, FAMILY_GUIDE_THEME_PATH, familyGuideBreadcrumbJsonLd, familyGuideThemeMetadataUrl } from "@/lib/guides";
+import { FAMILY_GUIDE_THEME_PATH, GUIDE_THEMES, familyGuideBreadcrumbJsonLd, familyGuideThemeMetadataUrl } from "@/lib/guides";
 
 export const metadata: Metadata = {
   title: "Family & Children Guides | Runaway Finance",
@@ -48,20 +48,22 @@ export default function FamilyGuidesPage() {
           <p className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-pine">Guides</p>
           <h1 className="mt-2 max-w-3xl font-serif text-3xl leading-tight text-pine sm:text-4xl">Family &amp; Children</h1>
           <p className="mt-2 max-w-3xl text-base text-muted sm:text-lg">
-            Affordability, childcare, leave, and nest eggs for raising a child.
+            Affordability, how much to save, and nest eggs for raising a child.
           </p>
         </div>
       }
     >
       <TrustBar />
       <ul className="mt-8 space-y-5">
-        <li>
-          <Link href={BABY_AFFORD_GUIDE.path} className="card block transition hover:border-pine/30">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Guide</p>
-            <h2 className="mt-2 font-serif text-xl text-pine">{BABY_AFFORD_GUIDE.h1}</h2>
-            <p className="mt-2 text-sm leading-relaxed text-muted">{BABY_AFFORD_GUIDE.description}</p>
-          </Link>
-        </li>
+        {GUIDE_THEMES[0]!.articles.map((article) => (
+          <li key={article.path}>
+            <Link href={article.path} className="card block transition hover:border-pine/30">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Guide</p>
+              <h2 className="mt-2 font-serif text-xl text-pine">{article.h1}</h2>
+              <p className="mt-2 text-sm leading-relaxed text-muted">{article.description}</p>
+            </Link>
+          </li>
+        ))}
         <li>
           <Link href="/child" className="card block transition hover:border-pine/30">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Calculator</p>

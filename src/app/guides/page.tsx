@@ -1,6 +1,6 @@
 import { GuideChrome } from "@/components/GuideChrome";
 import { TrustBar } from "@/components/CalculatorSeo";
-import { BABY_AFFORD_GUIDE, GUIDE_THEMES } from "@/lib/guides";
+import { GUIDE_THEMES } from "@/lib/guides";
 import { SITE_URL } from "@/lib/seo";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -59,19 +59,21 @@ export default function GuidesPage() {
         </h2>
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">{familyTheme.description}</p>
         <ul className="mt-5 space-y-5">
-          <li>
-            <Link href={BABY_AFFORD_GUIDE.path} className="card block transition hover:border-pine/30">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Guide</p>
-              <h3 className="mt-2 font-serif text-xl text-pine">{BABY_AFFORD_GUIDE.h1}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted">{BABY_AFFORD_GUIDE.description}</p>
-            </Link>
-          </li>
+          {familyTheme.articles.map((article) => (
+            <li key={article.path}>
+              <Link href={article.path} className="card block transition hover:border-pine/30">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Guide</p>
+                <h3 className="mt-2 font-serif text-xl text-pine">{article.h1}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{article.description}</p>
+              </Link>
+            </li>
+          ))}
           <li>
             <Link href="/guides/family" className="card block transition hover:border-pine/30">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Theme hub</p>
               <h3 className="mt-2 font-serif text-xl text-pine">All Family &amp; Children guides</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted">
-                Baby affordability plus the Nest Eggs for a Child calculator.
+                Baby affordability, how much to save, and the Nest Eggs for a Child calculator.
               </p>
             </Link>
           </li>

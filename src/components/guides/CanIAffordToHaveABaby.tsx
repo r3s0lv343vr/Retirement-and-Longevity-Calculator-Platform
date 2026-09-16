@@ -376,6 +376,11 @@ export function CanIAffordToHaveABaby() {
             </Link>
           </li>
           <li>
+            <Link href="/guides/family/how-much-should-you-save-before-having-a-baby" className={pineLink}>
+              How much money should you have saved before having a baby?
+            </Link>
+          </li>
+          <li>
             <Link href="/guides/family" className={pineLink}>
               More Family &amp; Children guides
             </Link>
