@@ -3,9 +3,10 @@ import { SITE_URL } from "./seo";
 
 export const FAMILY_GUIDE_THEME_PATH = "/guides/family" as const;
 export const BABY_AFFORD_PATH = "/guides/family/can-i-afford-to-have-a-baby" as const;
+export const BABY_SAVE_PATH = "/guides/family/how-much-should-you-save-before-having-a-baby" as const;
 
 export type GuideThemePath = typeof FAMILY_GUIDE_THEME_PATH;
-export type GuideArticlePath = typeof BABY_AFFORD_PATH;
+export type GuideArticlePath = typeof BABY_AFFORD_PATH | typeof BABY_SAVE_PATH;
 export type GuidePath = GuideThemePath | GuideArticlePath;
 
 export type GuideFaq = { question: string; answer: string };
@@ -62,20 +63,77 @@ export const BABY_AFFORD_GUIDE = {
   faqs: BABY_AFFORD_FAQS,
 };
 
+export const BABY_SAVE_FAQS: GuideFaq[] = [
+  {
+    question: "Do I need the entire cost of raising a child saved before having a baby?",
+    answer:
+      "No. Nest Eggs for a Child solves for the starting balance that, with the yearly add you enter, can pay each raising year without the pot going negative. Future years can still be funded by later saving and return. That is not the same as having every future dollar in cash today.",
+  },
+  {
+    question: "Is $20,000 enough to have a baby?",
+    answer:
+      "The savings balance alone cannot answer that. In the calculator it depends on Child cost / month, school and extras, the two yearly adds, inflation, the age-related increase, education inflation, return, and years until the baby. Paid leave and setup costs sit outside those nest eggs as cash you may need soon.",
+  },
+  {
+    question: "Should my emergency fund count as baby savings?",
+    answer:
+      "Avoid counting the same dollars twice. The raising and university pots are earmarked. An emergency reserve is for unexpected shocks, not the planned child-cost stream.",
+  },
+  {
+    question: "Should childcare be included?",
+    answer:
+      "Yes when you expect to pay for it. Enter it in Child cost / month. The calculator grows that living stream through the year before university. It does not take a childcare stop date, so a few years of care entered as a permanent monthly cost will overstate later years.",
+  },
+  {
+    question: "How should parental leave be calculated?",
+    answer:
+      "Estimate the difference between normal take-home income and expected take-home income during leave, and multiply by the months affected. Hold that as a near-term cash reserve. Nest Eggs for a Child does not have a parental-leave input.",
+  },
+  {
+    question: "Should college be included?",
+    answer:
+      "Yes as a separate university nest egg. The calculator funds each university year, inflated at education inflation, from a second pot. It is not one inflated lump discounted once at age 18.",
+  },
+  {
+    question: "What investment return should I assume?",
+    answer:
+      "No return is guaranteed. Use the Return on these pots field and test a lower-return case. The nest egg is the starting balance that survives the year-by-year path at the rate you enter.",
+  },
+  {
+    question: "What inflation rate should I use?",
+    answer:
+      "Living costs use Inflation and a separate Age-related increase. School, co-curricular extras, and university use Education inflation. No rate is guaranteed for 18 years, so change them and compare.",
+  },
+];
+
+export const BABY_SAVE_GUIDE = {
+  path: BABY_SAVE_PATH,
+  themePath: FAMILY_GUIDE_THEME_PATH,
+  h1: "How Much Money Should You Have Saved Before Having a Baby?",
+  title: "How Much Should You Save Before Having a Baby? | Runaway Finance",
+  description:
+    "Learn how to estimate baby savings using the Nest Eggs for a Child calculator: living costs, inflation, age-related increase, yearly adds, and a separate university nest egg.",
+  reviewed: "September 2026",
+  datePublished: "2026-09-16",
+  dateModified: "2026-09-16",
+  primaryCalculator: "/child" as const,
+  faqs: BABY_SAVE_FAQS,
+};
+
 export const GUIDE_THEMES = [
   {
     path: FAMILY_GUIDE_THEME_PATH,
     title: "Family & Children",
     question: "What will a baby or a child do to household finances?",
     description:
-      "Guides on baby affordability, childcare, parental leave and the longer child-cost path. Use them with the Growing a Family calculators.",
-    articles: [BABY_AFFORD_GUIDE],
+      "Guides on baby affordability, how much to save before a child, and the nest-egg path through 18 and university. Use them with the Growing a Family calculators.",
+    articles: [BABY_AFFORD_GUIDE, BABY_SAVE_GUIDE],
   },
 ] as const;
 
-export const GUIDE_ARTICLES = [BABY_AFFORD_GUIDE] as const;
+export const GUIDE_ARTICLES = [BABY_AFFORD_GUIDE, BABY_SAVE_GUIDE] as const;
 
-export const GUIDE_PATHS = [FAMILY_GUIDE_THEME_PATH, BABY_AFFORD_PATH] as const;
+export const GUIDE_PATHS = [FAMILY_GUIDE_THEME_PATH, BABY_AFFORD_PATH, BABY_SAVE_PATH] as const;
 
 export function guideThemeByPath(path: string) {
   return GUIDE_THEMES.find((theme) => theme.path === path);
@@ -137,13 +195,67 @@ export function babyAffordArticleJsonLd(): Record<string, unknown> {
 }
 
 export function babyAffordFaqJsonLd(): Record<string, unknown> {
+  return guideFaqJsonLd(BABY_AFFORD_FAQS);
+}
+
+export function babySaveCanonicalUrl() {
+  return `${SITE_URL}${BABY_SAVE_PATH}`;
+}
+
+export function guideFaqJsonLd(faqs: GuideFaq[]): Record<string, unknown> {
   return {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: BABY_AFFORD_FAQS.map((faq) => ({
+    mainEntity: faqs.map((faq) => ({
       "@type": "Question",
       name: faq.question,
       acceptedAnswer: { "@type": "Answer", text: faq.answer },
     })),
   };
+}
+
+export function guideArticleJsonLd(article: {
+  path: string;
+  h1: string;
+  description: string;
+  datePublished: string;
+  dateModified: string;
+}): Record<string, unknown> {
+  const url = `${SITE_URL}${article.path}`;
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: article.h1,
+    description: article.description,
+    datePublished: article.datePublished,
+    dateModified: article.dateModified,
+    author: { "@type": "Organization", name: HUB_NAME },
+    publisher: { "@type": "Organization", name: HUB_TITLE },
+    mainEntityOfPage: { "@type": "WebPage", "@id": url },
+    url,
+  };
+}
+
+export function guideArticleBreadcrumbJsonLd(article: { path: string; h1: string }): Record<string, unknown> {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Guides", item: `${SITE_URL}/guides` },
+      { "@type": "ListItem", position: 2, name: "Family & Children", item: familyGuideThemeMetadataUrl() },
+      { "@type": "ListItem", position: 3, name: article.h1, item: `${SITE_URL}${article.path}` },
+    ],
+  };
+}
+
+export function babySaveArticleJsonLd(): Record<string, unknown> {
+  return guideArticleJsonLd(BABY_SAVE_GUIDE);
+}
+
+export function babySaveBreadcrumbJsonLd(): Record<string, unknown> {
+  return guideArticleBreadcrumbJsonLd(BABY_SAVE_GUIDE);
+}
+
+export function babySaveFaqJsonLd(): Record<string, unknown> {
+  return guideFaqJsonLd(BABY_SAVE_FAQS);
 }

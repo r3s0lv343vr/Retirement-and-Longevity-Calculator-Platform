@@ -3,10 +3,14 @@ import sitemap from "@/app/sitemap";
 import {
   BABY_AFFORD_FAQS,
   BABY_AFFORD_GUIDE,
+  BABY_SAVE_FAQS,
+  BABY_SAVE_GUIDE,
   GUIDE_PATHS,
   babyAffordArticleJsonLd,
   babyAffordBreadcrumbJsonLd,
   babyAffordFaqJsonLd,
+  babySaveArticleJsonLd,
+  babySaveBreadcrumbJsonLd,
 } from "./guides";
 import { SITE_URL } from "./seo";
 
@@ -21,6 +25,16 @@ describe("Family & Children guide catalog", () => {
     expect(BABY_AFFORD_GUIDE.description).toMatch(/childcare, parental leave/);
     expect(BABY_AFFORD_GUIDE.primaryCalculator).toBe("/child");
     expect(BABY_AFFORD_GUIDE.reviewed).toBe("September 2026");
+    expect(BABY_SAVE_GUIDE.path).toBe("/guides/family/how-much-should-you-save-before-having-a-baby");
+    expect(BABY_SAVE_GUIDE.h1).toBe("How Much Money Should You Have Saved Before Having a Baby?");
+    expect(BABY_SAVE_GUIDE.title).toBe("How Much Should You Save Before Having a Baby? | Runaway Finance");
+    expect(BABY_SAVE_GUIDE.primaryCalculator).toBe("/child");
+  });
+
+  it("lists baby-savings FAQs once for visible FAQPage structured data", () => {
+    expect(BABY_SAVE_FAQS).toHaveLength(8);
+    const names = BABY_SAVE_FAQS.map((faq) => faq.question);
+    expect(new Set(names).size).toBe(names.length);
   });
 
   it("lists every FAQ once for visible FAQPage structured data", () => {
@@ -43,6 +57,14 @@ describe("Family & Children guide catalog", () => {
       "Guides",
       "Family & Children",
       BABY_AFFORD_GUIDE.h1,
+    ]);
+    const saveArticle = babySaveArticleJsonLd();
+    const saveCrumbs = babySaveBreadcrumbJsonLd();
+    expect(saveArticle.url).toBe(`${SITE_URL}${BABY_SAVE_GUIDE.path}`);
+    expect((saveCrumbs.itemListElement as { name: string }[]).map((item) => item.name)).toEqual([
+      "Guides",
+      "Family & Children",
+      BABY_SAVE_GUIDE.h1,
     ]);
   });
 
