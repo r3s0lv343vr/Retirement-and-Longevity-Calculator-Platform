@@ -5,6 +5,8 @@ import { TrustBar } from "@/components/CalculatorSeo";
 import { HUB_TITLE } from "@/lib/brand";
 import { FAMILY_GUIDE_THEME_PATH, GUIDE_THEMES, familyGuideBreadcrumbJsonLd, familyGuideThemeMetadataUrl } from "@/lib/guides";
 
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: "Family & Children Guides | Runaway Finance",
   description:

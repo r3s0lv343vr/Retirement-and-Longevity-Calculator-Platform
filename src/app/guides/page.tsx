@@ -1,9 +1,12 @@
 import { GuideChrome } from "@/components/GuideChrome";
 import { TrustBar } from "@/components/CalculatorSeo";
-import { GUIDE_THEMES } from "@/lib/guides";
+import { GUIDE_ARTICLES, GUIDE_THEMES } from "@/lib/guides";
 import { SITE_URL } from "@/lib/seo";
 import Link from "next/link";
 import type { Metadata } from "next";
+
+/** Hostinger/CDN was holding this listing for a year; refresh after new guides ship. */
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Guides – Family Finance Articles and Calculator Paths",
@@ -52,33 +55,50 @@ export default function GuidesPage() {
       }
     >
       <TrustBar />
-      {GUIDE_THEMES.map((theme) => (
-        <section key={theme.path} className="mt-8" aria-labelledby={`${theme.path.replace(/\//g, "-")}-theme`}>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Theme</p>
-          <h2 id={`${theme.path.replace(/\//g, "-")}-theme`} className="mt-2 font-serif text-2xl text-pine">
-            {theme.title}
-          </h2>
-          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">{theme.description}</p>
-          <ul className="mt-5 space-y-5">
-            {theme.articles.map((article) => (
-              <li key={article.path}>
-                <Link href={article.path} className="card block transition hover:border-pine/30">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Guide</p>
-                  <h3 className="mt-2 font-serif text-xl text-pine">{article.h1}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted">{article.description}</p>
-                </Link>
-              </li>
-            ))}
-            <li>
-              <Link href={theme.path} className="card block transition hover:border-pine/30">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Theme hub</p>
-                <h3 className="mt-2 font-serif text-xl text-pine">All {theme.title} guides</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted">{theme.question}</p>
+      <nav aria-label="All guides" className="mt-6 max-w-3xl">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">All guides</p>
+        <ul className="mt-3 space-y-2">
+          {GUIDE_ARTICLES.map((article) => (
+            <li key={article.path}>
+              <Link
+                href={article.path}
+                className="font-medium text-pine underline decoration-pine/30 underline-offset-2 hover:decoration-pine"
+              >
+                {article.h1}
               </Link>
             </li>
-          </ul>
-        </section>
-      ))}
+          ))}
+        </ul>
+      </nav>
+      <div className="mt-10 grid gap-10 lg:grid-cols-2 lg:gap-8">
+        {GUIDE_THEMES.map((theme) => (
+          <section key={theme.path} aria-labelledby={`${theme.path.replace(/\//g, "-")}-theme`}>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Theme</p>
+            <h2 id={`${theme.path.replace(/\//g, "-")}-theme`} className="mt-2 font-serif text-2xl text-pine">
+              {theme.title}
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-muted">{theme.description}</p>
+            <ul className="mt-5 space-y-5">
+              {theme.articles.map((article) => (
+                <li key={article.path}>
+                  <Link href={article.path} className="card block h-full transition hover:border-pine/30">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Guide</p>
+                    <h3 className="mt-2 font-serif text-xl text-pine">{article.h1}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-muted">{article.description}</p>
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <Link href={theme.path} className="card block transition hover:border-pine/30">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Theme hub</p>
+                  <h3 className="mt-2 font-serif text-xl text-pine">All {theme.title} guides</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted">{theme.question}</p>
+                </Link>
+              </li>
+            </ul>
+          </section>
+        ))}
+      </div>
       <section className="mt-12" aria-labelledby="calculator-paths">
         <h2 id="calculator-paths" className="font-serif text-2xl text-pine">
           Calculator paths
