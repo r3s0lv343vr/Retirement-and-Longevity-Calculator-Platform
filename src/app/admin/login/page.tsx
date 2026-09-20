@@ -12,7 +12,7 @@ export default async function AdminLoginPage() {
   const status = await authStatus();
   const hint =
     status.persistence === "browser"
-      ? "Use the password you created in this browser. This host is not keeping .data/admin.json (typical on Vercel), so sign-in works from the hashed copy saved here."
+      ? "Use the password you created in this browser. This host is not keeping .data/admin.json, so a hashed verifier is kept here for 7 days — not the password itself."
       : "Use the password you created on this server. You can change it after you sign in.";
 
   return (

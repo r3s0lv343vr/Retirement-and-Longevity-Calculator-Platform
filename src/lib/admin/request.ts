@@ -5,7 +5,7 @@ import { ADMIN_COOKIE, VISITOR_COOKIE } from "./constants";
 import type { CalculatorTool } from "./constants";
 import { normalizePath } from "./constants";
 import { recordAnalyticsEvent } from "./store";
-import { encodeAdminStore, loadStoredAdmin, type StoredAdmin } from "./credentials";
+import { encodeAdminStore, isDurableAuth, loadStoredAdmin, type AuthPersistence, type StoredAdmin } from "./credentials";
 import { adminCookieOptions, adminStoreCookieOptions, authenticateAdmin, newVisitorId, verifyAdminSession } from "./session";
 
 const BOT_HINT = /bot|crawler|spider|slurp|bingpreview|facebookexternalhit/i;
@@ -106,17 +106,24 @@ export function stampAdminAuthCookies(
   response: NextResponse,
   token: string,
   record?: StoredAdmin | null,
+  persistence: AuthPersistence = "memory",
 ): NextResponse {
   response.cookies.set({
     ...adminCookieOptions,
     value: token,
   });
-  if (record) {
+  if (record && !isDurableAuth(persistence)) {
     response.cookies.set({
       ...adminStoreCookieOptions,
       value: encodeAdminStore(record),
     });
+    return response;
   }
+  response.cookies.set({
+    ...adminStoreCookieOptions,
+    value: "",
+    maxAge: 0,
+  });
   return response;
 }
 
@@ -125,8 +132,8 @@ export async function createLoginResponse(password: string): Promise<NextRespons
   if (!token) {
     return NextResponse.json({ error: "Wrong password." }, { status: 401 });
   }
-  const { record } = await loadStoredAdmin();
-  return stampAdminAuthCookies(NextResponse.json({ ok: true }), token, record);
+  const { record, persistence } = await loadStoredAdmin();
+  return stampAdminAuthCookies(NextResponse.json({ ok: true }), token, record, persistence);
 }
 
 export function createLogoutResponse(): NextResponse {
