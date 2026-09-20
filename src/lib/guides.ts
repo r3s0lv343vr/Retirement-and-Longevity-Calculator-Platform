@@ -2,11 +2,14 @@ import { HUB_NAME, HUB_TITLE } from "./brand";
 import { SITE_URL } from "./seo";
 
 export const FAMILY_GUIDE_THEME_PATH = "/guides/family" as const;
+export const HOME_GUIDE_THEME_PATH = "/guides/home" as const;
 export const BABY_AFFORD_PATH = "/guides/family/can-i-afford-to-have-a-baby" as const;
 export const BABY_SAVE_PATH = "/guides/family/how-much-should-you-save-before-having-a-baby" as const;
+export const EXTRA_VS_SAVINGS_PATH =
+  "/guides/home/should-i-pay-extra-on-my-mortgage-or-keep-savings" as const;
 
-export type GuideThemePath = typeof FAMILY_GUIDE_THEME_PATH;
-export type GuideArticlePath = typeof BABY_AFFORD_PATH | typeof BABY_SAVE_PATH;
+export type GuideThemePath = typeof FAMILY_GUIDE_THEME_PATH | typeof HOME_GUIDE_THEME_PATH;
+export type GuideArticlePath = typeof BABY_AFFORD_PATH | typeof BABY_SAVE_PATH | typeof EXTRA_VS_SAVINGS_PATH;
 export type GuidePath = GuideThemePath | GuideArticlePath;
 
 export type GuideFaq = { question: string; answer: string };
@@ -120,6 +123,48 @@ export const BABY_SAVE_GUIDE = {
   faqs: BABY_SAVE_FAQS,
 };
 
+export const EXTRA_VS_SAVINGS_FAQS: GuideFaq[] = [
+  {
+    question: "Is paying extra on a mortgage the same as earning the mortgage rate?",
+    answer:
+      "It is a useful approximation because reducing principal avoids future interest at the loan’s rate, but the exact economic comparison can differ because of timing, taxes, loan terms and the liquidity you surrender. Mortgage Payoff shows the interest avoided and time reclaimed; it does not treat prepayment as an investment return.",
+  },
+  {
+    question: "Should I empty my savings to pay down my mortgage?",
+    answer:
+      "Usually this should not be treated as a simple rate comparison. Emptying liquid reserves can force a household to borrow again when an emergency occurs. Preserve a cash buffer appropriate to your risks and obligations.",
+  },
+  {
+    question: "Should I invest instead of paying extra on the mortgage?",
+    answer:
+      "That depends on expected after-tax return, investment risk, time horizon, liquidity needs and the mortgage rate. Investment returns are uncertain; mortgage interest avoided is much more predictable.",
+  },
+  {
+    question: "Can I do both?",
+    answer:
+      "Yes. A split strategy can build savings and reduce principal simultaneously, then shift more cash toward the mortgage once the savings target is reached.",
+  },
+  {
+    question: "Will my lender automatically apply extra money to principal?",
+    answer:
+      "Do not assume so. Check the lender’s instructions and statements and specify that qualifying extra payments are intended for principal. The calculator applies extras to principal and does not recast the scheduled payment.",
+  },
+];
+
+export const EXTRA_VS_SAVINGS_GUIDE = {
+  path: EXTRA_VS_SAVINGS_PATH,
+  themePath: HOME_GUIDE_THEME_PATH,
+  h1: "Should I Pay Extra on My Mortgage or Keep the Money in Savings?",
+  title: "Should I Pay Extra on My Mortgage or Keep Savings? | Runaway Finance",
+  description:
+    "Decide whether extra mortgage principal or cash savings is the better next dollar. Compare payoff math, liquidity, other debt and near-term family costs.",
+  reviewed: "September 2026",
+  datePublished: "2026-09-20",
+  dateModified: "2026-09-20",
+  primaryCalculator: "/mortgage/payoff" as const,
+  faqs: EXTRA_VS_SAVINGS_FAQS,
+};
+
 export const GUIDE_THEMES = [
   {
     path: FAMILY_GUIDE_THEME_PATH,
@@ -129,11 +174,25 @@ export const GUIDE_THEMES = [
       "Guides on baby affordability, how much to save before a child, and the nest-egg path through 18 and university. Use them with the Growing a Family calculators.",
     articles: [BABY_AFFORD_GUIDE, BABY_SAVE_GUIDE],
   },
+  {
+    path: HOME_GUIDE_THEME_PATH,
+    title: "Home & Mortgage",
+    question: "Should the next dollar go to the house or stay in cash?",
+    description:
+      "Guides on extra mortgage payments versus savings, liquidity, and the payoff path. Use them with the Buying a Home calculators.",
+    articles: [EXTRA_VS_SAVINGS_GUIDE],
+  },
 ] as const;
 
-export const GUIDE_ARTICLES = [BABY_AFFORD_GUIDE, BABY_SAVE_GUIDE] as const;
+export const GUIDE_ARTICLES = [BABY_AFFORD_GUIDE, BABY_SAVE_GUIDE, EXTRA_VS_SAVINGS_GUIDE] as const;
 
-export const GUIDE_PATHS = [FAMILY_GUIDE_THEME_PATH, BABY_AFFORD_PATH, BABY_SAVE_PATH] as const;
+export const GUIDE_PATHS = [
+  FAMILY_GUIDE_THEME_PATH,
+  BABY_AFFORD_PATH,
+  BABY_SAVE_PATH,
+  HOME_GUIDE_THEME_PATH,
+  EXTRA_VS_SAVINGS_PATH,
+] as const;
 
 export function guideThemeByPath(path: string) {
   return GUIDE_THEMES.find((theme) => theme.path === path);
@@ -149,6 +208,14 @@ export function isGuidePath(path: string): path is GuidePath {
 
 export function familyGuideThemeMetadataUrl() {
   return `${SITE_URL}${FAMILY_GUIDE_THEME_PATH}`;
+}
+
+export function homeGuideThemeMetadataUrl() {
+  return `${SITE_URL}${HOME_GUIDE_THEME_PATH}`;
+}
+
+export function extraVsSavingsCanonicalUrl() {
+  return `${SITE_URL}${EXTRA_VS_SAVINGS_PATH}`;
 }
 
 export function babyAffordCanonicalUrl() {
@@ -236,13 +303,23 @@ export function guideArticleJsonLd(article: {
   };
 }
 
-export function guideArticleBreadcrumbJsonLd(article: { path: string; h1: string }): Record<string, unknown> {
+export function guideArticleBreadcrumbJsonLd(article: {
+  path: string;
+  h1: string;
+  themePath: string;
+}): Record<string, unknown> {
+  const theme = GUIDE_THEMES.find((item) => item.path === article.themePath);
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Guides", item: `${SITE_URL}/guides` },
-      { "@type": "ListItem", position: 2, name: "Family & Children", item: familyGuideThemeMetadataUrl() },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: theme?.title ?? "Guides",
+        item: `${SITE_URL}${article.themePath}`,
+      },
       { "@type": "ListItem", position: 3, name: article.h1, item: `${SITE_URL}${article.path}` },
     ],
   };
@@ -258,4 +335,27 @@ export function babySaveBreadcrumbJsonLd(): Record<string, unknown> {
 
 export function babySaveFaqJsonLd(): Record<string, unknown> {
   return guideFaqJsonLd(BABY_SAVE_FAQS);
+}
+
+export function homeGuideBreadcrumbJsonLd(): Record<string, unknown> {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Guides", item: `${SITE_URL}/guides` },
+      { "@type": "ListItem", position: 2, name: "Home & Mortgage", item: homeGuideThemeMetadataUrl() },
+    ],
+  };
+}
+
+export function extraVsSavingsArticleJsonLd(): Record<string, unknown> {
+  return guideArticleJsonLd(EXTRA_VS_SAVINGS_GUIDE);
+}
+
+export function extraVsSavingsBreadcrumbJsonLd(): Record<string, unknown> {
+  return guideArticleBreadcrumbJsonLd(EXTRA_VS_SAVINGS_GUIDE);
+}
+
+export function extraVsSavingsFaqJsonLd(): Record<string, unknown> {
+  return guideFaqJsonLd(EXTRA_VS_SAVINGS_FAQS);
 }

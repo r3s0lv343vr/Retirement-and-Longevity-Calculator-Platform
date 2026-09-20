@@ -5,7 +5,9 @@ import { TrustFooterLinks } from "@/components/TrustFooterLinks";
 import { PayoffApp } from "@/components/payoff/PayoffApp";
 import { JsonLd } from "@/components/JsonLd";
 import { HUB_TITLE } from "@/lib/brand";
+import { EXTRA_VS_SAVINGS_PATH } from "@/lib/guides";
 import { breadcrumbJsonLd, calculatorMetadata, CALCULATOR_SEO, SITE_URL, webPageJsonLd } from "@/lib/seo";
+import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = calculatorMetadata("/mortgage/payoff");
@@ -39,6 +41,15 @@ export default function MortgagePayoffPage() {
 
       <main className="mx-auto max-w-5xl px-5 pb-16 sm:px-6">
         <CalculatorSeoBlock seo={seo} />
+        <p className="mb-6 max-w-3xl text-sm leading-relaxed text-muted">
+          Deciding whether the extra belongs on the loan or in cash?{" "}
+          <Link
+            href={EXTRA_VS_SAVINGS_PATH}
+            className="font-medium text-pine underline decoration-pine/30 underline-offset-2 hover:decoration-pine"
+          >
+            Read Should I Pay Extra on My Mortgage or Keep the Money in Savings?
+          </Link>
+        </p>
         <PayoffApp />
         <RelatedCalculators seo={seo} />
       </main>

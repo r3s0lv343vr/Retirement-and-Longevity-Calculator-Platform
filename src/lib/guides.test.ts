@@ -5,12 +5,16 @@ import {
   BABY_AFFORD_GUIDE,
   BABY_SAVE_FAQS,
   BABY_SAVE_GUIDE,
+  EXTRA_VS_SAVINGS_FAQS,
+  EXTRA_VS_SAVINGS_GUIDE,
   GUIDE_PATHS,
   babyAffordArticleJsonLd,
   babyAffordBreadcrumbJsonLd,
   babyAffordFaqJsonLd,
   babySaveArticleJsonLd,
   babySaveBreadcrumbJsonLd,
+  extraVsSavingsArticleJsonLd,
+  extraVsSavingsBreadcrumbJsonLd,
 } from "./guides";
 import { SITE_URL } from "./seo";
 
@@ -29,6 +33,10 @@ describe("Family & Children guide catalog", () => {
     expect(BABY_SAVE_GUIDE.h1).toBe("How Much Money Should You Have Saved Before Having a Baby?");
     expect(BABY_SAVE_GUIDE.title).toBe("How Much Should You Save Before Having a Baby? | Runaway Finance");
     expect(BABY_SAVE_GUIDE.primaryCalculator).toBe("/child");
+    expect(EXTRA_VS_SAVINGS_GUIDE.path).toBe("/guides/home/should-i-pay-extra-on-my-mortgage-or-keep-savings");
+    expect(EXTRA_VS_SAVINGS_GUIDE.themePath).toBe("/guides/home");
+    expect(EXTRA_VS_SAVINGS_GUIDE.h1).toBe("Should I Pay Extra on My Mortgage or Keep the Money in Savings?");
+    expect(EXTRA_VS_SAVINGS_GUIDE.primaryCalculator).toBe("/mortgage/payoff");
   });
 
   it("lists baby-savings FAQs once for visible FAQPage structured data", () => {
@@ -65,6 +73,15 @@ describe("Family & Children guide catalog", () => {
       "Guides",
       "Family & Children",
       BABY_SAVE_GUIDE.h1,
+    ]);
+    expect(EXTRA_VS_SAVINGS_FAQS).toHaveLength(5);
+    const extraArticle = extraVsSavingsArticleJsonLd();
+    const extraCrumbs = extraVsSavingsBreadcrumbJsonLd();
+    expect(extraArticle.url).toBe(`${SITE_URL}${EXTRA_VS_SAVINGS_GUIDE.path}`);
+    expect((extraCrumbs.itemListElement as { name: string }[]).map((item) => item.name)).toEqual([
+      "Guides",
+      "Home & Mortgage",
+      EXTRA_VS_SAVINGS_GUIDE.h1,
     ]);
   });
 
