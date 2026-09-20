@@ -49,6 +49,10 @@ export const JOURNEYS: Journey[] = [
     calculators: ["/mortgage", "/mortgage/payoff"],
     also: [
       {
+        href: "/guides/home/mortgage-payment-vs-true-cost-of-owning-a-home",
+        label: "Read: Mortgage Payment vs. the True Cost of Owning a Home",
+      },
+      {
         href: "/guides/home/should-i-pay-extra-on-my-mortgage-or-keep-savings",
         label: "Read: Should I Pay Extra on My Mortgage or Keep the Money in Savings?",
       },

@@ -7,9 +7,14 @@ export const BABY_AFFORD_PATH = "/guides/family/can-i-afford-to-have-a-baby" as 
 export const BABY_SAVE_PATH = "/guides/family/how-much-should-you-save-before-having-a-baby" as const;
 export const EXTRA_VS_SAVINGS_PATH =
   "/guides/home/should-i-pay-extra-on-my-mortgage-or-keep-savings" as const;
+export const TRUE_COST_PATH = "/guides/home/mortgage-payment-vs-true-cost-of-owning-a-home" as const;
 
 export type GuideThemePath = typeof FAMILY_GUIDE_THEME_PATH | typeof HOME_GUIDE_THEME_PATH;
-export type GuideArticlePath = typeof BABY_AFFORD_PATH | typeof BABY_SAVE_PATH | typeof EXTRA_VS_SAVINGS_PATH;
+export type GuideArticlePath =
+  | typeof BABY_AFFORD_PATH
+  | typeof BABY_SAVE_PATH
+  | typeof EXTRA_VS_SAVINGS_PATH
+  | typeof TRUE_COST_PATH;
 export type GuidePath = GuideThemePath | GuideArticlePath;
 
 export type GuideFaq = { question: string; answer: string };
@@ -165,6 +170,48 @@ export const EXTRA_VS_SAVINGS_GUIDE = {
   faqs: EXTRA_VS_SAVINGS_FAQS,
 };
 
+export const TRUE_COST_FAQS: GuideFaq[] = [
+  {
+    question: "Is the mortgage payment the true cost of owning a home?",
+    answer:
+      "No. The lender quote is usually principal and interest. Can I Get a Mortgage treats estimated housing cost as P&I plus tax, insurance, PMI, HOA, and upkeep. Closing, moving, and repairs or furnishing sit in cash to buy.",
+  },
+  {
+    question: "Does the calculator include utilities?",
+    answer:
+      "No. Electric, gas, water, trash, and internet are not a housing-cost field. They are not inside estimated housing cost. Fold a stand-in into the life-cost fields, or raise upkeep, if you want them in the outlook.",
+  },
+  {
+    question: "What is cash to buy?",
+    answer:
+      "Cash to buy is down payment plus closing costs plus moving plus repairs or furnishing. It is the check you write to get the keys, not the monthly payment.",
+  },
+  {
+    question: "When does PMI stop?",
+    answer:
+      "The calculator turns PMI off the month loan-to-value hits 80% of the purchase price — not a later appraisal. Extra principal can bring that month forward. The scheduled payment is not recast.",
+  },
+  {
+    question: "Is Can I Get a Mortgage a lender quote?",
+    answer:
+      "No. It is an educational projection, not a pre-approval, a rate lock, or tax advice. Lenders use their own rules.",
+  },
+];
+
+export const TRUE_COST_GUIDE = {
+  path: TRUE_COST_PATH,
+  themePath: HOME_GUIDE_THEME_PATH,
+  h1: "Mortgage Payment vs. the True Cost of Owning a Home",
+  title: "Mortgage Payment vs. the True Cost of Owning a Home | Runaway Finance",
+  description:
+    "The lender quote is P&I. Housing cost adds tax, insurance, PMI, HOA, and upkeep. Cash to buy sits before the first payment. Run it in Can I Get a Mortgage.",
+  reviewed: "September 2026",
+  datePublished: "2026-09-20",
+  dateModified: "2026-09-20",
+  primaryCalculator: "/mortgage" as const,
+  faqs: TRUE_COST_FAQS,
+};
+
 export const GUIDE_THEMES = [
   {
     path: FAMILY_GUIDE_THEME_PATH,
@@ -177,20 +224,21 @@ export const GUIDE_THEMES = [
   {
     path: HOME_GUIDE_THEME_PATH,
     title: "Home & Mortgage",
-    question: "Should the next dollar go to the house or stay in cash?",
+    question: "What will the house really cost — and should extra cash go to the loan?",
     description:
-      "Guides on extra mortgage payments versus savings, liquidity, and the payoff path. Use them with the Buying a Home calculators.",
-    articles: [EXTRA_VS_SAVINGS_GUIDE],
+      "Guides on the true cost of owning a house, extra payments versus savings, and the payoff path. Use them with the Buying a Home calculators.",
+    articles: [TRUE_COST_GUIDE, EXTRA_VS_SAVINGS_GUIDE],
   },
 ] as const;
 
-export const GUIDE_ARTICLES = [BABY_AFFORD_GUIDE, BABY_SAVE_GUIDE, EXTRA_VS_SAVINGS_GUIDE] as const;
+export const GUIDE_ARTICLES = [BABY_AFFORD_GUIDE, BABY_SAVE_GUIDE, TRUE_COST_GUIDE, EXTRA_VS_SAVINGS_GUIDE] as const;
 
 export const GUIDE_PATHS = [
   FAMILY_GUIDE_THEME_PATH,
   BABY_AFFORD_PATH,
   BABY_SAVE_PATH,
   HOME_GUIDE_THEME_PATH,
+  TRUE_COST_PATH,
   EXTRA_VS_SAVINGS_PATH,
 ] as const;
 
@@ -216,6 +264,10 @@ export function homeGuideThemeMetadataUrl() {
 
 export function extraVsSavingsCanonicalUrl() {
   return `${SITE_URL}${EXTRA_VS_SAVINGS_PATH}`;
+}
+
+export function trueCostCanonicalUrl() {
+  return `${SITE_URL}${TRUE_COST_PATH}`;
 }
 
 export function babyAffordCanonicalUrl() {
@@ -358,4 +410,16 @@ export function extraVsSavingsBreadcrumbJsonLd(): Record<string, unknown> {
 
 export function extraVsSavingsFaqJsonLd(): Record<string, unknown> {
   return guideFaqJsonLd(EXTRA_VS_SAVINGS_FAQS);
+}
+
+export function trueCostArticleJsonLd(): Record<string, unknown> {
+  return guideArticleJsonLd(TRUE_COST_GUIDE);
+}
+
+export function trueCostBreadcrumbJsonLd(): Record<string, unknown> {
+  return guideArticleBreadcrumbJsonLd(TRUE_COST_GUIDE);
+}
+
+export function trueCostFaqJsonLd(): Record<string, unknown> {
+  return guideFaqJsonLd(TRUE_COST_FAQS);
 }

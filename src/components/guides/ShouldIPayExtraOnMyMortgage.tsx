@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { GuideCta, GuideFormula, GuideTable } from "@/components/GuideChrome";
-import { EXTRA_VS_SAVINGS_FAQS, EXTRA_VS_SAVINGS_GUIDE } from "@/lib/guides";
+import { EXTRA_VS_SAVINGS_FAQS, EXTRA_VS_SAVINGS_GUIDE, TRUE_COST_PATH } from "@/lib/guides";
 import { formatMoney, formatPercent } from "@/lib/format";
 import { EXTRA_VS_SAVINGS_FIGURES as F } from "@/lib/mortgage/payoff/extraVsSavingsGuideFigures";
 
@@ -346,6 +346,11 @@ export function ShouldIPayExtraOnMyMortgage() {
           <li>
             <Link href="/mortgage" className={pineLink}>
               See what the house actually costs to own
+            </Link>
+          </li>
+          <li>
+            <Link href={TRUE_COST_PATH} className={pineLink}>
+              Read Mortgage Payment vs. the True Cost of Owning a Home
             </Link>
           </li>
           <li>

@@ -4,6 +4,7 @@ import { ClusterNav } from "@/components/ClusterNav";
 import { TrustFooterLinks } from "@/components/TrustFooterLinks";
 import { MortgageApp } from "@/components/MortgageApp";
 import { JsonLd } from "@/components/JsonLd";
+import { TRUE_COST_PATH } from "@/lib/guides";
 import { breadcrumbJsonLd, calculatorMetadata, CALCULATOR_SEO, webPageJsonLd } from "@/lib/seo";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -22,6 +23,14 @@ export default function MortgagePage() {
           <h1 className="max-w-3xl font-serif text-3xl leading-tight text-pine sm:text-4xl">{seo.name}</h1>
           <p className="mt-2 text-base text-muted sm:text-lg">What will this house actually cost you?</p>
           <p className="mt-3 text-sm">
+            <Link
+              href={TRUE_COST_PATH}
+              className="font-medium text-pine underline decoration-pine/30 underline-offset-2 hover:decoration-pine"
+            >
+              Read Mortgage Payment vs. the True Cost of Owning a Home
+            </Link>
+          </p>
+          <p className="mt-2 text-sm">
             <Link
               href="/mortgage/payoff"
               className="font-medium text-pine underline decoration-pine/30 underline-offset-2 hover:decoration-pine"

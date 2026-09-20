@@ -15,13 +15,13 @@ const theme = GUIDE_THEMES.find((item) => item.path === HOME_GUIDE_THEME_PATH)!;
 export const metadata: Metadata = {
   title: "Home & Mortgage Guides | Runaway Finance",
   description:
-    "Guides on extra mortgage payments versus savings, liquidity, and the payoff path. Use them with the Buying a Home calculators.",
+    "Guides on the true cost of owning a house, extra payments versus savings, and the payoff path. Use them with the Buying a Home calculators.",
   robots: { index: true, follow: true },
   alternates: { canonical: homeGuideThemeMetadataUrl() },
   openGraph: {
     title: "Home & Mortgage Guides | Runaway Finance",
     description:
-      "Guides on extra mortgage payments versus savings, liquidity, and the payoff path. Use them with the Buying a Home calculators.",
+      "Guides on the true cost of owning a house, extra payments versus savings, and the payoff path. Use them with the Buying a Home calculators.",
     url: homeGuideThemeMetadataUrl(),
     type: "website",
     siteName: HUB_TITLE,
@@ -69,6 +69,16 @@ export default function HomeGuidesPage() {
             </Link>
           </li>
         ))}
+        <li>
+          <Link href="/mortgage" className="card block transition hover:border-pine/30">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Calculator</p>
+            <h2 className="mt-2 font-serif text-xl text-pine">Can I get a mortgage</h2>
+            <p className="mt-2 text-sm leading-relaxed text-muted">
+              Principal and interest sit on one line. Tax, insurance, PMI, HOA, and upkeep sit beside them as housing
+              cost.
+            </p>
+          </Link>
+        </li>
         <li>
           <Link href="/mortgage/payoff" className="card block transition hover:border-pine/30">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Calculator</p>
