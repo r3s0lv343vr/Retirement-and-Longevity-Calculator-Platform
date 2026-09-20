@@ -12,6 +12,8 @@ import {
 
 const theme = GUIDE_THEMES.find((item) => item.path === HOME_GUIDE_THEME_PATH)!;
 
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: "Home & Mortgage Guides | Runaway Finance",
   description:

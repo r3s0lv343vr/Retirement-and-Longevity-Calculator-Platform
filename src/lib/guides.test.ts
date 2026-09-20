@@ -116,5 +116,7 @@ describe("Family & Children guide catalog", () => {
     for (const path of GUIDE_PATHS) {
       expect(urls).toContain(`${SITE_URL}${path}`);
     }
+    const home = sitemap().find((entry) => entry.url === `${SITE_URL}${TRUE_COST_GUIDE.path}`);
+    expect(home?.lastModified).toEqual(new Date("2026-09-20"));
   });
 });

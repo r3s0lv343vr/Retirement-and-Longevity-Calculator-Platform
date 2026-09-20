@@ -20,7 +20,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   for (const path of GUIDE_PATHS) {
     pages.push({
       url: `${SITE_URL}${path}`,
-      lastModified: new Date("2026-09-15"),
+      lastModified: path.startsWith("/guides/home") ? new Date("2026-09-20") : new Date("2026-09-15"),
       changeFrequency: "monthly",
       priority: 0.6,
     });
