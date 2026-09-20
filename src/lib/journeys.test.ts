@@ -22,5 +22,6 @@ describe("family-finance journeys", () => {
     expect(navHrefForCurrent("/guides/family/how-much-should-you-save-before-having-a-baby")).toBe("/guides");
     expect(navHrefForCurrent("/guides/home")).toBe("/guides");
     expect(navHrefForCurrent("/guides/home/should-i-pay-extra-on-my-mortgage-or-keep-savings")).toBe("/guides");
+    expect(navHrefForCurrent("/guides/home/mortgage-payment-vs-true-cost-of-owning-a-home")).toBe("/guides");
   });
 });

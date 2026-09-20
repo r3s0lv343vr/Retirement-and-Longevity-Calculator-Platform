@@ -8,6 +8,8 @@ import {
   EXTRA_VS_SAVINGS_FAQS,
   EXTRA_VS_SAVINGS_GUIDE,
   GUIDE_PATHS,
+  TRUE_COST_FAQS,
+  TRUE_COST_GUIDE,
   babyAffordArticleJsonLd,
   babyAffordBreadcrumbJsonLd,
   babyAffordFaqJsonLd,
@@ -15,6 +17,8 @@ import {
   babySaveBreadcrumbJsonLd,
   extraVsSavingsArticleJsonLd,
   extraVsSavingsBreadcrumbJsonLd,
+  trueCostArticleJsonLd,
+  trueCostBreadcrumbJsonLd,
 } from "./guides";
 import { SITE_URL } from "./seo";
 
@@ -37,6 +41,10 @@ describe("Family & Children guide catalog", () => {
     expect(EXTRA_VS_SAVINGS_GUIDE.themePath).toBe("/guides/home");
     expect(EXTRA_VS_SAVINGS_GUIDE.h1).toBe("Should I Pay Extra on My Mortgage or Keep the Money in Savings?");
     expect(EXTRA_VS_SAVINGS_GUIDE.primaryCalculator).toBe("/mortgage/payoff");
+    expect(TRUE_COST_GUIDE.path).toBe("/guides/home/mortgage-payment-vs-true-cost-of-owning-a-home");
+    expect(TRUE_COST_GUIDE.themePath).toBe("/guides/home");
+    expect(TRUE_COST_GUIDE.h1).toBe("Mortgage Payment vs. the True Cost of Owning a Home");
+    expect(TRUE_COST_GUIDE.primaryCalculator).toBe("/mortgage");
   });
 
   it("lists baby-savings FAQs once for visible FAQPage structured data", () => {
@@ -82,6 +90,15 @@ describe("Family & Children guide catalog", () => {
       "Guides",
       "Home & Mortgage",
       EXTRA_VS_SAVINGS_GUIDE.h1,
+    ]);
+    expect(TRUE_COST_FAQS).toHaveLength(5);
+    const trueCostArticle = trueCostArticleJsonLd();
+    const trueCostCrumbs = trueCostBreadcrumbJsonLd();
+    expect(trueCostArticle.url).toBe(`${SITE_URL}${TRUE_COST_GUIDE.path}`);
+    expect((trueCostCrumbs.itemListElement as { name: string }[]).map((item) => item.name)).toEqual([
+      "Guides",
+      "Home & Mortgage",
+      TRUE_COST_GUIDE.h1,
     ]);
   });
 
