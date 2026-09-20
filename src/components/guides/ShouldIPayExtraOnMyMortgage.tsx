@@ -113,7 +113,7 @@ export function ShouldIPayExtraOnMyMortgage() {
         <p className="mt-3 text-base leading-relaxed text-ink">
           Assume a {formatMoney(F.balance)} mortgage balance, a {formatPercent(F.annualRate)} fixed rate and{" "}
           {F.remainingYears} years remaining. The scheduled principal-and-interest payment is{" "}
-          {formatMoney(F.scheduledPayment)} a month — about {formatMoney(Math.round(F.scheduledPayment))}.
+          {formatMoney(F.scheduledPayment, 2)} a month — about {formatMoney(F.scheduledPayment)}.
         </p>
         <GuideTable
           caption="How $250 extra each month changes payoff time and interest"
