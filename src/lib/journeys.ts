@@ -48,6 +48,10 @@ export const JOURNEYS: Journey[] = [
       "A mortgage payment is not the cost of the house. Tax, insurance, upkeep, and the rest of life sit beside it. If you already have the loan, extra payments can change how soon it is gone.",
     calculators: ["/mortgage", "/mortgage/payoff"],
     also: [
+      {
+        href: "/guides/home/should-i-pay-extra-on-my-mortgage-or-keep-savings",
+        label: "Read: Should I Pay Extra on My Mortgage or Keep the Money in Savings?",
+      },
       { href: "/housing", label: "Compare later-life housing paths: stay home, CCRC, or nursing" },
       { href: "/family", label: "See child costs beside a house payment" },
       { href: "/savings", label: "See whether a house payment raids a savings goal" },

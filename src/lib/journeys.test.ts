@@ -20,5 +20,7 @@ describe("family-finance journeys", () => {
     expect(navHrefForCurrent("/guides/family")).toBe("/guides");
     expect(navHrefForCurrent("/guides/family/can-i-afford-to-have-a-baby")).toBe("/guides");
     expect(navHrefForCurrent("/guides/family/how-much-should-you-save-before-having-a-baby")).toBe("/guides");
+    expect(navHrefForCurrent("/guides/home")).toBe("/guides");
+    expect(navHrefForCurrent("/guides/home/should-i-pay-extra-on-my-mortgage-or-keep-savings")).toBe("/guides");
   });
 });

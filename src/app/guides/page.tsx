@@ -8,7 +8,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Guides – Family Finance Articles and Calculator Paths",
   description:
-    "Family & Children guides plus short paths to the Runaway Finance calculators for home, savings and retirement decisions.",
+    "Family & Children and Home & Mortgage guides plus short paths to the Runaway Finance calculators for home, savings and retirement decisions.",
   robots: { index: true, follow: true },
   alternates: { canonical: `${SITE_URL}/guides` },
 };
@@ -37,7 +37,6 @@ const CALCULATOR_PATHS = [
 ];
 
 export default function GuidesPage() {
-  const familyTheme = GUIDE_THEMES[0]!;
   return (
     <GuideChrome
       current="/guides"
@@ -46,39 +45,40 @@ export default function GuidesPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Family finance</p>
           <h1 className="mt-2 max-w-3xl font-serif text-3xl leading-tight text-pine sm:text-4xl">Guides</h1>
           <p className="mt-2 max-w-3xl text-base text-muted sm:text-lg">
-            Start with Family &amp; Children, then use the calculator paths for home, savings and retirement.
+            Start with Family &amp; Children or Home &amp; Mortgage, then use the calculator paths for savings and
+            retirement.
           </p>
         </div>
       }
     >
       <TrustBar />
-      <section className="mt-8" aria-labelledby="family-children-theme">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Theme</p>
-        <h2 id="family-children-theme" className="mt-2 font-serif text-2xl text-pine">
-          {familyTheme.title}
-        </h2>
-        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">{familyTheme.description}</p>
-        <ul className="mt-5 space-y-5">
-          {familyTheme.articles.map((article) => (
-            <li key={article.path}>
-              <Link href={article.path} className="card block transition hover:border-pine/30">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Guide</p>
-                <h3 className="mt-2 font-serif text-xl text-pine">{article.h1}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted">{article.description}</p>
+      {GUIDE_THEMES.map((theme) => (
+        <section key={theme.path} className="mt-8" aria-labelledby={`${theme.path.replace(/\//g, "-")}-theme`}>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Theme</p>
+          <h2 id={`${theme.path.replace(/\//g, "-")}-theme`} className="mt-2 font-serif text-2xl text-pine">
+            {theme.title}
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">{theme.description}</p>
+          <ul className="mt-5 space-y-5">
+            {theme.articles.map((article) => (
+              <li key={article.path}>
+                <Link href={article.path} className="card block transition hover:border-pine/30">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Guide</p>
+                  <h3 className="mt-2 font-serif text-xl text-pine">{article.h1}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted">{article.description}</p>
+                </Link>
+              </li>
+            ))}
+            <li>
+              <Link href={theme.path} className="card block transition hover:border-pine/30">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Theme hub</p>
+                <h3 className="mt-2 font-serif text-xl text-pine">All {theme.title} guides</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{theme.question}</p>
               </Link>
             </li>
-          ))}
-          <li>
-            <Link href="/guides/family" className="card block transition hover:border-pine/30">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Theme hub</p>
-              <h3 className="mt-2 font-serif text-xl text-pine">All Family &amp; Children guides</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted">
-                Baby affordability, how much to save, and the Nest Eggs for a Child calculator.
-              </p>
-            </Link>
-          </li>
-        </ul>
-      </section>
+          </ul>
+        </section>
+      ))}
       <section className="mt-12" aria-labelledby="calculator-paths">
         <h2 id="calculator-paths" className="font-serif text-2xl text-pine">
           Calculator paths
