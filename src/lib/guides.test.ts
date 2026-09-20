@@ -40,6 +40,8 @@ describe("Family & Children guide catalog", () => {
     expect(EXTRA_VS_SAVINGS_GUIDE.path).toBe("/guides/home/should-i-pay-extra-on-my-mortgage-or-keep-savings");
     expect(EXTRA_VS_SAVINGS_GUIDE.themePath).toBe("/guides/home");
     expect(EXTRA_VS_SAVINGS_GUIDE.h1).toBe("Should I Pay Extra on My Mortgage or Keep the Money in Savings?");
+    expect(EXTRA_VS_SAVINGS_GUIDE.title).toBe("Pay Extra on Mortgage or Save? How to Decide | Runaway Finance");
+    expect(EXTRA_VS_SAVINGS_GUIDE.description).toMatch(/emergency fund, liquidity/);
     expect(EXTRA_VS_SAVINGS_GUIDE.primaryCalculator).toBe("/mortgage/payoff");
     expect(TRUE_COST_GUIDE.path).toBe("/guides/home/mortgage-payment-vs-true-cost-of-owning-a-home");
     expect(TRUE_COST_GUIDE.themePath).toBe("/guides/home");
@@ -83,6 +85,13 @@ describe("Family & Children guide catalog", () => {
       BABY_SAVE_GUIDE.h1,
     ]);
     expect(EXTRA_VS_SAVINGS_FAQS).toHaveLength(5);
+    expect(EXTRA_VS_SAVINGS_FAQS.map((faq) => faq.question)).toEqual([
+      "Is paying extra on my mortgage equivalent to earning my mortgage rate?",
+      "Should I drain savings to pay down the mortgage?",
+      "What if my savings rate is lower than my mortgage rate?",
+      "What if I expect investments to earn more than my mortgage rate?",
+      "Can I save and prepay at the same time?",
+    ]);
     const extraArticle = extraVsSavingsArticleJsonLd();
     const extraCrumbs = extraVsSavingsBreadcrumbJsonLd();
     expect(extraArticle.url).toBe(`${SITE_URL}${EXTRA_VS_SAVINGS_GUIDE.path}`);

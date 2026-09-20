@@ -1,44 +1,36 @@
 import Link from "next/link";
 import { GuideCta, GuideFormula, GuideTable } from "@/components/GuideChrome";
 import { EXTRA_VS_SAVINGS_FAQS, EXTRA_VS_SAVINGS_GUIDE, TRUE_COST_PATH } from "@/lib/guides";
-import { formatMoney, formatPercent } from "@/lib/format";
+import { formatMoney, formatPercent, formatYearsMonths } from "@/lib/format";
 import { EXTRA_VS_SAVINGS_FIGURES as F } from "@/lib/mortgage/payoff/extraVsSavingsGuideFigures";
 
 const pineLink = "font-medium text-pine underline decoration-pine/30 underline-offset-2 hover:decoration-pine";
 const ctaButton =
   "mt-4 inline-flex h-12 items-center justify-center rounded-full bg-pine px-6 text-sm font-semibold text-paper shadow-sm transition hover:bg-pine-2";
 
-function formatSpan(periods: number): string {
-  const years = Math.floor(periods / 12);
-  const months = periods % 12;
-  if (years > 0 && months > 0) return `${years} years and ${months} months`;
-  if (years > 0) return years === 1 ? "1 year" : `${years} years`;
-  return months === 1 ? "1 month" : `${months} months`;
-}
-
 export function ShouldIPayExtraOnMyMortgage() {
   return (
     <>
       <article className="max-w-3xl">
         <p className="text-base leading-relaxed text-ink">
-          There is no universal winner. Extra mortgage principal gives a predictable reduction in future interest and
-          can shorten the loan. Savings preserves liquidity — the ability to handle a job loss, home repair, medical
-          bill, childcare change or another near-term need without borrowing again.
+          The answer is not simply “whichever rate is higher.” The better choice depends on what that money needs to
+          do for your household before your mortgage is gone.
+        </p>
+
+        <h2 className="mt-10 font-serif text-2xl text-pine">The short answer</h2>
+        <p className="mt-3 text-base leading-relaxed text-ink">
+          Paying extra on your mortgage can produce a predictable benefit: less principal remains outstanding, so less
+          interest accrues and the loan can end sooner. Keeping the money in savings does something different. It
+          preserves cash you can use immediately if income falls, the roof fails, childcare rises, a medical bill
+          arrives or another major expense appears.
         </p>
         <p className="mt-4 text-base leading-relaxed text-ink">
-          The better use of the next dollar depends on your mortgage rate, emergency reserves, other debt, job
-          stability, near-term family costs, tax position and what the money would otherwise earn.
+          So the decision is not just about return. It is a trade-off between reducing a long-term liability and
+          preserving short-term financial flexibility.
         </p>
         <p className="mt-4 text-base leading-relaxed text-ink">
-          The real decision is not “debt or savings?” It is a choice between two different forms of financial strength.
-          Paying extra on the mortgage increases home equity and reduces a contractual liability. Keeping cash
-          increases liquidity and optionality. A household can be wealthy on paper and still be financially fragile if
-          too much of its money is locked inside the house.
-        </p>
-        <p className="mt-4 text-base leading-relaxed text-ink">
-          That is why this decision should be made in sequence. First protect the household against shocks. Then
-          compare the economic return from prepaying the mortgage with the value and expected return of the
-          alternative use of the money.
+          A useful rule for thinking — not a universal rule for acting — is: protect the household first, then
+          optimize the mortgage.
         </p>
 
         <GuideCta>
@@ -52,242 +44,318 @@ export function ShouldIPayExtraOnMyMortgage() {
           </Link>
         </GuideCta>
 
-        <h2 className="mt-10 font-serif text-2xl text-pine">1. What an extra mortgage payment actually earns</h2>
+        <h2 className="mt-10 font-serif text-2xl text-pine">
+          Why this decision is harder than comparing two interest rates
+        </h2>
         <p className="mt-3 text-base leading-relaxed text-ink">
-          Mortgage interest is calculated on the outstanding principal. When an extra payment is applied to principal,
-          the balance falls sooner. That reduces future interest and can bring the payoff date forward. Fannie Mae and
-          Freddie Mac both describe extra principal payments as a way to reduce total interest and shorten the
-          mortgage term.
+          Imagine your mortgage costs {formatPercent(F.annualRate)} while a savings account earns 4%. At first glance,
+          sending every spare dollar to the mortgage appears obvious. But suppose doing that leaves only{" "}
+          {formatMoney(2_000)} in cash. A {formatMoney(7_000)} home repair could then force you to use a credit card,
+          personal loan or other expensive borrowing. The mathematically attractive mortgage decision may have made
+          the household financially weaker.
         </p>
         <p className="mt-4 text-base leading-relaxed text-ink">
-          A useful first approximation is to think of mortgage prepayment as producing a return related to the
-          mortgage rate, because each dollar of principal removed no longer accrues mortgage interest. The exact
-          lifetime benefit depends on when the payment is made, the remaining term, loan structure, and any tax
-          effects. Mortgage Payoff reports interest avoided and time reclaimed. It does not recast the scheduled
-          payment after an extra, and it does not turn that interest avoided into an investment-return percentage.
+          Now reverse the situation. Suppose the same household already has a well-funded emergency reserve, no
+          expensive debt, stable income and no large costs expected soon. Keeping every additional dollar in cash may
+          then provide little extra protection, while mortgage prepayments could remove years of interest.
+        </p>
+        <p className="mt-4 text-base leading-relaxed text-ink">
+          The same mortgage rate can therefore produce two different sensible decisions.
+        </p>
+
+        <h2 className="mt-10 font-serif text-2xl text-pine">1. Start with the emergency fund</h2>
+        <p className="mt-3 text-base leading-relaxed text-ink">
+          Before asking how quickly you can eliminate the mortgage, ask how long the household could function if
+          something went wrong.
+        </p>
+        <p className="mt-4 text-base leading-relaxed text-ink">
+          FDIC consumer guidance describes emergency savings as protection against events such as income loss and
+          major unexpected home or car repairs, and notes that financial experts generally recommend keeping at least
+          six months of living expenses in an insured product. That is a benchmark, not a personalized requirement: a
+          two-income household with highly stable employment may view the risk differently from a one-income
+          household, contractor or business owner.
+        </p>
+        <p className="mt-4 text-base leading-relaxed text-ink">
+          Your emergency reserve should reflect the consequences of being wrong, not simply an arbitrary percentage.
+        </p>
+        <ul className="mt-3 list-disc space-y-2 pl-5 text-base leading-relaxed text-ink">
+          <li>How many months of essential spending could we cover if our income suddenly fell?</li>
+          <li>What insurance deductibles could we have to pay?</li>
+          <li>Could the home need a major repair within the next year?</li>
+          <li>Do we have childcare, school, medical or elder-care costs that could rise quickly?</li>
+          <li>Would we have to borrow if a {formatMoney(5_000)}–{formatMoney(10_000)} surprise appeared?</li>
+        </ul>
+
+        <h2 className="mt-10 font-serif text-2xl text-pine">2. Then look at the mortgage rate</h2>
+        <p className="mt-3 text-base leading-relaxed text-ink">
+          Once liquidity is reasonably protected, the mortgage rate becomes a much more useful comparison. An extra
+          principal payment reduces the balance on which future mortgage interest is calculated. Freddie Mac explains
+          that additional principal payments can reduce both total interest and the time required to repay the loan.
+        </p>
+        <p className="mt-4 text-base leading-relaxed text-ink">
+          That makes mortgage prepayment unusually easy to understand: unlike an investment return, the interest
+          avoided does not depend on the stock market rising next year.
+        </p>
+        <p className="mt-4 text-base leading-relaxed text-ink">
+          Mortgage Payoff uses the same amortization formula as Can I Get a Mortgage. Extra amounts then go to
+          principal on top of that payment. The required payment is not recast.
         </p>
         <GuideFormula>
           Monthly P&amp;I = P × r × (1+r)<sup>n</sup> / ((1+r)<sup>n</sup> − 1)
         </GuideFormula>
         <p className="mt-4 text-base leading-relaxed text-ink">
-          P is the remaining balance. r is the annual rate divided by 12. n is the remaining term in months. Extra
-          monthly, yearly, or one-time amounts then go to principal on top of that payment.
+          P is the remaining balance. r is the annual rate divided by 12. n is the remaining term in months.
         </p>
 
-        <h3 className="mt-8 font-serif text-xl text-pine">Worked example: {formatMoney(F.extraMonthly)} extra each month</h3>
+        <h3 className="mt-8 font-serif text-xl text-pine">
+          A {formatMoney(F.extraMonthly)}-a-month example
+        </h3>
         <p className="mt-3 text-base leading-relaxed text-ink">
-          Suppose a household has a {formatMoney(F.balance)} remaining mortgage, a {formatPercent(F.annualRate)} fixed
-          rate and {F.remainingYears} years remaining. The scheduled principal-and-interest payment is{" "}
-          {formatMoney(F.scheduledPayment)} a month — the same amortization formula Mortgage Payoff uses.
-        </p>
-        <p className="mt-4 text-base leading-relaxed text-ink">
-          If the household adds {formatMoney(F.extraMonthly)} to principal every month and the lender applies it
-          correctly, the first extra month pays {formatMoney(F.firstInterest)} in interest,{" "}
-          {formatMoney(F.firstScheduledPrincipal)} in scheduled principal, and {formatMoney(F.firstExtra)} extra. The
-          required payment stays {formatMoney(F.scheduledPayment)}. The loan is gone in {formatSpan(F.extraPeriods)}{" "}
-          instead of {formatSpan(F.baselinePeriods)} — {formatSpan(F.periodsSaved)} sooner — and total interest falls
-          from {formatMoney(F.baselineInterest)} to {formatMoney(F.extraInterest)}, a saving of{" "}
-          {formatMoney(F.interestAvoided)}.
-        </p>
-        <p className="mt-4 text-base leading-relaxed text-ink">
-          Those figures are one path. Change the balance, rate, remaining term or extra and the story changes. The
-          mechanism does not: extra principal reduces the balance on which future interest is calculated.
-        </p>
-
-        <h2 className="mt-10 font-serif text-2xl text-pine">2. Why cash in savings can be more valuable than the interest it earns</h2>
-        <p className="mt-3 text-base leading-relaxed text-ink">
-          A savings account may earn less than a mortgage rate, but that comparison is incomplete. Cash can be spent
-          immediately. Home equity generally cannot be accessed without selling, refinancing or borrowing against the
-          property.
-        </p>
-        <p className="mt-4 text-base leading-relaxed text-ink">
-          That liquidity has insurance-like value. A household facing unemployment, an urgent roof repair or a sudden
-          childcare expense can use cash without creating new debt. FDIC consumer guidance notes that emergency
-          savings can help households absorb income loss and major unexpected home or car repairs; it cites a commonly
-          recommended benchmark of at least six months of living expenses.
-        </p>
-        <p className="mt-4 font-medium text-ink">Liquidity test</p>
-        <p className="mt-3 text-base leading-relaxed text-ink">Before making a large mortgage prepayment, ask:</p>
-        <ul className="mt-3 list-disc space-y-2 pl-5 text-base leading-relaxed text-ink">
-          <li>If income stopped next month, how many months of essential expenses could we cover without using credit?</li>
-          <li>Are major home repairs, insurance deductibles, medical expenses or vehicle replacement plausible in the next year?</li>
-          <li>Are childcare, school, parental-leave or elder-care costs likely to rise?</li>
-          <li>Would making this prepayment leave us unable to meet a planned expense without borrowing?</li>
-          <li>If we needed the money back, how difficult and expensive would it be to access home equity?</li>
-        </ul>
-
-        <h2 className="mt-10 font-serif text-2xl text-pine">3. Mortgage rate: the first economic hurdle</h2>
-        <p className="mt-3 text-base leading-relaxed text-ink">
-          The mortgage rate is the clearest starting point. The higher the rate, the more interest an extra principal
-          payment can avoid. A very low fixed-rate mortgage makes the case for preserving cash or investing more
-          competitive; a high-rate mortgage makes guaranteed debt reduction more attractive.
-        </p>
-        <p className="mt-4 text-base leading-relaxed text-ink">
-          But do not compare the mortgage rate with an investment’s headline expected return as though they are
-          identical. Mortgage interest avoided is comparatively predictable. Investment returns are uncertain, can be
-          negative over meaningful periods, and may be taxable. Cash savings may have a lower return but much lower
-          volatility and much greater accessibility.
-        </p>
-
-        <h2 className="mt-10 font-serif text-2xl text-pine">4. Investment opportunity: compare like with like</h2>
-        <p className="mt-3 text-base leading-relaxed text-ink">
-          If the alternative is investing, compare expected after-tax return, risk, time horizon and liquidity — not
-          just the advertised historical average. A long-horizon retirement investor may reasonably tolerate market
-          volatility that would be unacceptable for money needed for a house repair next year.
+          Assume a {formatMoney(F.balance)} mortgage balance, a {formatPercent(F.annualRate)} fixed rate and{" "}
+          {F.remainingYears} years remaining. The scheduled principal-and-interest payment is{" "}
+          {formatMoney(F.scheduledPayment)} a month — about {formatMoney(Math.round(F.scheduledPayment))}.
         </p>
         <GuideTable
-          caption="How the next dollar behaves under three uses"
-          headers={["Use of $1", "Return characteristic", "Liquidity", "Main risk"]}
+          caption="How $250 extra each month changes payoff time and interest"
+          headers={["Scenario", "Approx. payoff time", "Approx. interest"]}
+          emphasizeLastRow
           rows={[
-            ["Extra mortgage principal", "Predictable interest avoided", "Low", "Cash becomes home equity"],
-            ["Insured savings / cash", "Lower but relatively stable interest", "High", "Return may trail inflation or the mortgage rate"],
-            ["Market investment", "Potentially higher long-run return", "Moderate", "Market loss, timing and tax risk"],
+            ["Scheduled payment only", formatYearsMonths(F.baselinePeriods), formatMoney(F.baselineInterest)],
+            [
+              `Add ${formatMoney(F.extraMonthly)}/month`,
+              formatYearsMonths(F.extraPeriods),
+              formatMoney(F.extraInterest),
+            ],
+            [
+              "Difference",
+              `${formatYearsMonths(F.periodsSaved)} sooner`,
+              `${formatMoney(F.interestAvoided)} less interest`,
+            ],
+          ]}
+        />
+        <p className="mt-4 text-base leading-relaxed text-ink">
+          Illustration assumes the rate remains fixed and every extra payment is applied directly to principal. It
+          excludes taxes, insurance, fees and tax effects. The first extra month pays {formatMoney(F.firstInterest)}{" "}
+          in interest, {formatMoney(F.firstScheduledPrincipal)} in scheduled principal, and {formatMoney(F.firstExtra)}{" "}
+          extra. Use Mortgage Payoff for your own balance, rate, remaining term and extra-payment pattern.
+        </p>
+
+        <h2 className="mt-10 font-serif text-2xl text-pine">
+          3. Liquidity has a value that an interest-rate comparison misses
+        </h2>
+        <p className="mt-3 text-base leading-relaxed text-ink">
+          A dollar in savings and a dollar of home equity are both part of net worth, but they are not
+          interchangeable. Cash can usually pay tomorrow’s bill. Equity generally requires a sale, refinance or new
+          borrowing before it can be spent.
+        </p>
+        <p className="mt-4 text-base leading-relaxed text-ink">
+          That difference matters most when life is changing. A family expecting a baby, moving to one income
+          temporarily, preparing for school costs or anticipating a major repair may rationally hold more cash even
+          when the mortgage rate exceeds the savings rate.
+        </p>
+
+        <h2 className="mt-10 font-serif text-2xl text-pine">
+          4. What would the money do if you did not prepay the mortgage?
+        </h2>
+        <p className="mt-3 text-base leading-relaxed text-ink">
+          The alternative matters. “Keep it” can mean very different things: leaving cash idle, earning interest in
+          an insured savings product, contributing to retirement, investing for a long-term goal, or holding money
+          for a known expense.
+        </p>
+        <GuideTable
+          caption="How the next dollar behaves under four uses"
+          headers={["Alternative", "Potential advantage", "Main trade-off", "Best question to ask"]}
+          rows={[
+            [
+              "Extra mortgage principal",
+              "Predictable interest avoided",
+              "Money becomes less liquid",
+              "How much time and interest will this actually save?",
+            ],
+            [
+              "Cash savings",
+              "Immediate access and stability",
+              "Return may be below mortgage cost or inflation",
+              "What risk is this cash protecting us from?",
+            ],
+            [
+              "Long-term investment",
+              "Possibility of higher long-run return",
+              "Returns are uncertain and can fall",
+              "Can we leave this money invested through a downturn?",
+            ],
+            [
+              "Near-term family fund",
+              "Protects planned spending",
+              "May earn less financially",
+              "Will we need this money before we could rebuild it?",
+            ],
           ]}
         />
 
-        <h2 className="mt-10 font-serif text-2xl text-pine">5. Job stability changes the answer</h2>
+        <h2 className="mt-10 font-serif text-2xl text-pine">
+          5. Investment opportunity is not the same as a guaranteed return
+        </h2>
         <p className="mt-3 text-base leading-relaxed text-ink">
-          Two households with the same mortgage rate can rationally make different choices. A household with two
-          stable incomes, strong insurance coverage and a large cash reserve may be comfortable directing more surplus
-          to principal. A household dependent on one volatile income, commissions, contract work or a business may
-          place a much higher value on liquidity.
+          A common argument is that if investments might return more than the mortgage rate, the money should be
+          invested instead. That comparison can be useful, but only if risk, taxes, time horizon and liquidity are
+          included.
         </p>
         <p className="mt-4 text-base leading-relaxed text-ink">
-          The relevant question is not whether you expect to lose your job. It is whether your financial plan can
-          survive a meaningful interruption in income without forcing you to borrow at a much higher rate than the
-          mortgage you just prepaid.
+          A 7% expected investment return is not the same thing as avoiding interest on a {formatPercent(F.annualRate)}{" "}
+          fixed mortgage. The investment can outperform, underperform or lose money — especially over short periods.
+          For money needed next year, that uncertainty may be unacceptable. For money intended for retirement decades
+          away, it may be much more tolerable.
         </p>
 
-        <h2 className="mt-10 font-serif text-2xl text-pine">6. Near-term family costs can outweigh a mathematically attractive prepayment</h2>
+        <h2 className="mt-10 font-serif text-2xl text-pine">6. Job stability can change the answer completely</h2>
         <p className="mt-3 text-base leading-relaxed text-ink">
-          Family finance rarely presents one decision at a time. A mortgage prepayment may look attractive in isolation
-          but become less attractive when a household expects parental leave, childcare, tuition, a vehicle
-          replacement, a move, medical treatment or major home maintenance.
+          The more uncertain household income is, the more valuable accessible cash can become. A worker paid largely
+          through commissions, a contractor, a business owner or a household dependent on one salary may reasonably
+          maintain a larger reserve than a household with two stable incomes.
         </p>
         <p className="mt-4 text-base leading-relaxed text-ink">
-          Money sent to principal cannot ordinarily be redirected to these expenses next month. For a household
-          entering an expensive life stage, preserving a larger cash buffer can be rational even when the savings rate
-          is below the mortgage rate.
+          The question is not “Do I think I will lose my job?” The better question is: “If income stopped, would this
+          mortgage prepayment leave us needing expensive debt to survive?”
         </p>
 
-        <h2 className="mt-10 font-serif text-2xl text-pine">7. Do not ignore other debt</h2>
+        <h2 className="mt-10 font-serif text-2xl text-pine">
+          7. Near-term family costs deserve their own line in the decision
+        </h2>
         <p className="mt-3 text-base leading-relaxed text-ink">
-          Before accelerating a mortgage, examine higher-cost debt. Paying extra on a 6% mortgage while carrying
-          revolving debt at a much higher rate can leave the household worse positioned. The mortgage decision belongs
-          inside the full household balance sheet, not in isolation.
-        </p>
-
-        <h2 className="mt-10 font-serif text-2xl text-pine">8. Taxes can change the effective comparison</h2>
-        <p className="mt-3 text-base leading-relaxed text-ink">
-          For U.S. taxpayers, qualified mortgage interest may be deductible only when the applicable requirements are
-          met, including itemizing deductions. IRS Publication 936 explains the rules and debt limits. A deduction can
-          reduce the effective after-tax cost of mortgage interest for some households, but many households receive no
-          incremental mortgage-interest tax benefit because they do not itemize or because other limitations apply.
+          Runaway Finance is built around the fact that financial decisions collide. The extra {formatMoney(500)}{" "}
+          going to a mortgage may also be the {formatMoney(500)} needed for parental leave, daycare, a replacement
+          vehicle, tuition, medical treatment or a house repair.
         </p>
         <p className="mt-4 text-base leading-relaxed text-ink">
-          Do not assume that a {formatPercent(F.annualRate)} mortgage automatically costs {formatPercent(F.annualRate)}{" "}
-          after tax, or that the interest is automatically deductible. Tax circumstances differ and rules change.
-          Mortgage Payoff does not apply a tax deduction to interest avoided.
+          Before accelerating the mortgage, list major expenses that are reasonably foreseeable over the next 12–24
+          months. A known expense is not an emergency. If it is likely to occur, funding it separately can prevent
+          you from paying down cheap mortgage debt today only to take on expensive consumer debt later.
         </p>
 
-        <h2 className="mt-10 font-serif text-2xl text-pine">9. Check the mortgage contract before paying extra</h2>
+        <h2 className="mt-10 font-serif text-2xl text-pine">
+          8. Check higher-cost debt before accelerating the mortgage
+        </h2>
         <p className="mt-3 text-base leading-relaxed text-ink">
-          Confirm that extra payments are applied to principal. Fannie Mae specifically advises borrowers to tell the
-          lender that extra payments should reduce principal rather than simply prepay interest. Also check for any
-          prepayment restrictions or penalties. They are not common on every mortgage, but they can materially alter
-          the economics. The calculator can model extras the servicer may refuse.
+          A mortgage is only one liability on the household balance sheet. If you carry credit-card or other debt at
+          a substantially higher rate, directing surplus cash to the mortgage first can be economically inefficient.
+          Compare all major debts, minimum obligations and penalties before choosing where the next dollar goes.
         </p>
 
-        <h2 className="mt-10 font-serif text-2xl text-pine">10. A practical decision sequence</h2>
+        <h2 className="mt-10 font-serif text-2xl text-pine">9. Taxes may alter the effective mortgage cost</h2>
+        <p className="mt-3 text-base leading-relaxed text-ink">
+          For U.S. households, mortgage interest is not automatically deductible. IRS Publication 936 explains that a
+          taxpayer generally must itemize deductions and satisfy the rules for secured debt on a qualified home;
+          deduction limits also apply. That means two households with identical mortgage rates can have different
+          after-tax mortgage costs.
+        </p>
+        <p className="mt-4 text-base leading-relaxed text-ink">
+          Do not reduce the mortgage rate for a presumed tax benefit unless that benefit actually applies to your tax
+          situation. Mortgage Payoff does not apply a tax deduction to interest avoided.
+        </p>
+
+        <h2 className="mt-10 font-serif text-2xl text-pine">10. Confirm how your lender treats extra payments</h2>
+        <p className="mt-3 text-base leading-relaxed text-ink">
+          Before sending extra money, confirm that the lender will apply it to principal and review the loan for any
+          applicable prepayment terms. The objective is to reduce principal sooner — not accidentally advance a
+          future scheduled payment without achieving the intended payoff effect. Fannie Mae specifically advises
+          borrowers to tell the lender that extra payments should reduce principal. The calculator can model extras
+          the servicer may refuse.
+        </p>
+
+        <h2 className="mt-10 font-serif text-2xl text-pine">A better decision framework</h2>
         <ol className="mt-3 list-decimal space-y-3 pl-5 text-base leading-relaxed text-ink">
           <li>
-            <span className="font-medium">Protect the floor.</span> Maintain enough liquid emergency savings for your
-            household’s actual risks. Six months of living expenses is a common benchmark, but the appropriate amount
-            can be higher or lower depending on income stability and obligations.
+            <span className="font-medium">Protect liquidity first.</span> Keep an emergency reserve appropriate to
+            your income stability, obligations and likely shocks.
           </li>
           <li>
-            <span className="font-medium">Clear urgent high-cost debt.</span> Compare the mortgage with credit cards and
-            other expensive liabilities before directing surplus cash to the home loan.
+            <span className="font-medium">Set aside known near-term costs.</span> Do not treat foreseeable childcare,
+            repairs or other planned expenses as emergencies.
           </li>
           <li>
-            <span className="font-medium">Fund known near-term needs.</span> Set aside money for costs likely to occur
-            before you could comfortably rebuild savings.
+            <span className="font-medium">Check expensive debt.</span> Compare the mortgage with higher-rate
+            liabilities.
           </li>
           <li>
-            <span className="font-medium">Capture important benefits.</span> Do not sacrifice valuable employer
-            retirement matches or other benefits merely to prepay the mortgage without comparing them.
+            <span className="font-medium">Preserve valuable benefits.</span> Consider employer retirement matches or
+            other benefits you would give up by redirecting cash.
           </li>
           <li>
-            <span className="font-medium">Compare rates and risk.</span> Compare the mortgage interest avoided with the
-            after-tax, risk-adjusted return and liquidity of the alternative.
+            <span className="font-medium">Measure the mortgage benefit.</span> Calculate the exact payoff-date change
+            and interest avoided.
           </li>
           <li>
-            <span className="font-medium">Choose a split if uncertainty is high.</span> The decision does not have to be
-            all-or-nothing. A household can keep part of the monthly surplus in savings and send part to principal.
+            <span className="font-medium">Compare the alternative.</span> Ask what the same money would earn, what
+            risk it carries and when you may need it.
           </li>
           <li>
-            <span className="font-medium">Reassess periodically.</span> A job change, new child, refinance, rate change,
-            inheritance or stronger emergency fund can change the answer.
+            <span className="font-medium">Consider a split.</span> You do not have to choose 100% mortgage or 100%
+            savings.
+          </li>
+          <li>
+            <span className="font-medium">Revisit the decision.</span> A larger emergency fund, job change, new
+            child, refinance or lower mortgage balance can change the trade-off.
           </li>
         </ol>
 
-        <h3 className="mt-8 font-serif text-xl text-pine">Three household scenarios</h3>
+        <h3 className="mt-8 font-serif text-xl text-pine">Three households, three different answers</h3>
         <GuideTable
-          caption="Same 6.5% rate, three different priorities"
-          headers={["Household", "Situation", "Planning interpretation"]}
+          caption="Same 6.5% rate can still produce different priorities"
+          headers={["Household", "Situation", "What changes"]}
           rows={[
             [
-              "A — cash-poor, stable mortgage",
-              "Mortgage 6.5%. Emergency savings: one month. One income. Baby expected within a year.",
-              "Priority is likely liquidity first. A thin cash reserve plus an imminent family cost makes a large irreversible prepayment risky.",
+              "A — the mortgage rate is high, but cash is thin",
+              "6.5% mortgage. One month of emergency savings. One income. Baby expected within 12 months.",
+              "Building liquidity may deserve priority before aggressive mortgage prepayment. The household has several ways a cash shortage could become expensive.",
             ],
             [
-              "B — strong reserve, no expensive debt",
-              "Mortgage 6.5%. Emergency savings: eight months. Two stable incomes. No high-rate debt. Near-term expenses funded.",
-              "Extra principal becomes much easier to justify. The household can compare prepayment with investing or other goals.",
+              "B — the financial floor is already protected",
+              "6.5% mortgage. Eight months of emergency savings. Two stable incomes. No high-rate debt. Major near-term costs funded.",
+              "Extra principal is much easier to justify. The household can now compare a relatively predictable mortgage benefit with its investment and other goals.",
             ],
             [
-              "C — low fixed mortgage, long horizon",
-              "Mortgage 3.0%. Emergency savings: six months. Stable income. Long investment horizon.",
-              "The opportunity cost of aggressive prepayment is more significant. Preserving liquidity or investing may be more competitive.",
+              "C — low-rate mortgage, strong liquidity, long horizon",
+              "3.0% fixed mortgage. Six months of emergency savings. Stable income. Long investment horizon.",
+              "Aggressive prepayment has a larger opportunity cost. Saving or investing may be more competitive, depending on risk tolerance, taxes and goals.",
             ],
           ]}
         />
 
-        <h2 className="mt-10 font-serif text-2xl text-pine">A useful compromise: split the surplus</h2>
+        <h2 className="mt-10 font-serif text-2xl text-pine">The overlooked option: do both</h2>
         <p className="mt-3 text-base leading-relaxed text-ink">
-          Households often frame this as a binary decision when a blended strategy may fit better. If {formatMoney(600)}{" "}
-          per month is available, for example, a household might direct {formatMoney(300)} to cash reserves and{" "}
-          {formatMoney(300)} to mortgage principal until the emergency fund reaches its target. After that, the full{" "}
-          {formatMoney(600)} can be reconsidered.
+          The decision is often presented as binary when it does not have to be. Suppose you have {formatMoney(600)}{" "}
+          of monthly surplus but your emergency fund is still below target. You might send {formatMoney(300)} to
+          savings and {formatMoney(300)} to mortgage principal. When the reserve reaches its target, you can
+          reconsider where the full {formatMoney(600)} should go.
         </p>
         <p className="mt-4 text-base leading-relaxed text-ink">
-          This approach preserves progress on the mortgage while preventing the household from becoming equity-rich
-          and cash-poor.
+          A split strategy can reduce the mortgage without turning the household into the uncomfortable position of
+          being equity-rich but cash-poor.
         </p>
 
         <GuideCta>
           <p>
-            <span className="font-semibold text-pine">See how much time and interest an extra payment could save. </span>
-            Enter the current balance, rate, remaining term and proposed extra on Mortgage Payoff. Then compare that
-            result with the cash reserve you would give up.
+            <span className="font-semibold text-pine">See how much faster you could pay off your mortgage. </span>
+            Test an extra monthly payment, annual extra, lump sum or temporary acceleration. Compare the new payoff
+            date and interest avoided with the liquidity you would give up.
           </p>
           <Link href="/mortgage/payoff" className={ctaButton}>
             Test an extra payment
           </Link>
         </GuideCta>
 
-        <h2 className="mt-10 font-serif text-2xl text-pine">Decision checklist</h2>
+        <h2 className="mt-10 font-serif text-2xl text-pine">Quick decision checklist</h2>
         <ul className="mt-3 list-disc space-y-2 pl-5 text-base leading-relaxed text-ink">
-          <li>Emergency fund is adequate for my household.</li>
-          <li>Known near-term family expenses are funded.</li>
-          <li>I have checked for higher-cost debt.</li>
-          <li>I know my mortgage rate and remaining term.</li>
-          <li>I understand whether mortgage interest produces a real tax benefit for me.</li>
-          <li>I have checked the loan for prepayment rules or penalties.</li>
-          <li>I know what the money would otherwise earn and what risk that alternative carries.</li>
-          <li>I have considered whether I may need this cash before the mortgage ends.</li>
-          <li>I have tested the actual payoff and interest savings rather than relying on intuition.</li>
+          <li>I have enough accessible emergency savings for my household’s actual risks.</li>
+          <li>Known expenses over the next 12–24 months are separately funded.</li>
+          <li>I have compared the mortgage with any higher-cost debt.</li>
+          <li>I know my mortgage rate, balance and remaining term.</li>
+          <li>I have checked whether a mortgage-interest tax benefit actually applies to me.</li>
+          <li>I understand what the money would do if I kept or invested it instead.</li>
+          <li>I have considered job and income stability.</li>
+          <li>I have confirmed how the lender applies extra payments.</li>
+          <li>I have calculated the actual interest and time saved.</li>
         </ul>
 
         <h2 className="mt-10 font-serif text-2xl text-pine">Frequently asked questions</h2>
@@ -300,32 +368,42 @@ export function ShouldIPayExtraOnMyMortgage() {
 
         <h2 className="mt-10 font-serif text-2xl text-pine">Sources and methodology</h2>
         <p className="mt-3 text-base leading-relaxed text-ink">
-          Fannie Mae, “Should I Make Extra Payments On My Mortgage?” — explains principal prepayment, savings
-          considerations and possible prepayment penalties.
+          This guide uses a household cash-flow framework rather than prescribing a universal mortgage strategy. The
+          worked mortgage example uses standard fixed-rate amortization and assumes extra payments are applied
+          directly to principal.
         </p>
         <p className="mt-4 text-base leading-relaxed text-ink">
-          Freddie Mac, “Is There a Faster Way to Be Mortgage-Free?” — explains how extra principal reduces interest
-          and loan duration.
+          Internal Revenue Service, Publication 936 (2025), Home Mortgage Interest Deduction — current rules on
+          qualification, itemization and debt limits.
         </p>
         <p className="mt-4 text-base leading-relaxed text-ink">
-          FDIC Consumer News, “Saving for the Unexpected and Your Future” (January 2025) — emergency-savings guidance
-          and the role of liquid reserves.
+          Freddie Mac, “Is There a Faster Way to Be Mortgage-Free?” — consumer guidance on additional principal
+          payments and shortening the loan.
         </p>
         <p className="mt-4 text-base leading-relaxed text-ink">
-          Internal Revenue Service, Publication 936 (2025), Home Mortgage Interest Deduction, and Publication 530
-          (2025), Tax Information for Homeowners.
+          Fannie Mae, “Should I Make Extra Payments On My Mortgage?” — principal prepayment, savings considerations
+          and possible prepayment penalties.
+        </p>
+        <p className="mt-4 text-base leading-relaxed text-ink">
+          FDIC Consumer News, “Saving for the Unexpected and Your Future” (January 2025) — emergency-savings
+          guidance and the role of liquid reserves.
         </p>
         <p className="mt-4 text-base leading-relaxed text-ink">
           Worked figures were produced with Mortgage Payoff: remaining balance {formatMoney(F.balance)},{" "}
           {formatPercent(F.annualRate)}, {F.remainingYears} years remaining, and {formatMoney(F.extraMonthly)} extra
           each month. Extra amounts are applied to principal in the month they fall. A lump sum does not recast the
-          scheduled payment. The calculator does not model a mortgage-interest tax deduction, utilities, or the return
-          on the cash you kept. Examples are illustrations, not a servicer payoff quote.
+          scheduled payment. The calculator does not model a mortgage-interest tax deduction, utilities, or the
+          return on the cash you kept. Examples are illustrations, not a servicer payoff quote.
+        </p>
+        <p className="mt-4 text-base leading-relaxed text-ink">
+          Rates, tax rules and individual circumstances change. External rules should be rechecked when this guide is
+          reviewed or updated.
         </p>
         <p className="mt-4 text-base leading-relaxed text-ink">
           This guide is educational and is not individualized financial, investment, tax, legal or lending advice.
-          Mortgage contracts, tax treatment and household circumstances differ. Verify loan terms with the lender and
-          consult an appropriate professional where the decision depends on tax, legal or investment circumstances.
+          The appropriate balance between mortgage prepayment, cash savings and investing depends on the household’s
+          circumstances, loan contract and goals. Verify loan terms with the lender and consult an appropriate
+          professional where the decision depends on tax, legal or investment circumstances.
         </p>
         <p className="mt-6 text-sm text-muted">Last reviewed: {EXTRA_VS_SAVINGS_GUIDE.reviewed}</p>
       </article>

@@ -130,29 +130,29 @@ export const BABY_SAVE_GUIDE = {
 
 export const EXTRA_VS_SAVINGS_FAQS: GuideFaq[] = [
   {
-    question: "Is paying extra on a mortgage the same as earning the mortgage rate?",
+    question: "Is paying extra on my mortgage equivalent to earning my mortgage rate?",
     answer:
-      "It is a useful approximation because reducing principal avoids future interest at the loan’s rate, but the exact economic comparison can differ because of timing, taxes, loan terms and the liquidity you surrender. Mortgage Payoff shows the interest avoided and time reclaimed; it does not treat prepayment as an investment return.",
+      "It is a useful starting approximation because reducing principal avoids future interest, but timing, taxes, loan terms and the loss of liquidity can change the full economic comparison. Mortgage Payoff shows the interest avoided and time reclaimed; it does not treat prepayment as an investment return.",
   },
   {
-    question: "Should I empty my savings to pay down my mortgage?",
+    question: "Should I drain savings to pay down the mortgage?",
     answer:
-      "Usually this should not be treated as a simple rate comparison. Emptying liquid reserves can force a household to borrow again when an emergency occurs. Preserve a cash buffer appropriate to your risks and obligations.",
+      "A rate comparison alone is not enough. If draining savings would leave you unable to absorb income loss or a large expense, you may simply replace relatively inexpensive mortgage debt with more expensive borrowing later.",
   },
   {
-    question: "Should I invest instead of paying extra on the mortgage?",
+    question: "What if my savings rate is lower than my mortgage rate?",
     answer:
-      "That depends on expected after-tax return, investment risk, time horizon, liquidity needs and the mortgage rate. Investment returns are uncertain; mortgage interest avoided is much more predictable.",
+      "That strengthens the mathematical case for prepayment, but liquidity still has value. First ask why the cash is being held and whether the remaining reserve is sufficient.",
   },
   {
-    question: "Can I do both?",
+    question: "What if I expect investments to earn more than my mortgage rate?",
     answer:
-      "Yes. A split strategy can build savings and reduce principal simultaneously, then shift more cash toward the mortgage once the savings target is reached.",
+      "Expected investment returns are uncertain. Compare after-tax expected return, volatility, time horizon and liquidity with the relatively predictable interest avoided by mortgage prepayment.",
   },
   {
-    question: "Will my lender automatically apply extra money to principal?",
+    question: "Can I save and prepay at the same time?",
     answer:
-      "Do not assume so. Check the lender’s instructions and statements and specify that qualifying extra payments are intended for principal. The calculator applies extras to principal and does not recast the scheduled payment.",
+      "Yes. A split strategy can be especially useful while building an emergency fund or preparing for a known family expense.",
   },
 ];
 
@@ -160,9 +160,9 @@ export const EXTRA_VS_SAVINGS_GUIDE = {
   path: EXTRA_VS_SAVINGS_PATH,
   themePath: HOME_GUIDE_THEME_PATH,
   h1: "Should I Pay Extra on My Mortgage or Keep the Money in Savings?",
-  title: "Should I Pay Extra on My Mortgage or Keep Savings? | Runaway Finance",
+  title: "Pay Extra on Mortgage or Save? How to Decide | Runaway Finance",
   description:
-    "Decide whether extra mortgage principal or cash savings is the better next dollar. Compare payoff math, liquidity, other debt and near-term family costs.",
+    "Should extra cash go to your mortgage or savings? Compare your mortgage rate, emergency fund, liquidity, investment opportunity, job stability and near-term family costs.",
   reviewed: "September 2026",
   datePublished: "2026-09-20",
   dateModified: "2026-09-20",
