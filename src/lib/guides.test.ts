@@ -19,6 +19,7 @@ import {
   extraVsSavingsBreadcrumbJsonLd,
   trueCostArticleJsonLd,
   trueCostBreadcrumbJsonLd,
+  homeGuideJsonLd,
 } from "./guides";
 import { SITE_URL } from "./seo";
 
@@ -94,7 +95,7 @@ describe("Family & Children guide catalog", () => {
     ]);
     const extraArticle = extraVsSavingsArticleJsonLd();
     const extraCrumbs = extraVsSavingsBreadcrumbJsonLd();
-    expect(extraArticle.url).toBe(`${SITE_URL}${EXTRA_VS_SAVINGS_GUIDE.path}`);
+    expect(extraArticle.url).toBe(`${SITE_URL}/guides/home#should-i-pay-extra-on-my-mortgage-or-keep-savings`);
     expect((extraCrumbs.itemListElement as { name: string }[]).map((item) => item.name)).toEqual([
       "Guides",
       "Home & Mortgage",
@@ -103,11 +104,22 @@ describe("Family & Children guide catalog", () => {
     expect(TRUE_COST_FAQS).toHaveLength(5);
     const trueCostArticle = trueCostArticleJsonLd();
     const trueCostCrumbs = trueCostBreadcrumbJsonLd();
-    expect(trueCostArticle.url).toBe(`${SITE_URL}${TRUE_COST_GUIDE.path}`);
+    expect(trueCostArticle.url).toBe(`${SITE_URL}/guides/home#mortgage-payment-vs-true-cost-of-owning-a-home`);
     expect((trueCostCrumbs.itemListElement as { name: string }[]).map((item) => item.name)).toEqual([
       "Guides",
       "Home & Mortgage",
       TRUE_COST_GUIDE.h1,
+    ]);
+    const homeLd = homeGuideJsonLd();
+    expect(homeLd.map((item) => item["@type"])).toEqual([
+      "BreadcrumbList",
+      "Article",
+      "Article",
+      "FAQPage",
+    ]);
+    expect(homeLd.filter((item) => item["@type"] === "Article").map((item) => item.headline)).toEqual([
+      TRUE_COST_GUIDE.h1,
+      EXTRA_VS_SAVINGS_GUIDE.h1,
     ]);
   });
 

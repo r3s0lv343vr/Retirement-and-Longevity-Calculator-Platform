@@ -263,11 +263,15 @@ export function homeGuideThemeMetadataUrl() {
 }
 
 export function extraVsSavingsCanonicalUrl() {
-  return `${SITE_URL}${EXTRA_VS_SAVINGS_PATH}`;
+  return `${homeGuideThemeMetadataUrl()}#${guideArticleAnchor(EXTRA_VS_SAVINGS_PATH)}`;
 }
 
 export function trueCostCanonicalUrl() {
-  return `${SITE_URL}${TRUE_COST_PATH}`;
+  return `${homeGuideThemeMetadataUrl()}#${guideArticleAnchor(TRUE_COST_PATH)}`;
+}
+
+export function guideArticleAnchor(path: string) {
+  return path.split("/").pop() ?? "";
 }
 
 export function babyAffordCanonicalUrl() {
@@ -333,14 +337,16 @@ export function guideFaqJsonLd(faqs: GuideFaq[]): Record<string, unknown> {
   };
 }
 
-export function guideArticleJsonLd(article: {
-  path: string;
-  h1: string;
-  description: string;
-  datePublished: string;
-  dateModified: string;
-}): Record<string, unknown> {
-  const url = `${SITE_URL}${article.path}`;
+export function guideArticleJsonLd(
+  article: {
+    path: string;
+    h1: string;
+    description: string;
+    datePublished: string;
+    dateModified: string;
+  },
+  url = `${SITE_URL}${article.path}`,
+): Record<string, unknown> {
   return {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -355,11 +361,14 @@ export function guideArticleJsonLd(article: {
   };
 }
 
-export function guideArticleBreadcrumbJsonLd(article: {
-  path: string;
-  h1: string;
-  themePath: string;
-}): Record<string, unknown> {
+export function guideArticleBreadcrumbJsonLd(
+  article: {
+    path: string;
+    h1: string;
+    themePath: string;
+  },
+  url = `${SITE_URL}${article.path}`,
+): Record<string, unknown> {
   const theme = GUIDE_THEMES.find((item) => item.path === article.themePath);
   return {
     "@context": "https://schema.org",
@@ -372,7 +381,7 @@ export function guideArticleBreadcrumbJsonLd(article: {
         name: theme?.title ?? "Guides",
         item: `${SITE_URL}${article.themePath}`,
       },
-      { "@type": "ListItem", position: 3, name: article.h1, item: `${SITE_URL}${article.path}` },
+      { "@type": "ListItem", position: 3, name: article.h1, item: url },
     ],
   };
 }
@@ -401,11 +410,11 @@ export function homeGuideBreadcrumbJsonLd(): Record<string, unknown> {
 }
 
 export function extraVsSavingsArticleJsonLd(): Record<string, unknown> {
-  return guideArticleJsonLd(EXTRA_VS_SAVINGS_GUIDE);
+  return guideArticleJsonLd(EXTRA_VS_SAVINGS_GUIDE, extraVsSavingsCanonicalUrl());
 }
 
 export function extraVsSavingsBreadcrumbJsonLd(): Record<string, unknown> {
-  return guideArticleBreadcrumbJsonLd(EXTRA_VS_SAVINGS_GUIDE);
+  return guideArticleBreadcrumbJsonLd(EXTRA_VS_SAVINGS_GUIDE, extraVsSavingsCanonicalUrl());
 }
 
 export function extraVsSavingsFaqJsonLd(): Record<string, unknown> {
@@ -413,13 +422,22 @@ export function extraVsSavingsFaqJsonLd(): Record<string, unknown> {
 }
 
 export function trueCostArticleJsonLd(): Record<string, unknown> {
-  return guideArticleJsonLd(TRUE_COST_GUIDE);
+  return guideArticleJsonLd(TRUE_COST_GUIDE, trueCostCanonicalUrl());
 }
 
 export function trueCostBreadcrumbJsonLd(): Record<string, unknown> {
-  return guideArticleBreadcrumbJsonLd(TRUE_COST_GUIDE);
+  return guideArticleBreadcrumbJsonLd(TRUE_COST_GUIDE, trueCostCanonicalUrl());
 }
 
 export function trueCostFaqJsonLd(): Record<string, unknown> {
   return guideFaqJsonLd(TRUE_COST_FAQS);
+}
+
+export function homeGuideJsonLd(): Record<string, unknown>[] {
+  return [
+    homeGuideBreadcrumbJsonLd(),
+    trueCostArticleJsonLd(),
+    extraVsSavingsArticleJsonLd(),
+    guideFaqJsonLd([...TRUE_COST_FAQS, ...EXTRA_VS_SAVINGS_FAQS]),
+  ];
 }

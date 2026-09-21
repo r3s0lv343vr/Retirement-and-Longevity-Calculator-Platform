@@ -2,11 +2,16 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { GuideChrome } from "@/components/GuideChrome";
 import { TrustBar } from "@/components/CalculatorSeo";
+import { MortgagePaymentVsTrueCost } from "@/components/guides/MortgagePaymentVsTrueCost";
+import { ShouldIPayExtraOnMyMortgage } from "@/components/guides/ShouldIPayExtraOnMyMortgage";
 import { HUB_TITLE } from "@/lib/brand";
 import {
+  EXTRA_VS_SAVINGS_PATH,
   GUIDE_THEMES,
   HOME_GUIDE_THEME_PATH,
-  homeGuideBreadcrumbJsonLd,
+  TRUE_COST_PATH,
+  guideArticleAnchor,
+  homeGuideJsonLd,
   homeGuideThemeMetadataUrl,
 } from "@/lib/guides";
 
@@ -30,11 +35,16 @@ export const metadata: Metadata = {
   },
 };
 
+const ARTICLE_BODY = {
+  [TRUE_COST_PATH]: MortgagePaymentVsTrueCost,
+  [EXTRA_VS_SAVINGS_PATH]: ShouldIPayExtraOnMyMortgage,
+} as const;
+
 export default function HomeGuidesPage() {
   return (
     <GuideChrome
       current={HOME_GUIDE_THEME_PATH}
-      jsonLd={homeGuideBreadcrumbJsonLd()}
+      jsonLd={homeGuideJsonLd()}
       footerTitle="Home & Mortgage"
       header={
         <div className="mx-auto max-w-5xl px-5 py-6 sm:px-6">
@@ -62,15 +72,20 @@ export default function HomeGuidesPage() {
     >
       <TrustBar />
       <ul className="mt-8 space-y-5">
-        {theme.articles.map((article) => (
-          <li key={article.path}>
-            <Link href={article.path} className="card block transition hover:border-pine/30">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Guide</p>
-              <h2 className="mt-2 font-serif text-xl text-pine">{article.h1}</h2>
-              <p className="mt-2 text-sm leading-relaxed text-muted">{article.description}</p>
-            </Link>
-          </li>
-        ))}
+        {theme.articles.map((article) => {
+          const Body = ARTICLE_BODY[article.path];
+          return (
+            <li key={article.path}>
+              <section id={guideArticleAnchor(article.path)} className="scroll-mt-24">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Guide</p>
+                <h2 className="mt-2 font-serif text-2xl text-pine sm:text-3xl">{article.h1}</h2>
+                <div className="mt-6">
+                  <Body />
+                </div>
+              </section>
+            </li>
+          );
+        })}
         <li>
           <Link href="/mortgage" className="card block transition hover:border-pine/30">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">Calculator</p>
